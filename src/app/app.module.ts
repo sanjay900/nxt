@@ -16,6 +16,7 @@ import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {BluetoothProvider} from "../providers/bluetooth/bluetooth";
 import {Gyroscope} from "@ionic-native/gyroscope";
 import { NxtProvider } from '../providers/nxt/nxt';
+import { File } from '@ionic-native/file';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,8 @@ import { NxtProvider } from '../providers/nxt/nxt';
     Gyroscope,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     BluetoothProvider,
-    NxtProvider
+    NxtProvider,
+    File
   ]
 })
 export class AppModule {}

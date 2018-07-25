@@ -24,7 +24,7 @@
       </ion-select>
     </ion-item>
     <button ion-button (click)="bluetooth.connect()" [disabled]="bluetooth.connected">Connect to the device</button>
-    <button ion-button (click)="sendTone()" [disabled]="!bluetooth.connected">Send a test tone</button>
-    <button ion-button (click)="resetPosition()" [disabled]="!bluetooth.connected">Reset motor position</button>
+    <button ion-button (click)="nxt.playTone(440, 100)" [disabled]="!bluetooth.connected">Send a test tone</button>
+    <button ion-button (click)="nxt.resetCounter(0, false)" [disabled]="!bluetooth.connected">Reset motor position</button>
   </ion-list>
 </ion-content>

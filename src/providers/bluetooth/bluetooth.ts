@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {EventEmitter, Injectable} from '@angular/core';
 import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
@@ -13,6 +13,7 @@ import {AlertController} from "ionic-angular";
 @Injectable()
 export class BluetoothProvider {
 
+  public deviceConnect$: EventEmitter<String> = new EventEmitter<String>();
   private _bluetoothDevices: any[];
   private _device: any;
   private observer: Subscription;
@@ -21,11 +22,13 @@ export class BluetoothProvider {
   constructor(private _bluetoothSerial: BluetoothSerial, private appPreferences: AppPreferences, public alertCtrl: AlertController) {
     this._status = "Disconnected";
   }
+
   init() {
-    this._bluetoothSerial.isEnabled().then(()=>this.search(),()=>{
-      this._bluetoothSerial.enable().then(()=>this.search())
+    this._bluetoothSerial.isEnabled().then(() => this.search(), () => {
+      this._bluetoothSerial.enable().then(() => this.search())
     })
   }
+
   search() {
     this._bluetoothSerial.list().then(devices => this._bluetoothDevices = devices);
 
@@ -38,7 +41,12 @@ export class BluetoothProvider {
   private connect() {
     this._status = "Connecting";
     if (this._device) {
-      this.observer = this._bluetoothSerial.connect(this._device).subscribe(()=>{this._status = "Connected"}, ret=>{this.showAlert(ret)})
+      this.observer = this._bluetoothSerial.connect(this._device).subscribe(() => {
+        this._status = "Connected";
+        this.deviceConnect$.emit(this.device);
+      }, ret => {
+        this.showAlert(ret)
+      });
     }
   }
 
@@ -46,19 +54,19 @@ export class BluetoothProvider {
     this._status = "Disconnected";
     const alert = this.alertCtrl.create({
       title: 'Error connecting to the selected bluetooth device',
-      subTitle: "Error: "+message+"<br>Try connecting to another device, or power cycling the device you are trying to connect to.",
+      subTitle: "Error: " + message + "<br>Try connecting to another device, or power cycling the device you are trying to connect to.",
       buttons: ['OK']
     });
     alert.present();
   }
 
-  write(data: Uint8Array) {
+  write(data: Uint8Array): Promise<any> {
     if (!this.connected) return;
-    this._bluetoothSerial.write(data);
+    return this._bluetoothSerial.write(data);
   }
 
-  read():Promise<any> {
-    if (!this.connected) return new Promise<any>(()=>[]);
+  read(): Promise<any> {
+    if (!this.connected) return new Promise<any>(() => []);
     return this._bluetoothSerial.read();
   }
 
@@ -76,11 +84,13 @@ export class BluetoothProvider {
       this.observer.unsubscribe();
     }
     this.connect();
-    this.appPreferences.store("bluetooth-device",this._device);
+    this.appPreferences.store("bluetooth-device", this._device);
   }
+
   get connectedFormatted(): String {
     return this._status;
   }
+
   get connected(): boolean {
     return this.observer && !this.observer.closed;
   }
