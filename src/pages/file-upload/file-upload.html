@@ -17,8 +17,16 @@
   File Name: {{file.name}}
   <br/>
   Total Size: {{file.size}} bytes
-  <progress-bar [progress]="file.percentage" [color-degraded]="{'0': '#5bc0de',  '99.9': '#5cb85c'}"></progress-bar>
+  <br/>
+  Status: {{getStatus()}}
+  <div *ngIf="isExisting()">
+    Error: The file that is being written already exists!
+    <br/>
+    If the file does not appear on the NXT, reboot the NXT as a partially written file may reside on the NXT.
+  </div>
+  <div *ngIf="!bluetooth.connected">Error: The NXT has lost connection!</div>
+  <progress-bar [progress]="file.percentage" [color]="getColor()"></progress-bar>
 
-  <button *ngIf="file.isFinished" ion-button (click)="dismiss()">Close</button>
+  <button *ngIf="canDismiss()" ion-button (click)="dismiss()">Close</button>
 </ion-content>
 

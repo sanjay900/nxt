@@ -14,6 +14,7 @@ import {AlertController} from "ionic-angular";
 export class BluetoothProvider {
 
   public deviceConnect$: EventEmitter<String> = new EventEmitter<String>();
+  public deviceDisconnect$: EventEmitter<String> = new EventEmitter<String>();
   private _bluetoothDevices: any[];
   private _device: any;
   private observer: Subscription;
@@ -45,7 +46,8 @@ export class BluetoothProvider {
         this._status = "Connected";
         this.deviceConnect$.emit(this.device);
       }, ret => {
-        this.showAlert(ret)
+        this.showAlert(ret);
+        this.deviceDisconnect$.emit(this.device);
       });
     }
   }

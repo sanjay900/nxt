@@ -1,19 +1,13 @@
-import {Injectable} from '@angular/core';
+import {EventEmitter, Injectable} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
-import {App, ModalController} from 'ionic-angular';
+import {ModalController} from 'ionic-angular';
 import {FileUploadPage} from "../../pages/file-upload/file-upload";
-
-type BigInt = number
-declare const BigInt: typeof Number;
+import {NxtConstants, NXTFile, NXTFileState} from "./nxt-constants";
 
 @Injectable()
 export class NxtProvider {
 
-  //The max number returned by the nxt brick for motor power is four bytes, but the first byte has a mx of 254.
-  private static MAX_MOTOR: BigInt = NxtProvider.bytesToLong(new Uint8Array([254, 255, 255, 255]));
-  private static MAX_MOTOR_HALF: BigInt = NxtProvider.MAX_MOTOR / BigInt(2);
-  private static MOTOR_PROGRAM: string = "MotorControl22.rxe";
   public currentRotation: number = 0;
   public targetRotation: number = 0;
   private data: Uint8Array;
@@ -23,63 +17,62 @@ export class NxtProvider {
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController) {
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
       this.data = new Uint8Array(data);
-      if (this.data[2] == 2 && this.data[3] == 6) {
-        //The last four bytes represent the motor's current tachometer value, as an offset from the last motor reset.
-        let rotation: BigInt = NxtProvider.bytesToLong(this.data.slice(this.data.length - 4, this.data.length));
-
-        if (rotation > NxtProvider.MAX_MOTOR_HALF) {
-          rotation -= NxtProvider.MAX_MOTOR;
+      let messageClass: number = this.data[2];
+      let messageType: number = this.data[3];
+      let status: number = this.data[4];
+      if (messageClass == 2) {
+        if (messageType == 6) {
+          //The last four bytes represent the motor's current tachometer value, as an offset from the last motor reset.
+          this.currentRotation = NxtProvider.bytesToLong(this.data.slice(this.data.length - 4, this.data.length));
         }
-        this.currentRotation = Number(rotation);
-      }
-      if (this.data[2] == 2 && this.data[3] == 0) {
-        if (this.data[4] == 0xc0) {
-          this.writeFile("MotorControl22.rxe")
-        } else if (this.data[4] != 0) {
-          console.log("Error Starting: " + this.data[4].toString(16));
+        if (messageType == 0) {
+          if (this.data[4] == 0xc0) {
+            this.writeFile("MotorControl22.rxe")
+          } else if (this.data[4] != 0) {
+            console.log("Error Starting: " + this.data[4].toString(16));
+          }
         }
-        this.writeMotorCommand("120990010002")
-      }
-      if (this.data[2] == 2 && this.data[3] == 0x81) {
-        if (this.data[4] == 0) {
-          this.nextFile.handle = this.data[5];
-          this.files[this.nextFile.handle] = this.nextFile;
-          this.writeSection(this.files[this.data[5]]);
-        } else {
-          console.log("Error Opening: " + this.data[4].toString(16));
+        if (this.data[2] == 2 && this.data[3] == 0x09) {
+          if (this.data[4] == 0) {
+            console.log("Wrote message!");
+          } else {
+            console.log("Error Writing msg: " + this.data[4].toString(16));
+          }
+        }
+        if (messageType >= 0x81 && messageType <= 0x84) {
+          let handle: number = this.data[5];
+          let file: NXTFile = this.files[handle] || this.nextFile;
+          if (status == 0) {
+            switch (messageType) {
+              case 0x81:
+                this.nextFile.handle = handle;
+                this.files[this.nextFile.handle] = file;
+                file.status = NXTFileState.WRITING;
+              case 0x83:
+                this.writeSection(file);
+                break;
+              case 0x84:
+                file.status = NXTFileState.DONE;
+                delete this.files[handle];
+                this.startProgram(NxtConstants.MOTOR_PROGRAM);
+                break;
+            }
+          } else if (status == 0x8f) {
+            this.nextFile.status = NXTFileState.FILE_EXISTS;
+          } else {
+            this.nextFile.status = NXTFileState.ERROR;
+          }
         }
       }
-      if (this.data[2] == 2 && this.data[3] == 0x83) {
-        if (this.data[4] == 0) {
-          this.writeSection(this.files[this.data[5]]);
-        } else {
-          console.log("Error Writing: " + this.data[4].toString(16));
-        }
-      }
-      if (this.data[2] == 2 && this.data[3] == 0x09) {
-        if (this.data[4] == 0) {
-          console.log("Wrote message!");
-        } else {
-          console.log("Error Writing msg: " + this.data[4].toString(16));
-        }
-      }
-      if (this.data[2] == 2 && this.data[3] == 0x84) {
-        if (this.data[4] == 0) {
-          console.log("Wrote file!");
-        } else {
-          console.log("Error Writing: " + this.data[4].toString(16));
-        }
-      }
-
     });
     this.bluetooth.deviceConnect$.subscribe(() => {
-      this.startProgram(NxtProvider.MOTOR_PROGRAM);
+      this.startProgram(NxtConstants.MOTOR_PROGRAM);
     });
 
   }
 
   writeSection(file: NXTFile) {
-    if (file.isFinished) {
+    if (file.isFinished()) {
       this.closeFileHandle(file);
       return;
     }
@@ -128,6 +121,7 @@ export class NxtProvider {
   }
 
   closeFileHandle(file: NXTFile) {
+    this.files[file.handle].status = NXTFileState.CLOSING;
     return this.bluetooth.write(new Uint8Array([0x03, 0x00, 0x01, 0x84, file.handle]));
   }
 
@@ -140,13 +134,6 @@ export class NxtProvider {
     this.bluetooth.write(new Uint8Array(arr));
   }
 
-  static bytesToLong(data: Uint8Array): BigInt {
-    return BigInt(data[0]) |
-      BigInt(data[1]) << BigInt(8) |
-      BigInt(data[2]) << BigInt(16) |
-      BigInt(data[3]) << BigInt(24);
-  }
-
 
   stopMotor(motor: number) {
     return this.bluetooth.write(new Uint8Array([0xC, 0x00, 0x80, 0x04, motor, 0, 0x00, 0x01, 0, 0x20, 0, 0, 0, 0]));
@@ -157,12 +144,13 @@ export class NxtProvider {
   }
 
   requestMotorInfo(motor: number) {
-    // this.bluetooth.write(new Uint8Array([0x03, 0x00, 0x00, 0x06, motor]));
+    this.bluetooth.write(new Uint8Array([0x03, 0x00, 0x00, 0x06, motor]));
   }
 
   rotateTowards(motor: number, angle: number) {
     this.targetRotation = angle;
-    this.requestMotorInfo(0);
+    console.log("req..");
+    // this.requestMotorInfo(0);
   }
 
   resetCounter(motor: number, relative: boolean) {
@@ -172,33 +160,8 @@ export class NxtProvider {
   playTone(hz: number, duration: number) {
     return this.bluetooth.write(new Uint8Array([0x06, 0x00, 0x00, 0x03, hz & 0xff, hz >> 0x08, duration & 0xff, duration >> 0x08]));
   }
-}
 
-export class NXTFile {
-  public name: string;
-  public data: Uint8Array;
-  public size: number;
-  public handle: number;
-  private static PACKET_SIZE: number = 64;
-
-  constructor(name: string, data: Uint8Array, length: number) {
-    this.name = name;
-    this.data = data;
-    this.size = length;
-  }
-
-  get percentage(): number {
-    return 100-(this.data.length/this.size*100);
-  }
-
-  get isFinished(): boolean {
-    return this.data.length == 0;
-  }
-
-  nextChunk(): Uint8Array {
-    let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
-    let ret: Uint8Array  = this.data.slice(0, chunkSize);
-    this.data = this.data.slice(chunkSize, this.data.length);
-    return ret;
+  private static bytesToLong(data: Uint8Array) : number {
+    return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
   }
 }

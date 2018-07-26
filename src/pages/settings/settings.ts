@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {ActionSheetController, IonicPage, NavController, NavParams} from 'ionic-angular';
+import {ActionSheetController, NavController, NavParams} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {NxtProvider} from "../../providers/nxt/nxt";
 
@@ -10,7 +10,6 @@ import {NxtProvider} from "../../providers/nxt/nxt";
  * Ionic pages and navigation.
  */
 
-@IonicPage()
 @Component({
   selector: 'page-settings',
   templateUrl: 'settings.html',
