@@ -17,6 +17,8 @@ import {BluetoothProvider} from "../providers/bluetooth/bluetooth";
 import {Gyroscope} from "@ionic-native/gyroscope";
 import { NxtProvider } from '../providers/nxt/nxt';
 import { File } from '@ionic-native/file';
+import {FileUploadPage} from "../pages/file-upload/file-upload";
+import {ProgressBarModule} from "angular-progress-bar"
 
 @NgModule({
   declarations: [
@@ -25,10 +27,12 @@ import { File } from '@ionic-native/file';
     ContactPage,
     MainPage,
     TabsPage,
-    SettingsPage
+    SettingsPage,
+    FileUploadPage
   ],
   imports: [
     BrowserModule,
+    ProgressBarModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -38,7 +42,8 @@ import { File } from '@ionic-native/file';
     ContactPage,
     MainPage,
     TabsPage,
-    SettingsPage
+    SettingsPage,
+    FileUploadPage
   ],
   providers: [
     StatusBar,
@@ -49,7 +54,7 @@ import { File } from '@ionic-native/file';
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     BluetoothProvider,
     NxtProvider,
-    File
+    File,
   ]
 })
 export class AppModule {}
