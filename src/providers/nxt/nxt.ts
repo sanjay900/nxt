@@ -25,8 +25,17 @@ export class NxtProvider {
   private data: Uint8Array;
   private files: Map<number, NXTFile> = new Map();
   private nextFile: NXTFile;
+  private currentProgram: string = null;
+  private programToStart: string;
 
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController) {
+    this.bluetooth.deviceDisconnect$.subscribe(() => {
+      this.files.clear();
+      this.nextFile = null;
+      this.currentRotation = 0;
+      this.targetRotation = 0;
+      this.currentProgram = null;
+    });
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
       this.data = new Uint8Array(data);
       let telegramType: number = this.data[2];
@@ -39,9 +48,11 @@ export class NxtProvider {
         }
         if (messageType == DirectCommand.START_PROGRAM) {
           //Out of range is sent back if the file was not found on the brick.
-          if (status == DirectCommandResponse.OUT_OF_RANGE) {
+          if (status == DirectCommandResponse.SUCCESS) {
+            this.currentProgram = this.programToStart;
+          } else if (status == DirectCommandResponse.OUT_OF_RANGE) {
             //File not found, so lets upload it.
-            this.writeFile("MotorControl22.rxe", true)
+            this.writeFile(NxtConstants.MOTOR_PROGRAM, true)
           } else if (status != DirectCommandResponse.SUCCESS) {
             console.log("Error Starting: " + status.toString(16));
           }
@@ -170,6 +181,7 @@ export class NxtProvider {
   }
 
   writeMessage(message: string, mailbox: number) {
+    if (this.currentProgram == null) return;
     message += '\0';
     this.writePacket(new Uint8Array([
       TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.MESSAGE_WRITE,
@@ -181,7 +193,7 @@ export class NxtProvider {
     let data = [TelegramType.SYSTEM_COMMAND_RESPONSE, read ? SystemCommand.OPEN_READ : SystemCommand.OPEN_WRITE];
     data.push(...NxtProvider.stringToAscii(file.name));
     //We need to write 21 chars, so pad with null terminators.
-    data.push(...new Array(22-data.length));
+    data.push(...new Array(22 - data.length));
     console.log(data.length);
     console.log(data);
     data.push(file.size, file.size >> 8, file.size >> 16, file.size >> 24);
@@ -192,13 +204,12 @@ export class NxtProvider {
     this.files[file.handle].status = NXTFileState.CLOSING;
     this.writePacket(new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.CLOSE, file.handle]));
   }
-  writingFile() : boolean {
-    return this.files.size != 0;
-  }
+
   startProgram(prog: string) {
+    this.programToStart = prog;
     let data = [TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.START_PROGRAM];
     //push a null terminator
-    data.push(...NxtProvider.stringToAscii(prog),0);
+    data.push(...NxtProvider.stringToAscii(prog), 0);
     this.writePacket(new Uint8Array(data));
   }
 
