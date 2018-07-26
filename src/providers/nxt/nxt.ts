@@ -8,7 +8,8 @@ import {
   DirectCommandResponse,
   NxtConstants,
   NXTFile,
-  NXTFileState, OutputPort,
+  NXTFileState,
+  OutputPort,
   OutputRegulationMode,
   OutputRunState,
   SystemCommand,
@@ -40,7 +41,7 @@ export class NxtProvider {
           //Out of range is sent back if the file was not found on the brick.
           if (status == DirectCommandResponse.OUT_OF_RANGE) {
             //File not found, so lets upload it.
-            this.writeFile("MotorControl22.rxe")
+            this.writeFile("MotorControl22.rxe", true)
           } else if (status != DirectCommandResponse.SUCCESS) {
             console.log("Error Starting: " + status.toString(16));
           }
@@ -53,6 +54,7 @@ export class NxtProvider {
         if (messageType >= SystemCommand.OPEN_WRITE && messageType <= SystemCommand.CLOSE) {
           let handle: number = this.data[5];
           let file: NXTFile = this.files[handle] || this.nextFile;
+          file.errorMessage = SystemCommandResponse[status];
           if (status == 0) {
             switch (messageType) {
               case SystemCommand.OPEN_WRITE:
@@ -65,15 +67,15 @@ export class NxtProvider {
               case SystemCommand.CLOSE:
                 file.status = NXTFileState.DONE;
                 delete this.files[handle];
-                this.startProgram(NxtConstants.MOTOR_PROGRAM);
+                if (file.autoStart) {
+                  this.startProgram(NxtConstants.MOTOR_PROGRAM);
+                }
                 break;
             }
           } else if (status == SystemCommandResponse.FILE_ALREADY_EXISTS) {
             file.status = NXTFileState.FILE_EXISTS;
-            file.errorMessage = SystemCommandResponse[status];
           } else {
             file.status = NXTFileState.ERROR;
-            file.errorMessage = SystemCommandResponse[status];
           }
         }
       }
@@ -92,7 +94,7 @@ export class NxtProvider {
   }
 
   writePacket(data: Uint8Array) {
-    this.bluetooth.write(NxtProvider.appendBefore(this.data, new Uint8Array([data.length, data.length << 8])));
+    this.bluetooth.write(NxtProvider.appendBefore(data, new Uint8Array([data.length, data.length << 8])));
   }
 
   writeSection(file: NXTFile) {
@@ -104,9 +106,9 @@ export class NxtProvider {
     this.writePacket(NxtProvider.appendBefore(file.nextChunk(), header));
   }
 
-  async writeFile(prog: string) {
+  writeFile(prog: string, autoStart: boolean) {
     this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + prog).then(file => {
-      this.nextFile = new NXTFile(prog, new Uint8Array(file), file.byteLength);
+      this.nextFile = new NXTFile(prog, new Uint8Array(file), file.byteLength, autoStart);
       this.openFileHandle(this.nextFile, false);
       let uploadModal = this.modalCtrl.create(FileUploadPage, {file: this.nextFile});
       uploadModal.present();
@@ -118,48 +120,71 @@ export class NxtProvider {
     return Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
   }
 
-  controlledMotorCommand(port: OutputPort, power: number, tachoLimit: number, mode: number) {
-    this.writeMessage("1" + port + NxtProvider.padDigits(power, 3) +
-      NxtProvider.padDigits(tachoLimit, 6) + mode.toString(), 1)
-  }
-
-  classicMotorCommand(port: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
-    this.writeMessage("4" + port + NxtProvider.padDigits(power, 3) +
-      NxtProvider.padDigits(tachoLimit, 6) + speedRegulation?"1":"0", 1)
-  }
-
-  resetTachoLimit(port: OutputPort) {
-    this.writeMessage("2"+port, 1);
-  }
 
   /**
    * Write motor commands formatted for the below specs
    * http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
-   * @param {string} command the command to write
    * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
+   * @param port
+   * @param power
+   * @param tachoLimit
+   * @param mode
    */
-  private writeMotorCommand(command: string) {
-    //Write to message box 1, as the running program expects data there
-    this.writeMessage(command, 0x01);
+  controlledMotorCommand(port: OutputPort, power: number, tachoLimit: number, mode: number) {
+    this.writeMessage("1" + port.toString() + NxtProvider.padDigits(power, 3) +
+      NxtProvider.padDigits(tachoLimit, 6) + mode.toString(), 1)
+  }
+
+
+  /**
+   * Write motor commands formatted for the below specs
+   * http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+   * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
+   * @param port
+   * @param power
+   * @param tachoLimit
+   * @param speedRegulation
+   */
+  classicMotorCommand(port: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
+    this.writeMessage("4" + port.toString() + NxtProvider.padDigits(power, 3) +
+      NxtProvider.padDigits(tachoLimit, 6) + (speedRegulation ? "1" : "0"), 1)
+  }
+
+
+  /**
+   * Write motor commands formatted for the below specs
+   * http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+   * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
+   * @param port
+   */
+  resetTachoLimit(port: OutputPort) {
+    this.writeMessage("2" + port.toString(), 1);
+  }
+
+  static stringToAscii(message: string): number[] {
+    let data = [];
+    for (let i = 0; i < message.length; i++) {
+      data.push(message.charCodeAt(i));
+    }
+    return data;
   }
 
   writeMessage(message: string, mailbox: number) {
-    message += "\0";
-    let arr = [TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.MESSAGE_WRITE, mailbox, message.length];
-    for (let i = 0; i < message.length; i++) {
-      arr.push(message.charCodeAt(i));
-    }
-    this.writePacket(new Uint8Array(arr));
+    message += '\0';
+    this.writePacket(new Uint8Array([
+      TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.MESSAGE_WRITE,
+      mailbox, message.length, ...NxtProvider.stringToAscii(message)
+    ]));
   }
 
   openFileHandle(file: NXTFile, read: boolean) {
     let data = [TelegramType.SYSTEM_COMMAND_RESPONSE, read ? SystemCommand.OPEN_READ : SystemCommand.OPEN_WRITE];
-    for (let i = 0; i < file.name.length; i++) {
-      data.push(file.name.charCodeAt(i));
-    }
-    //Write a null terminator
-    data.push(0);
-    data.push(...[file.size, file.size >> 8, file.size >> 16, file.size >> 24]);
+    data.push(...NxtProvider.stringToAscii(file.name));
+    //We need to write 21 chars, so pad with null terminators.
+    data.push(...new Array(22-data.length));
+    console.log(data.length);
+    console.log(data);
+    data.push(file.size, file.size >> 8, file.size >> 16, file.size >> 24);
     return this.writePacket(new Uint8Array(data));
   }
 
@@ -167,13 +192,14 @@ export class NxtProvider {
     this.files[file.handle].status = NXTFileState.CLOSING;
     this.writePacket(new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.CLOSE, file.handle]));
   }
-
-  startProgram(prog: String) {
-    let arr = [TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.START_PROGRAM];
-    for (let i = 0; i < prog.length; i++) {
-      arr.push(prog.charCodeAt(i));
-    }
-    this.writePacket(new Uint8Array(arr));
+  writingFile() : boolean {
+    return this.files.size != 0;
+  }
+  startProgram(prog: string) {
+    let data = [TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.START_PROGRAM];
+    //push a null terminator
+    data.push(...NxtProvider.stringToAscii(prog),0);
+    this.writePacket(new Uint8Array(data));
   }
 
   setOutputState(motor: number, power: number, mode: number, regulationMode: OutputRegulationMode, turnRatio: number, runState: OutputRunState, tachoLimit: number) {
@@ -191,12 +217,8 @@ export class NxtProvider {
     this.writePacket(new Uint8Array([TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.GET_OUTPUT_STATE, motor]));
   }
 
-  rotateTowards(motor: number, angle: number) {
+  rotateTowards(motor: OutputPort, angle: number) {
     this.targetRotation = angle;
-  }
-
-  resetCounter(motor: number) {
-    return this.writeMotorCommand("2" + motor.toString());
   }
 
   playTone(hz: number, duration: number) {

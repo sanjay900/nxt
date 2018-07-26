@@ -166,7 +166,7 @@ export enum InputSensorMode {
 }
 
 export enum NXTFileState {
-  OPENING = "Opening File", WRITING = "Writing File", CLOSING = "Closing File", DONE = "Finished", ERROR = "Error", FILE_EXISTS = "File Already Exists"
+  OPENING = "Opening File", WRITING = "Writing File", CLOSING = "Closing File", DONE = "Finished", ERROR = "Error", FILE_EXISTS = "File already exists"
 }
 
 export class NXTFile {
@@ -176,13 +176,15 @@ export class NXTFile {
   public size: number;
   public handle: number;
   public errorMessage: string;
+  public autoStart: boolean;
   private state: NXTFileState = NXTFileState.OPENING;
   private static PACKET_SIZE: number = 64;
 
-  constructor(name: string, data: Uint8Array, length: number) {
+  constructor(name: string, data: Uint8Array, length: number, autoStart: boolean) {
     this.name = name;
     this.data = data;
     this.size = length;
+    this.autoStart = autoStart;
   }
 
   set status(status: NXTFileState) {
@@ -200,9 +202,9 @@ export class NXTFile {
 
   get formattedErrorMessage(): string {
     if (!this.hasError()) return "No Error";
-    return this.errorMessage
-      .replace("_"," ")
-      .replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    let msg: string = this.errorMessage
+      .replace(/_/g," ");
+    return msg.charAt(0).toLocaleUpperCase()+msg.substring(1);
   }
 
   isFinished(): boolean {

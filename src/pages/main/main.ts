@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
-import {NavController, Platform} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
+import {OutputPort} from "../../providers/nxt/nxt-constants";
 
 @Component({
   selector: 'page-main',
@@ -23,18 +23,15 @@ export class MainPage {
   }
   ionViewDidLeave() {
     (<any>navigator).fusion.clearWatch(this.watchId);
-    // this.nxt.stopMotor(0xff);
-  }
-  padDigits(number, digits) {
-    return Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
+    this.nxt.stopMotor(0xff);
   }
   sensorUpdate(data) {
     this.steering = data.eulerAngles.pitch;
     this.steering *= 180/Math.PI;
     this.throttle = (data.eulerAngles.roll + Math.PI/2)*2;
     if (Math.abs(this.throttle) < 0.5) {
-      // this.nxt.stopMotor(1);
-      // this.nxt.stopMotor(2);
+      this.nxt.stopMotor(1);
+      this.nxt.stopMotor(2);
     } else {
       if (this.throttle > 1) this.throttle = 1;
       if (this.throttle < -1) this.throttle = -1;
@@ -42,10 +39,10 @@ export class MainPage {
       if (this.throttle < 0) {
         this.throttle = 100 - this.throttle;
       }
-      this.nxt.writeMotorCommand("45"+this.padDigits(this.throttle.toString(),3)+"0000001")
+      this.nxt.classicMotorCommand(OutputPort.B_C, this.throttle, 0, true);
 
     }
-    this.nxt.rotateTowards(0, this.steering);
+    // this.nxt.rotateTowards(OutputPort.A, this.steering);
 
   }
 
