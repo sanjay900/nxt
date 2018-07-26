@@ -27,6 +27,14 @@ export enum DirectCommand {
   MESSAGE_READ = 0x13
 }
 
+export enum TelegramType {
+  DIRECT_COMMAND_RESPONSE = 0x00,
+  SYSTEM_COMMAND_RESPONSE = 0x01,
+  REPLY = 0x02,
+  DIRECT_COMMAND_NO_RESPONSE = 0x80,
+  SYSTEM_COMMAND_NO_RESPONSE = 0x81
+}
+
 export enum DirectCommandResponse {
   SUCCESS = 0x00,
   PENDING = 0x20,
@@ -48,7 +56,7 @@ export enum DirectCommandResponse {
   BAD_ARGUMENTS = 0xFF
 }
 
-export enum Command {
+export enum SystemCommand {
   OPEN_READ = 0x80,
   OPEN_WRITE = 0x81,
   READ = 0x82,
@@ -71,14 +79,14 @@ export enum Command {
 
 }
 
-export enum SystemCommand {
+export enum ExtendedSystemCommand {
   DELETE_USER_FLASH = 0xA0,
   POLL_COMMAND_LENGTH = 0xA1,
   POLL_COMMAND = 0xA2,
   BLUETOOTH_FACTORY_RESET = 0xA4
 }
 
-export enum CommandResponse {
+export enum SystemCommandResponse {
   SUCCESS = 0x00,
   NO_MORE_HANDLES = 0x81,
   NO_SPACE = 0x82,
@@ -101,6 +109,62 @@ export enum CommandResponse {
   ILLEGAL_FILE_HANDLE = 0x93
 }
 
+export enum OutputMode {
+  MOTOR_ON = 0x01,
+  BRAKE = 0x02,
+  REGULATED = 0x04
+}
+
+export enum OutputRegulationMode {
+  IDLE = 0x00,
+  MOTOR_SPEED = 0x01,
+  MOTOR_SYNC = 0x02
+}
+
+export enum OutputRunState {
+  IDLE = 0x00,
+  RAMP_UP = 0x10,
+  RUNNING = 0x20,
+  RAMP_DOWN = 0x40
+}
+
+export enum OutputPort {
+  A = "0",
+  B = "1",
+  C = "2",
+  A_B = "3",
+  A_C = "4",
+  B_C = "5",
+  A_B_C = "6"
+}
+
+export enum InputSensorType {
+  NO_SENSOR = 0x00,
+  TOUCH = 0x01,
+  TEMPERATURE = 0x02,
+  REFLECTION = 0x03,
+  ANGLE = 0x04,
+  LIGHT_ACTIVE = 0x05,
+  LIGHT_INACTIVE = 0x06,
+  SOUND_DB = 0x07,
+  SOUND_DBA = 0x08,
+  CUSTOM = 0x09,
+  LOW_SPEED = 0x0A,
+  LOW_SPEED_9V = 0x0B,
+  NUMBER_OF_SENSOR_TYPES = 0x0C
+}
+
+export enum InputSensorMode {
+  RAW = 0x00,
+  BOOLEAN = 0x20,
+  TRANSITION_COUNT = 0x40,
+  PERIOD_COUNT = 0x60,
+  PERIOD_COUNT_FULL_SCALE = 0x80,
+  CELSIUS = 0xA0,
+  FAHRENHEIT = 0xC0,
+  ANGLE_STEPS = 0xE0
+}
+
 export enum NXTFileState {
   OPENING = "Opening File", WRITING = "Writing File", CLOSING = "Closing File", DONE = "Finished", ERROR = "Error", FILE_EXISTS = "File Already Exists"
 }
@@ -111,6 +175,7 @@ export class NXTFile {
   public data: Uint8Array;
   public size: number;
   public handle: number;
+  public errorMessage: string;
   private state: NXTFileState = NXTFileState.OPENING;
   private static PACKET_SIZE: number = 64;
 
@@ -131,6 +196,13 @@ export class NXTFile {
 
   get percentage(): number {
     return 100 - (this.data.length / this.size * 100);
+  }
+
+  get formattedErrorMessage(): string {
+    if (!this.hasError()) return "No Error";
+    return this.errorMessage
+      .replace("_"," ")
+      .replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
   }
 
   isFinished(): boolean {

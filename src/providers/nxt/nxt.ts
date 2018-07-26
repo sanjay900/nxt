@@ -1,9 +1,20 @@
-import {EventEmitter, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {ModalController} from 'ionic-angular';
 import {FileUploadPage} from "../../pages/file-upload/file-upload";
-import {NxtConstants, NXTFile, NXTFileState} from "./nxt-constants";
+import {
+  DirectCommand,
+  DirectCommandResponse,
+  NxtConstants,
+  NXTFile,
+  NXTFileState, OutputPort,
+  OutputRegulationMode,
+  OutputRunState,
+  SystemCommand,
+  SystemCommandResponse,
+  TelegramType
+} from "./nxt-constants";
 
 @Injectable()
 export class NxtProvider {
@@ -17,50 +28,52 @@ export class NxtProvider {
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController) {
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
       this.data = new Uint8Array(data);
-      let messageClass: number = this.data[2];
+      let telegramType: number = this.data[2];
       let messageType: number = this.data[3];
       let status: number = this.data[4];
-      if (messageClass == 2) {
-        if (messageType == 6) {
+      if (telegramType == TelegramType.REPLY) {
+        if (messageType == DirectCommand.GET_OUTPUT_STATE) {
           //The last four bytes represent the motor's current tachometer value, as an offset from the last motor reset.
           this.currentRotation = NxtProvider.bytesToLong(this.data.slice(this.data.length - 4, this.data.length));
         }
-        if (messageType == 0) {
-          if (this.data[4] == 0xc0) {
+        if (messageType == DirectCommand.START_PROGRAM) {
+          //Out of range is sent back if the file was not found on the brick.
+          if (status == DirectCommandResponse.OUT_OF_RANGE) {
+            //File not found, so lets upload it.
             this.writeFile("MotorControl22.rxe")
-          } else if (this.data[4] != 0) {
-            console.log("Error Starting: " + this.data[4].toString(16));
+          } else if (status != DirectCommandResponse.SUCCESS) {
+            console.log("Error Starting: " + status.toString(16));
           }
         }
-        if (this.data[2] == 2 && this.data[3] == 0x09) {
-          if (this.data[4] == 0) {
-            console.log("Wrote message!");
-          } else {
-            console.log("Error Writing msg: " + this.data[4].toString(16));
+        if (messageType == DirectCommand.MESSAGE_WRITE) {
+          if (status != 0) {
+            console.log("Error Writing msg: " + status.toString(16));
           }
         }
-        if (messageType >= 0x81 && messageType <= 0x84) {
+        if (messageType >= SystemCommand.OPEN_WRITE && messageType <= SystemCommand.CLOSE) {
           let handle: number = this.data[5];
           let file: NXTFile = this.files[handle] || this.nextFile;
           if (status == 0) {
             switch (messageType) {
-              case 0x81:
+              case SystemCommand.OPEN_WRITE:
                 this.nextFile.handle = handle;
                 this.files[this.nextFile.handle] = file;
                 file.status = NXTFileState.WRITING;
-              case 0x83:
+              case SystemCommand.WRITE:
                 this.writeSection(file);
                 break;
-              case 0x84:
+              case SystemCommand.CLOSE:
                 file.status = NXTFileState.DONE;
                 delete this.files[handle];
                 this.startProgram(NxtConstants.MOTOR_PROGRAM);
                 break;
             }
-          } else if (status == 0x8f) {
-            this.nextFile.status = NXTFileState.FILE_EXISTS;
+          } else if (status == SystemCommandResponse.FILE_ALREADY_EXISTS) {
+            file.status = NXTFileState.FILE_EXISTS;
+            file.errorMessage = SystemCommandResponse[status];
           } else {
-            this.nextFile.status = NXTFileState.ERROR;
+            file.status = NXTFileState.ERROR;
+            file.errorMessage = SystemCommandResponse[status];
           }
         }
       }
@@ -71,28 +84,52 @@ export class NxtProvider {
 
   }
 
+  static appendBefore(array: Uint8Array, toAppend: Uint8Array) {
+    let ret: Uint8Array = new Uint8Array(array.length + toAppend.length);
+    ret.set(toAppend, 0);
+    ret.set(array, toAppend.length);
+    return ret;
+  }
+
+  writePacket(data: Uint8Array) {
+    this.bluetooth.write(NxtProvider.appendBefore(this.data, new Uint8Array([data.length, data.length << 8])));
+  }
+
   writeSection(file: NXTFile) {
     if (file.isFinished()) {
       this.closeFileHandle(file);
       return;
     }
-    let newData: Uint8Array = file.nextChunk();
-    let totalSize = newData.length + 5;
-    let writeSize = newData.length + 3;
-    let toWrite: Uint8Array = new Uint8Array(totalSize);
-    toWrite.set([writeSize, writeSize << 8, 0x01, 0x83, file.handle]);
-    toWrite.set(newData, 5);
-    this.bluetooth.write(toWrite);
+    let header: Uint8Array = new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.WRITE, file.handle]);
+    this.writePacket(NxtProvider.appendBefore(file.nextChunk(), header));
   }
 
   async writeFile(prog: string) {
     this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + prog).then(file => {
       this.nextFile = new NXTFile(prog, new Uint8Array(file), file.byteLength);
-      this.openFileHandle(this.nextFile);
-      let uploadModal = this.modalCtrl.create(FileUploadPage, { file: this.nextFile });
+      this.openFileHandle(this.nextFile, false);
+      let uploadModal = this.modalCtrl.create(FileUploadPage, {file: this.nextFile});
       uploadModal.present();
     });
 
+  }
+
+  static padDigits(number, digits) {
+    return Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
+  }
+
+  controlledMotorCommand(port: OutputPort, power: number, tachoLimit: number, mode: number) {
+    this.writeMessage("1" + port + NxtProvider.padDigits(power, 3) +
+      NxtProvider.padDigits(tachoLimit, 6) + mode.toString(), 1)
+  }
+
+  classicMotorCommand(port: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
+    this.writeMessage("4" + port + NxtProvider.padDigits(power, 3) +
+      NxtProvider.padDigits(tachoLimit, 6) + speedRegulation?"1":"0", 1)
+  }
+
+  resetTachoLimit(port: OutputPort) {
+    this.writeMessage("2"+port, 1);
   }
 
   /**
@@ -101,67 +138,75 @@ export class NxtProvider {
    * @param {string} command the command to write
    * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
    */
-  writeMotorCommand(command: string) {
-    command += "\0";
-    let arr = [command.length + 4, 0x00, 0x00, 0x09, 0x01, command.length];
-    for (let i = 0; i < command.length; i++) {
-      arr.push(command.charCodeAt(i));
-    }
-    // return this.bluetooth.write(new Uint8Array(arr));
+  private writeMotorCommand(command: string) {
+    //Write to message box 1, as the running program expects data there
+    this.writeMessage(command, 0x01);
   }
-  openFileHandle(file: NXTFile) {
-    let arr = [26, 0, 0x01, 0x81];
-    for (let i = 0; i < file.name.length; i++) {
-      arr.push(file.name.charCodeAt(i));
+
+  writeMessage(message: string, mailbox: number) {
+    message += "\0";
+    let arr = [TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.MESSAGE_WRITE, mailbox, message.length];
+    for (let i = 0; i < message.length; i++) {
+      arr.push(message.charCodeAt(i));
     }
-    let data:Uint8Array = new Uint8Array(28);
-    data.set(arr,0);
-    data.set([file.size, file.size >> 8, file.size >> 16, file.size >> 24], 24);
-    return this.bluetooth.write(data);
+    this.writePacket(new Uint8Array(arr));
+  }
+
+  openFileHandle(file: NXTFile, read: boolean) {
+    let data = [TelegramType.SYSTEM_COMMAND_RESPONSE, read ? SystemCommand.OPEN_READ : SystemCommand.OPEN_WRITE];
+    for (let i = 0; i < file.name.length; i++) {
+      data.push(file.name.charCodeAt(i));
+    }
+    //Write a null terminator
+    data.push(0);
+    data.push(...[file.size, file.size >> 8, file.size >> 16, file.size >> 24]);
+    return this.writePacket(new Uint8Array(data));
   }
 
   closeFileHandle(file: NXTFile) {
     this.files[file.handle].status = NXTFileState.CLOSING;
-    return this.bluetooth.write(new Uint8Array([0x03, 0x00, 0x01, 0x84, file.handle]));
+    this.writePacket(new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.CLOSE, file.handle]));
   }
 
   startProgram(prog: String) {
-    prog += "\0";
-    let arr = [prog.length + 2, 0, 0x00, 0x00];
+    let arr = [TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.START_PROGRAM];
     for (let i = 0; i < prog.length; i++) {
       arr.push(prog.charCodeAt(i));
     }
-    this.bluetooth.write(new Uint8Array(arr));
+    this.writePacket(new Uint8Array(arr));
   }
 
+  setOutputState(motor: number, power: number, mode: number, regulationMode: OutputRegulationMode, turnRatio: number, runState: OutputRunState, tachoLimit: number) {
+    return this.writePacket(new Uint8Array([
+      TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.SET_OUTPUT_STATE,
+      motor, power, mode, regulationMode, turnRatio, runState, tachoLimit
+    ]));
+  }
 
   stopMotor(motor: number) {
-    return this.bluetooth.write(new Uint8Array([0xC, 0x00, 0x80, 0x04, motor, 0, 0x00, 0x01, 0, 0x20, 0, 0, 0, 0]));
-  }
-
-  rotateBy(motor: number, angle: number) {
-
+    this.setOutputState(motor, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
   }
 
   requestMotorInfo(motor: number) {
-    this.bluetooth.write(new Uint8Array([0x03, 0x00, 0x00, 0x06, motor]));
+    this.writePacket(new Uint8Array([TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.GET_OUTPUT_STATE, motor]));
   }
 
   rotateTowards(motor: number, angle: number) {
     this.targetRotation = angle;
-    console.log("req..");
-    // this.requestMotorInfo(0);
   }
 
-  resetCounter(motor: number, relative: boolean) {
-    return this.bluetooth.write(new Uint8Array([0x04, 0x00, 0x00, 0x0A, motor, Number(relative)]));
+  resetCounter(motor: number) {
+    return this.writeMotorCommand("2" + motor.toString());
   }
 
   playTone(hz: number, duration: number) {
-    return this.bluetooth.write(new Uint8Array([0x06, 0x00, 0x00, 0x03, hz & 0xff, hz >> 0x08, duration & 0xff, duration >> 0x08]));
+    this.writePacket(new Uint8Array([
+      TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.PLAY_TONE,
+      hz & 0xff, hz >> 0x08, duration & 0xff, duration >> 0x08
+    ]));
   }
 
-  private static bytesToLong(data: Uint8Array) : number {
+  private static bytesToLong(data: Uint8Array): number {
     return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
   }
 }

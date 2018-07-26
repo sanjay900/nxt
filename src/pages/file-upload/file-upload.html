@@ -19,6 +19,9 @@
   Total Size: {{file.size}} bytes
   <br/>
   Status: {{getStatus()}}
+  <div *ngIf="file.hasError() && !isExisting()">
+    Error: {{file.formattedErrorMessage}}
+  </div>
   <div *ngIf="isExisting()">
     Error: The file that is being written already exists!
     <br/>
