@@ -23,15 +23,14 @@ export class MainPage {
   }
   ionViewDidLeave() {
     (<any>navigator).fusion.clearWatch(this.watchId);
-    this.nxt.stopMotor(0xff);
+    this.nxt.stopMotors(OutputPort.A_B_C);
   }
   sensorUpdate(data) {
     this.steering = data.eulerAngles.pitch;
     this.steering *= 180/Math.PI;
     this.throttle = (data.eulerAngles.roll + Math.PI/2)*2;
     if (Math.abs(this.throttle) < 0.5) {
-      this.nxt.stopMotor(1);
-      this.nxt.stopMotor(2);
+      this.nxt.stopMotors(OutputPort.B_C);
     } else {
       if (this.throttle > 1) this.throttle = 1;
       if (this.throttle < -1) this.throttle = -1;
@@ -39,7 +38,7 @@ export class MainPage {
       if (this.throttle < 0) {
         this.throttle = 100 - this.throttle;
       }
-      this.nxt.classicMotorCommand(OutputPort.B_C, this.throttle, 0, true);
+      this.nxt.classicMotorCommand(OutputPort.B_C, this.throttle, 0, false);
 
     }
     // this.nxt.rotateTowards(OutputPort.A, this.steering);

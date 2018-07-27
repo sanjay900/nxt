@@ -30,6 +30,7 @@ export class NxtProvider {
   private nextFile: NXTFile;
   private currentProgram: string = null;
   private programToStart: string;
+  private ports: Map<OutputPort, number> = new Map();
 
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
     //Clear state for the current device when it is disconnected.
@@ -39,6 +40,7 @@ export class NxtProvider {
       this.currentRotation = 0;
       this.targetRotation = 0;
       this.currentProgram = null;
+      this.ports = new Map();
     });
     //Listen to and handle responses from the NXT
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
@@ -161,6 +163,7 @@ export class NxtProvider {
    * @param {Uint8Array} data the packet to write.
    */
   writePacket(data: Uint8Array) {
+    console.log(data);
     this.bluetooth.write(NxtProvider.appendBefore(data, new Uint8Array([data.length, data.length << 8])));
   }
 
@@ -196,7 +199,10 @@ export class NxtProvider {
    * @param mode a bitmask combining different output modes together to apply to the specified ports
    */
   controlledMotorCommand(ports: OutputPort, power: number, tachoLimit: number, mode: number) {
-    this.writeMessage("1" + ports.toString() + NxtProvider.padDigits(power, 3) +
+    power = Math.round(power);
+    if (this.ports[ports] == power) return;
+    this.ports[ports] = power;
+    this.writeMessage("1" + ports.toString() + NxtProvider.padDigits(Math.round(power), 3) +
       NxtProvider.padDigits(tachoLimit, 6) + mode.toString(), 1)
   }
 
@@ -210,6 +216,11 @@ export class NxtProvider {
    * @param speedRegulation true to enable speed regulation, false to disable it
    */
   classicMotorCommand(ports: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
+    power = Math.round(power);
+    power = Math.max(power, 1);
+    power = Math.min(power, 199);
+    if (this.ports[ports] == power) return;
+    this.ports[ports] = power;
     this.writeMessage("4" + ports.toString() + NxtProvider.padDigits(power, 3) +
       NxtProvider.padDigits(tachoLimit, 6) + (speedRegulation ? "1" : "0"), 1)
   }
@@ -246,6 +257,7 @@ export class NxtProvider {
   writeMessage(message: string, mailbox: number) {
     if (this.currentProgram == null) return;
     message += '\0';
+    console.log(message);
     this.writePacket(new Uint8Array([
       TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.MESSAGE_WRITE,
       mailbox, message.length, ...NxtProvider.stringToAscii(message)
