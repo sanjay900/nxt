@@ -4,12 +4,10 @@ import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
 import {AlertController} from "ionic-angular";
 
-/*
-  Generated class for the BluetoothProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
+/**
+ * This provider facilitates connections over bluetooth, handling emitting connect and disconnect events, and
+ * provides an alert dialog to the user if the bluetooth device is disconnected.
+ */
 @Injectable()
 export class BluetoothProvider {
 

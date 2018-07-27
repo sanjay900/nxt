@@ -128,6 +128,13 @@ export enum OutputRunState {
   RAMP_DOWN = 0x40
 }
 
+export enum SystemOutputPort {
+  A = 0x00,
+  B = 0x01,
+  C = 0x02,
+  ALL = 0xFF
+}
+
 export enum OutputPort {
   A = "0",
   B = "1",

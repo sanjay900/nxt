@@ -13,10 +13,13 @@ import {
   OutputRegulationMode,
   OutputRunState,
   SystemCommand,
-  SystemCommandResponse,
+  SystemCommandResponse, SystemOutputPort,
   TelegramType
 } from "./nxt-constants";
 
+/**
+ * This provide handles communication with a NXT device, and provides helper methods for uploading files and NXT I/O.
+ */
 @Injectable()
 export class NxtProvider {
 
@@ -29,6 +32,7 @@ export class NxtProvider {
   private programToStart: string;
 
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
+    //Clear state for the current device when it is disconnected.
     this.bluetooth.deviceDisconnect$.subscribe(() => {
       this.files.clear();
       this.nextFile = null;
@@ -36,6 +40,7 @@ export class NxtProvider {
       this.targetRotation = 0;
       this.currentProgram = null;
     });
+    //Listen to and handle responses from the NXT
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
       this.data = new Uint8Array(data);
       let telegramType: number = this.data[2];
@@ -97,7 +102,10 @@ export class NxtProvider {
 
   }
 
-  askUserToUploadFile() {
+  /**
+   * Pop up a dialog asking the user if they would like to upload the motor control program to the NXT
+   */
+  private askUserToUploadFile() {
     let alert = this.alertCtrl.create({
       title: 'Motor Control Program Missing',
       message: `The program for controlling NXT motors is missing on your NXT Device.<br/>
@@ -119,18 +127,48 @@ export class NxtProvider {
     alert.present();
   }
 
-  static appendBefore(array: Uint8Array, toAppend: Uint8Array) {
+  /**
+   * Append an array to another
+   * @param {Uint8Array} array the original array
+   * @param {Uint8Array} toAppend the array to place before the original array
+   * @returns {Uint8Array} both arrays combined together as a new array
+   */
+  private static appendBefore(array: Uint8Array, toAppend: Uint8Array) {
     let ret: Uint8Array = new Uint8Array(array.length + toAppend.length);
     ret.set(toAppend, 0);
     ret.set(array, toAppend.length);
     return ret;
   }
 
+
+  /**
+   * Write a file to the NXT device
+   * @param {string} fileName the file to write
+   * @param {boolean} autoStart if true, the file will be started on the NXT if it is a program once uploaded.
+   */
+  writeFile(fileName: string, autoStart: boolean) {
+    this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + fileName).then(file => {
+      this.nextFile = new NXTFile(fileName, new Uint8Array(file), file.byteLength, autoStart, this.zone);
+      this.openFileHandle(this.nextFile, false);
+      let uploadModal = this.modalCtrl.create(FileUploadPage, {file: this.nextFile});
+      uploadModal.present();
+    });
+
+  }
+
+  /**
+   * Write a packet to the nxt. the length of the packet is automatically prepended to the packet.
+   * @param {Uint8Array} data the packet to write.
+   */
   writePacket(data: Uint8Array) {
     this.bluetooth.write(NxtProvider.appendBefore(data, new Uint8Array([data.length, data.length << 8])));
   }
 
-  writeSection(file: NXTFile) {
+  /**
+   * Write a section of a file to the NXT device
+   * @param {NXTFile} file the file to write a section for
+   */
+  private writeSection(file: NXTFile) {
     if (file.size == file.writtenBytes) {
       this.closeFileHandle(file);
       return;
@@ -139,62 +177,59 @@ export class NxtProvider {
     this.writePacket(NxtProvider.appendBefore(file.nextChunk(), header));
   }
 
-  writeFile(prog: string, autoStart: boolean) {
-    this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + prog).then(file => {
-      this.nextFile = new NXTFile(prog, new Uint8Array(file), file.byteLength, autoStart, this.zone);
-      this.openFileHandle(this.nextFile, false);
-      let uploadModal = this.modalCtrl.create(FileUploadPage, {file: this.nextFile});
-      uploadModal.present();
-    });
-
-  }
-
-  static padDigits(number, digits) {
+  /**
+   * Pad a number with leading zeros
+   * @param number the number to pad
+   * @param digits the number of digits to pad to
+   * @returns {string} the padded number
+   */
+  private static padDigits(number, digits) {
     return Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
   }
 
-
   /**
-   * Write motor commands formatted for the below specs
-   * http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
-   * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
-   * @param port
-   * @param power
-   * @param tachoLimit
-   * @param mode
+   * Write a controlled motor command to the MotorControl program
+   * @see http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+   * @param ports the ports to update
+   * @param power the power to apply to the specified ports
+   * @param tachoLimit the angle to rotate the specified motors by, or 0 if none is required
+   * @param mode a bitmask combining different output modes together to apply to the specified ports
    */
-  controlledMotorCommand(port: OutputPort, power: number, tachoLimit: number, mode: number) {
-    this.writeMessage("1" + port.toString() + NxtProvider.padDigits(power, 3) +
+  controlledMotorCommand(ports: OutputPort, power: number, tachoLimit: number, mode: number) {
+    this.writeMessage("1" + ports.toString() + NxtProvider.padDigits(power, 3) +
       NxtProvider.padDigits(tachoLimit, 6) + mode.toString(), 1)
   }
 
 
   /**
-   * Write motor commands formatted for the below specs
-   * http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
-   * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
-   * @param port
-   * @param power
-   * @param tachoLimit
-   * @param speedRegulation
+   * Write a classic motor command to the MotorControl program
+   * @see http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+   * @param ports the ports to update
+   * @param power the power to apply to the specified ports
+   * @param tachoLimit the angle to rotate the specified motors by, or 0 if none is required
+   * @param speedRegulation true to enable speed regulation, false to disable it
    */
-  classicMotorCommand(port: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
-    this.writeMessage("4" + port.toString() + NxtProvider.padDigits(power, 3) +
+  classicMotorCommand(ports: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
+    this.writeMessage("4" + ports.toString() + NxtProvider.padDigits(power, 3) +
       NxtProvider.padDigits(tachoLimit, 6) + (speedRegulation ? "1" : "0"), 1)
   }
 
 
   /**
-   * Write motor commands formatted for the below specs
-   * http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
-   * @returns {Promise<any>} a promise that is resolved when the bluetooth plugin has written the data
-   * @param port
+   * Reset the tachometer limit for a set of output ports.
+   * @see http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
+   * @param ports the ports to reset the tachometer limit for
    */
-  resetTachoLimit(port: OutputPort) {
-    this.writeMessage("2" + port.toString(), 1);
+  resetTachoLimit(ports: OutputPort) {
+    this.writeMessage("2" + ports.toString(), 1);
   }
 
-  static stringToAscii(message: string): number[] {
+  /**
+   * Convert a string to an ascii array
+   * @param {string} message the message to convert to ascii
+   * @returns {number[]} the message encoded into a byte array
+   */
+  private static stringToAscii(message: string): number[] {
     let data = [];
     for (let i = 0; i < message.length; i++) {
       data.push(message.charCodeAt(i));
@@ -202,6 +237,12 @@ export class NxtProvider {
     return data;
   }
 
+  /**
+   * Write a message to a program's mailbox. Note that this will do nothing if the app has not started an application on
+   * the NXT device.
+   * @param {string} message the message to send, a null terminator is added by this function
+   * @param {number} mailbox the mailbox to send the message to
+   */
   writeMessage(message: string, mailbox: number) {
     if (this.currentProgram == null) return;
     message += '\0';
@@ -211,56 +252,107 @@ export class NxtProvider {
     ]));
   }
 
-  openFileHandle(file: NXTFile, read: boolean) {
+  /**
+   * Open a file handle on the NXT device
+   * @param {NXTFile} file the file to open a handle for
+   * @param {boolean} read true to open a READ file handle, false to open a WRITE file handle
+   */
+  private openFileHandle(file: NXTFile, read: boolean) {
     let data = [TelegramType.SYSTEM_COMMAND_RESPONSE, read ? SystemCommand.OPEN_READ : SystemCommand.OPEN_WRITE];
     data.push(...NxtProvider.stringToAscii(file.name));
     //We need to write 21 chars, so pad with null terminators.
     data.push(...new Array(22 - data.length));
-    console.log(data.length);
-    console.log(data);
     data.push(file.size, file.size >> 8, file.size >> 16, file.size >> 24);
     return this.writePacket(new Uint8Array(data));
   }
 
-  closeFileHandle(file: NXTFile) {
+  /**
+   * Close a file handle on the NXT device
+   * @param {NXTFile} file the file to close a handle for
+   */
+  private closeFileHandle(file: NXTFile) {
     this.files[file.handle].status = NXTFileState.CLOSING;
     this.writePacket(new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.CLOSE, file.handle]));
   }
 
-  startProgram(prog: string) {
-    this.programToStart = prog;
+  /**
+   * Start a program on the NXT device
+   * @param {string} program the program to start
+   */
+  startProgram(program: string) {
+    this.programToStart = program;
     let data = [TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.START_PROGRAM];
     //push a null terminator
-    data.push(...NxtProvider.stringToAscii(prog), 0);
+    data.push(...NxtProvider.stringToAscii(program), 0);
     this.writePacket(new Uint8Array(data));
   }
 
-  setOutputState(motor: number, power: number, mode: number, regulationMode: OutputRegulationMode, turnRatio: number, runState: OutputRunState, tachoLimit: number) {
+  /**
+   * Send a SetOutputState packet to the NXT device
+   * @param {SystemOutputPort} port the output port that should be modified
+   * @param {number} power the power to set on the specified port
+   * @param {OutputMode} mode a bitmask combing all OutputModes that you would like to set on the specified port
+   * @param {OutputRegulationMode} regulationMode the power regulation mode you would like to set on the specified port
+   * @param {number} turnRatio the turn ratio to set on the specified port
+   * @param {OutputRunState} runState the run state to set on the specified port
+   * @param {number} tachoLimit a number from 0-999999 that states how far the motor connected to the port should rotate.
+   * Use 0 for no limit.
+   */
+  private setOutputState(port: SystemOutputPort, power: number, mode: number, regulationMode: OutputRegulationMode, turnRatio: number, runState: OutputRunState, tachoLimit: number) {
     return this.writePacket(new Uint8Array([
       TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.SET_OUTPUT_STATE,
-      motor, power, mode, regulationMode, turnRatio, runState, tachoLimit
+      port, power, mode, regulationMode, turnRatio, runState, tachoLimit
     ]));
   }
 
-  stopMotor(motor: number) {
-    this.setOutputState(motor, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
+  /**
+   * Stop a set of motors
+   * @param {OutputPort} motor the ports that should be told to stop rotating.
+   */
+  stopMotors(motor: OutputPort) {
+    if (motor.includes("A")) {
+      this.setOutputState(SystemOutputPort.A, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
+    } else if (motor.includes("B")) {
+      this.setOutputState(SystemOutputPort.B, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
+    } else if (motor.includes("C")) {
+      this.setOutputState(SystemOutputPort.C, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
+    }
   }
 
+  /**
+   * Request that the nxt sends back the current status of a motor
+   * @param {number} motor the motor to request status information about
+   */
   requestMotorInfo(motor: number) {
     this.writePacket(new Uint8Array([TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.GET_OUTPUT_STATE, motor]));
   }
 
+  /**
+   * Rotate a motor to a specific angle
+   * @param {OutputPort} motor the motors that you would like to control
+   * @param {number} angle the angle to rotate towards
+   */
   rotateTowards(motor: OutputPort, angle: number) {
     this.targetRotation = angle;
   }
 
+  /**
+   * Play a tone out of the NXT device
+   * @param {number} hz the frequency of the tone
+   * @param {number} duration the duration of the tone
+   */
   playTone(hz: number, duration: number) {
     this.writePacket(new Uint8Array([
       TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.PLAY_TONE,
-      hz & 0xff, hz >> 0x08, duration & 0xff, duration >> 0x08
+      hz, hz >> 0x08, duration, duration >> 0x08
     ]));
   }
 
+  /**
+   * Read a SLong from the NXT device, and convert it to a javascript number
+   * @param {Uint8Array} data a 4 byte array containing an NXT SLong
+   * @returns {number} the resulting number that this SLong represents.
+   */
   private static bytesToLong(data: Uint8Array): number {
     return data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
   }
