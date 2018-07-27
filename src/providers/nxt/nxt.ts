@@ -13,7 +13,8 @@ import {
   OutputRegulationMode,
   OutputRunState,
   SystemCommand,
-  SystemCommandResponse, SystemOutputPort,
+  SystemCommandResponse,
+  SystemOutputPort,
   TelegramType
 } from "./nxt-constants";
 
@@ -163,6 +164,7 @@ export class NxtProvider {
    * @param {Uint8Array} data the packet to write.
    */
   writePacket(data: Uint8Array) {
+    console.log("Write");
     console.log(data);
     this.bluetooth.write(NxtProvider.appendBefore(data, new Uint8Array([data.length, data.length << 8])));
   }
@@ -190,6 +192,14 @@ export class NxtProvider {
     return Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
   }
 
+  private static convertPower(power: number): number {
+    power = Math.round(power);
+    if (power < 0) power = 100 + Math.abs(power);
+    power = Math.max(power, 0);
+    power = Math.min(power, 200);
+    return power;
+  }
+
   /**
    * Write a controlled motor command to the MotorControl program
    * @see http://www.mindstorms.rwth-aachen.de/trac/wiki/MotorControl
@@ -199,7 +209,7 @@ export class NxtProvider {
    * @param mode a bitmask combining different output modes together to apply to the specified ports
    */
   controlledMotorCommand(ports: OutputPort, power: number, tachoLimit: number, mode: number) {
-    power = Math.round(power);
+    power = NxtProvider.convertPower(power);
     if (this.ports[ports] == power) return;
     this.ports[ports] = power;
     this.writeMessage("1" + ports.toString() + NxtProvider.padDigits(Math.round(power), 3) +
@@ -216,9 +226,7 @@ export class NxtProvider {
    * @param speedRegulation true to enable speed regulation, false to disable it
    */
   classicMotorCommand(ports: OutputPort, power: number, tachoLimit: number, speedRegulation: boolean) {
-    power = Math.round(power);
-    power = Math.max(power, 1);
-    power = Math.min(power, 199);
+    power = NxtProvider.convertPower(power);
     if (this.ports[ports] == power) return;
     this.ports[ports] = power;
     this.writeMessage("4" + ports.toString() + NxtProvider.padDigits(power, 3) +
@@ -322,11 +330,13 @@ export class NxtProvider {
    * @param {OutputPort} motor the ports that should be told to stop rotating.
    */
   stopMotors(motor: OutputPort) {
-    if (motor.includes("A")) {
+    if (motor == OutputPort.A || motor == OutputPort.A_B || motor == OutputPort.A_C || motor == OutputPort.A_B_C) {
       this.setOutputState(SystemOutputPort.A, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
-    } else if (motor.includes("B")) {
+    }
+    if (motor == OutputPort.B || motor == OutputPort.A_B || motor == OutputPort.B_C || motor == OutputPort.A_B_C) {
       this.setOutputState(SystemOutputPort.B, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
-    } else if (motor.includes("C")) {
+    }
+    if (motor == OutputPort.C || motor == OutputPort.A_C || motor == OutputPort.B_C || motor == OutputPort.A_B_C) {
       this.setOutputState(SystemOutputPort.C, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
     }
   }

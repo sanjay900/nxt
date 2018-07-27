@@ -35,11 +35,8 @@ export class MainPage {
       if (this.throttle > 1) this.throttle = 1;
       if (this.throttle < -1) this.throttle = -1;
       this.throttle *= -100;
-      if (this.throttle < 0) {
-        this.throttle = 100 - this.throttle;
-      }
       this.nxt.classicMotorCommand(OutputPort.B_C, this.throttle, 0, false);
-
+ return
     }
     // this.nxt.rotateTowards(OutputPort.A, this.steering);
 
