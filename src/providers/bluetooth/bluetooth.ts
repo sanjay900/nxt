@@ -89,7 +89,7 @@ export class BluetoothProvider {
     this.appPreferences.store("bluetooth-device", this._device);
   }
 
-  get connectedFormatted(): String {
+  get status(): String {
     return this._status;
   }
 

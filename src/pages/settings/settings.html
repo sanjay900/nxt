@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Settings - Status: {{bluetooth.connectedFormatted}}</ion-title>
+    <ion-title>Settings - Status: {{bluetooth.status}}</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -26,5 +26,6 @@
     <button ion-button (click)="bluetooth.connect()" [disabled]="bluetooth.connected">Connect to the device</button>
     <button ion-button (click)="nxt.playTone(440, 100)" [disabled]="!bluetooth.connected">Send a test tone</button>
     <button ion-button (click)="nxt.resetCounter(0, false)" [disabled]="!bluetooth.connected">Reset motor position</button>
+    <button ion-button (click)="startMotorProgram()" [disabled]="!bluetooth.connected">Start motor program</button>
   </ion-list>
 </ion-content>

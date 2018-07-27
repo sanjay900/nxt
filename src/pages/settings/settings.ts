@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import {ActionSheetController, NavController, NavParams} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {NxtProvider} from "../../providers/nxt/nxt";
+import {NxtConstants} from "../../providers/nxt/nxt-constants";
 
 /**
  * Generated class for the SettingsPage page.
@@ -15,7 +16,11 @@ import {NxtProvider} from "../../providers/nxt/nxt";
   templateUrl: 'settings.html',
 })
 export class SettingsPage {
-  constructor(public navCtrl: NavController, public actionSheetCtrl: ActionSheetController, public navParams: NavParams, public bluetooth: BluetoothProvider, public nxt: NxtProvider) {
+  constructor(public bluetooth: BluetoothProvider, public nxt: NxtProvider) {
 
+  }
+
+  startMotorProgram() {
+    this.nxt.startProgram(NxtConstants.MOTOR_PROGRAM);
   }
 }

@@ -1,4 +1,4 @@
-import {EventEmitter} from "@angular/core";
+import {EventEmitter, NgZone} from "@angular/core";
 
 
 export class NxtConstants {
@@ -166,26 +166,23 @@ export enum InputSensorMode {
 }
 
 export enum NXTFileState {
-  OPENING = "Opening File", WRITING = "Writing File", CLOSING = "Closing File", DONE = "Finished", ERROR = "Error", FILE_EXISTS = "File already exists"
+  OPENING = "Opening File",
+  WRITING = "Writing File",
+  CLOSING = "Closing File",
+  DONE = "Finished",
+  ERROR = "Error",
+  FILE_EXISTS = "File already exists"
 }
 
 export class NXTFile {
   public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
-  public name: string;
-  public size: number;
   public handle: number;
   public errorMessage: string;
-  public autoStart: boolean;
   public writtenBytes: number;
-  private data: Uint8Array;
   private state: NXTFileState = NXTFileState.OPENING;
   private static PACKET_SIZE: number = 64;
 
-  constructor(name: string, data: Uint8Array, length: number, autoStart: boolean) {
-    this.name = name;
-    this.data = data;
-    this.size = length;
-    this.autoStart = autoStart;
+  constructor(public name: string, private data: Uint8Array, public size: number, public autoStart: boolean, private zone: NgZone) {
   }
 
   set status(status: NXTFileState) {
@@ -204,8 +201,8 @@ export class NXTFile {
   get formattedErrorMessage(): string {
     if (!this.hasError()) return "No Error";
     let msg: string = this.errorMessage
-      .replace(/_/g," ");
-    return msg.charAt(0).toLocaleUpperCase()+msg.substring(1);
+      .replace(/_/g, " ");
+    return msg.charAt(0).toLocaleUpperCase() + msg.substring(1);
   }
 
   isFinished(): boolean {
@@ -216,7 +213,9 @@ export class NXTFile {
     let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
     let ret: Uint8Array = this.data.slice(0, chunkSize);
     this.data = this.data.slice(chunkSize, this.data.length);
-    this.writtenBytes = this.size - this.data.length;
+    this.zone.run(() => {
+      this.writtenBytes = this.size - this.data.length;
+    });
     return ret;
   }
 

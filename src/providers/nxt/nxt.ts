@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
+import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
-import {ModalController} from 'ionic-angular';
+import {AlertController, ModalController} from 'ionic-angular';
 import {FileUploadPage} from "../../pages/file-upload/file-upload";
 import {
   DirectCommand,
@@ -28,7 +28,7 @@ export class NxtProvider {
   private currentProgram: string = null;
   private programToStart: string;
 
-  constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController) {
+  constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
     this.bluetooth.deviceDisconnect$.subscribe(() => {
       this.files.clear();
       this.nextFile = null;
@@ -52,7 +52,7 @@ export class NxtProvider {
             this.currentProgram = this.programToStart;
           } else if (status == DirectCommandResponse.OUT_OF_RANGE) {
             //File not found, so lets upload it.
-            this.writeFile(NxtConstants.MOTOR_PROGRAM, true)
+            this.askUserToUploadFile();
           } else if (status != DirectCommandResponse.SUCCESS) {
             console.log("Error Starting: " + status.toString(16));
           }
@@ -97,6 +97,28 @@ export class NxtProvider {
 
   }
 
+  askUserToUploadFile() {
+    let alert = this.alertCtrl.create({
+      title: 'Motor Control Program Missing',
+      message: `The program for controlling NXT motors is missing on your NXT Device.<br/>
+                Would you like to upload the NXT motor control program?<br/>
+                Note that without this program, motor control will not work.`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Upload',
+          handler: () => {
+            this.writeFile(this.programToStart, true);
+          }
+        }
+      ]
+    });
+    alert.present();
+  }
+
   static appendBefore(array: Uint8Array, toAppend: Uint8Array) {
     let ret: Uint8Array = new Uint8Array(array.length + toAppend.length);
     ret.set(toAppend, 0);
@@ -119,7 +141,7 @@ export class NxtProvider {
 
   writeFile(prog: string, autoStart: boolean) {
     this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + prog).then(file => {
-      this.nextFile = new NXTFile(prog, new Uint8Array(file), file.byteLength, autoStart);
+      this.nextFile = new NXTFile(prog, new Uint8Array(file), file.byteLength, autoStart, this.zone);
       this.openFileHandle(this.nextFile, false);
       let uploadModal = this.modalCtrl.create(FileUploadPage, {file: this.nextFile});
       uploadModal.present();
