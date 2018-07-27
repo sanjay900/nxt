@@ -9,6 +9,7 @@ import {
   NxtConstants,
   NXTFile,
   NXTFileState,
+  OutputMode,
   OutputPort,
   OutputRegulationMode,
   OutputRunState,
@@ -18,86 +19,39 @@ import {
   TelegramType
 } from "./nxt-constants";
 
+
 /**
  * This provide handles communication with a NXT device, and provides helper methods for uploading files and NXT I/O.
  */
 @Injectable()
 export class NxtProvider {
 
-  public currentRotation: number = 0;
-  public targetRotation: number = 0;
   private data: Uint8Array;
   private files: Map<number, NXTFile> = new Map();
   private nextFile: NXTFile;
   private currentProgram: string = null;
   private programToStart: string;
   private ports: Map<OutputPort, number> = new Map();
-
+  private ready: Map<OutputPort, boolean> = new Map();
+  public currentRotation: Map<OutputPort, number> = new Map();
+  public lastRotation: Map<OutputPort, number> = new Map();
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
     //Clear state for the current device when it is disconnected.
     this.bluetooth.deviceDisconnect$.subscribe(() => {
       this.files.clear();
       this.nextFile = null;
-      this.currentRotation = 0;
-      this.targetRotation = 0;
+      this.currentRotation = new Map();
+      this.lastRotation = new Map();
       this.currentProgram = null;
       this.ports = new Map();
     });
+    setInterval(()=>{
+      this.requestMotorInfo(OutputPort.A_B_C);
+    },100);
     //Listen to and handle responses from the NXT
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
-      this.data = new Uint8Array(data);
-      let telegramType: number = this.data[2];
-      let messageType: number = this.data[3];
-      let status: number = this.data[4];
-      if (telegramType == TelegramType.REPLY) {
-        if (messageType == DirectCommand.GET_OUTPUT_STATE) {
-          //The last four bytes represent the motor's current tachometer value, as an offset from the last motor reset.
-          this.currentRotation = NxtProvider.bytesToLong(this.data.slice(this.data.length - 4, this.data.length));
-        }
-        if (messageType == DirectCommand.START_PROGRAM) {
-          //Out of range is sent back if the file was not found on the brick.
-          if (status == DirectCommandResponse.SUCCESS) {
-            this.currentProgram = this.programToStart;
-          } else if (status == DirectCommandResponse.OUT_OF_RANGE) {
-            //File not found, so lets upload it.
-            this.askUserToUploadFile();
-          } else if (status != DirectCommandResponse.SUCCESS) {
-            console.log("Error Starting: " + status.toString(16));
-          }
-        }
-        if (messageType == DirectCommand.MESSAGE_WRITE) {
-          if (status != 0) {
-            console.log("Error Writing msg: " + status.toString(16));
-          }
-        }
-        if (messageType >= SystemCommand.OPEN_WRITE && messageType <= SystemCommand.CLOSE) {
-          let handle: number = this.data[5];
-          let file: NXTFile = this.files[handle] || this.nextFile;
-          file.errorMessage = SystemCommandResponse[status];
-          if (status == 0) {
-            switch (messageType) {
-              case SystemCommand.OPEN_WRITE:
-                this.nextFile.handle = handle;
-                this.files[this.nextFile.handle] = file;
-                file.status = NXTFileState.WRITING;
-              case SystemCommand.WRITE:
-                this.writeSection(file);
-                break;
-              case SystemCommand.CLOSE:
-                file.status = NXTFileState.DONE;
-                delete this.files[handle];
-                if (file.autoStart) {
-                  this.startProgram(NxtConstants.MOTOR_PROGRAM);
-                }
-                break;
-            }
-          } else if (status == SystemCommandResponse.FILE_ALREADY_EXISTS) {
-            file.status = NXTFileState.FILE_EXISTS;
-          } else {
-            file.status = NXTFileState.ERROR;
-          }
-        }
-      }
+      //Slice the length from the front of the packet
+      this.readPacket(new Uint8Array(data).slice(2));
     });
     this.bluetooth.deviceConnect$.subscribe(() => {
       this.startProgram(NxtConstants.MOTOR_PROGRAM);
@@ -105,6 +59,102 @@ export class NxtProvider {
 
   }
 
+  readPacket(data: Uint8Array) {
+    let telegramType: number = data[0];
+    let messageType: number = data[1];
+    let status: number = data[2];
+    let remaining: Uint8Array;
+    if (telegramType == TelegramType.REPLY) {
+      if (NxtConstants.COMMAND_RESPONSE_LENGTH.has(messageType)) {
+        let packetSize: number = NxtConstants.COMMAND_RESPONSE_LENGTH.get(messageType)+1;
+        this.data = data.slice(0,packetSize);
+        remaining = data.slice(packetSize);
+      }
+
+      if (messageType == DirectCommand.GET_OUTPUT_STATE) {
+        let port: number = this.data[3];
+        let portN: OutputPort = OutputPort.A;
+        if (port == 1) portN = OutputPort.B;
+        if (port == 2) portN = OutputPort.C;
+        this.lastRotation[portN] = this.currentRotation[portN];
+        this.currentRotation[portN] = NxtProvider.bytesToLong(this.data.slice(this.data.length - 4, this.data.length));
+      }
+      if (messageType == SystemCommand.READ) {
+        let size: number = data[3] | data[4] << 8;
+        //TODO: this
+        let packetSize = 8+size;
+        this.data = data.slice(0,packetSize);
+        remaining = data.slice(packetSize);
+      }
+      if (messageType == DirectCommand.MESSAGE_READ) {
+        if (status == DirectCommandResponse.SUCCESS) {
+          let messageBox: number = this.data[3];
+          let size: number = this.data[4];
+          let response: string = NxtProvider.asciiToString(this.data.slice(5,5+size-1));
+          if (messageBox == 1) {
+            if (response.charAt(0) == "0") {
+              this.ready[OutputPort.A] = response.charAt(1) == '1';
+            }
+            if (response.charAt(0) == "1") {
+              this.ready[OutputPort.B] = response.charAt(1) == '1';
+            }
+            if (response.charAt(0) == "2") {
+              this.ready[OutputPort.C] = response.charAt(1) == '1';
+            }
+          }
+        }else if (status != DirectCommandResponse.SUCCESS) {
+          console.log("Error Recieving: " + status.toString(16));
+        }
+      }
+      if (messageType == DirectCommand.START_PROGRAM) {
+        //Out of range is sent back if the file was not found on the brick.
+        if (status == DirectCommandResponse.SUCCESS) {
+          this.currentProgram = this.programToStart;
+        } else if (status == DirectCommandResponse.OUT_OF_RANGE) {
+          //File not found, so lets upload it.
+          this.askUserToUploadFile();
+        } else if (status != DirectCommandResponse.SUCCESS) {
+          console.log("Error Starting: " + status.toString(16));
+        }
+      }
+      if (messageType == DirectCommand.MESSAGE_WRITE) {
+        if (status != 0) {
+          console.log("Error Writing msg: " + status.toString(16));
+        }
+      }
+      if (messageType >= SystemCommand.OPEN_WRITE && messageType <= SystemCommand.CLOSE) {
+        let handle: number = this.data[3];
+        let file: NXTFile = this.files[handle] || this.nextFile;
+        file.errorMessage = SystemCommandResponse[status];
+        if (status == 0) {
+          switch (messageType) {
+            case SystemCommand.OPEN_WRITE:
+              this.nextFile.handle = handle;
+              this.files[this.nextFile.handle] = file;
+              file.status = NXTFileState.WRITING;
+            case SystemCommand.WRITE:
+              this.writeSection(file);
+              break;
+            case SystemCommand.CLOSE:
+              file.status = NXTFileState.DONE;
+              delete this.files[handle];
+              if (file.autoStart) {
+                this.startProgram(NxtConstants.MOTOR_PROGRAM);
+              }
+              break;
+          }
+        } else if (status == SystemCommandResponse.FILE_ALREADY_EXISTS) {
+          file.status = NXTFileState.FILE_EXISTS;
+        } else {
+          file.status = NXTFileState.ERROR;
+        }
+      }
+    }
+    //If there is extra data remaining, we probably recieved two packets together, so parse the next packet
+    if (remaining && remaining.length > 0) {
+      this.readPacket(remaining);
+    }
+  }
   /**
    * Pop up a dialog asking the user if they would like to upload the motor control program to the NXT
    */
@@ -164,8 +214,6 @@ export class NxtProvider {
    * @param {Uint8Array} data the packet to write.
    */
   writePacket(data: Uint8Array) {
-    console.log("Write");
-    console.log(data);
     this.bluetooth.write(NxtProvider.appendBefore(data, new Uint8Array([data.length, data.length << 8])));
   }
 
@@ -180,6 +228,19 @@ export class NxtProvider {
     }
     let header: Uint8Array = new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.WRITE, file.handle]);
     this.writePacket(NxtProvider.appendBefore(file.nextChunk(), header));
+  }
+
+  /**
+   * Request a message from the NXT device
+   * @param localMessageBox the local message box to write to (0-9)
+   * @param remoteMessageBox the remote message box to read from (0-9)
+   * @param removeMessage true to remove the message from the remote device, false to leave it in the queue
+   */
+  private requestMessage(localMessageBox: number, remoteMessageBox: number, removeMessage: boolean) {
+    this.writePacket(new Uint8Array([
+      TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.MESSAGE_READ,
+      remoteMessageBox, localMessageBox, removeMessage ? 1 : 0
+    ]));
   }
 
   /**
@@ -210,8 +271,6 @@ export class NxtProvider {
    */
   controlledMotorCommand(ports: OutputPort, power: number, tachoLimit: number, mode: number) {
     power = NxtProvider.convertPower(power);
-    if (this.ports[ports] == power) return;
-    this.ports[ports] = power;
     this.writeMessage("1" + ports.toString() + NxtProvider.padDigits(Math.round(power), 3) +
       NxtProvider.padDigits(tachoLimit, 6) + mode.toString(), 1)
   }
@@ -257,6 +316,19 @@ export class NxtProvider {
   }
 
   /**
+   * Convert an ascii array into a string
+   * @param {Uint8Array} message the message to convert to a string
+   * @returns {number[]} the message decoded into a string
+   */
+  private static asciiToString(message: Uint8Array): string {
+    let data: string = "";
+    for (let i = 0; i < message.length; i++) {
+      data += String.fromCharCode(message[i]);
+    }
+    return data;
+  }
+
+  /**
    * Write a message to a program's mailbox. Note that this will do nothing if the app has not started an application on
    * the NXT device.
    * @param {string} message the message to send, a null terminator is added by this function
@@ -265,7 +337,6 @@ export class NxtProvider {
   writeMessage(message: string, mailbox: number) {
     if (this.currentProgram == null) return;
     message += '\0';
-    console.log(message);
     this.writePacket(new Uint8Array([
       TelegramType.DIRECT_COMMAND_NO_RESPONSE, DirectCommand.MESSAGE_WRITE,
       mailbox, message.length, ...NxtProvider.stringToAscii(message)
@@ -330,14 +401,8 @@ export class NxtProvider {
    * @param {OutputPort} motor the ports that should be told to stop rotating.
    */
   stopMotors(motor: OutputPort) {
-    if (motor == OutputPort.A || motor == OutputPort.A_B || motor == OutputPort.A_C || motor == OutputPort.A_B_C) {
-      this.setOutputState(SystemOutputPort.A, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
-    }
-    if (motor == OutputPort.B || motor == OutputPort.A_B || motor == OutputPort.B_C || motor == OutputPort.A_B_C) {
-      this.setOutputState(SystemOutputPort.B, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
-    }
-    if (motor == OutputPort.C || motor == OutputPort.A_C || motor == OutputPort.B_C || motor == OutputPort.A_B_C) {
-      this.setOutputState(SystemOutputPort.C, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
+    for (let systemOutputPort of NxtConstants.outputToSystemOutput(motor)) {
+      this.setOutputState(systemOutputPort, 0, 0, OutputRegulationMode.IDLE, 0, OutputRunState.IDLE, 0);
     }
   }
 
@@ -345,8 +410,15 @@ export class NxtProvider {
    * Request that the nxt sends back the current status of a motor
    * @param {number} motor the motor to request status information about
    */
-  requestMotorInfo(motor: number) {
-    this.writePacket(new Uint8Array([TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.GET_OUTPUT_STATE, motor]));
+  requestMotorInfo(motor: OutputPort) {
+    for (let systemOutputPort of NxtConstants.outputToSystemOutput(motor)) {
+      this.writePacket(new Uint8Array([TelegramType.DIRECT_COMMAND_RESPONSE, DirectCommand.GET_OUTPUT_STATE, systemOutputPort]));
+    }
+  }
+
+  private checkIfMotorReady(motor: OutputPort) {
+    this.writeMessage("3"+motor, 1);
+    this.requestMessage(1,0,true);
   }
 
   /**
@@ -355,7 +427,11 @@ export class NxtProvider {
    * @param {number} angle the angle to rotate towards
    */
   rotateTowards(motor: OutputPort, angle: number) {
-    this.targetRotation = angle;
+    //TODO: as a proof of concept, this works.
+    //TODO: we need to think of a way to do this fast, with the ability to stop the motor.
+    //TODO: Also, we have issues with driving forward and backwards.
+    let diff: number = Math.round(angle - this.currentRotation[motor]);
+    this.controlledMotorCommand(OutputPort.A, 100 * Math.sign(diff), Math.abs(diff), 0);
   }
 
   /**

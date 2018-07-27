@@ -1,10 +1,5 @@
 import {EventEmitter, NgZone} from "@angular/core";
 
-
-export class NxtConstants {
-  public static MOTOR_PROGRAM: string = "MotorControl22.rxe";
-}
-
 export enum DirectCommand {
   START_PROGRAM = 0x00,
   STOP_PROGRAM = 0x01,
@@ -70,13 +65,8 @@ export enum SystemCommand {
   OPEN_READ_LINEAR = 0x8A,
   OPEN_WRITE_DATA = 0x8B,
   OPEN_APPEND_DATA = 0x8C,
-  BOOT = 0x97,
   SET_BRICK_NAME = 0x98,
-  GET_DEVICE_INFO = 0x9B,
-  DIRECT_COMMAND = 0x00,
-  DELETE_USER_FLASH = 0x01,
-  SYSTEM_COMMAND = 0x01
-
+  GET_DEVICE_INFO = 0x9B
 }
 
 export enum ExtendedSystemCommand {
@@ -224,5 +214,59 @@ export class NXTFile {
 
   hasError() {
     return this.state == NXTFileState.ERROR || this.state == NXTFileState.FILE_EXISTS;
+  }
+}
+
+
+export class NxtConstants {
+  public static MOTOR_PROGRAM: string = "MotorControl22.rxe";
+  public static COMMAND_RESPONSE_LENGTH: Map<DirectCommand | SystemCommand, number> = new Map(<[DirectCommand | SystemCommand, number][]>[
+    [DirectCommand.START_PROGRAM, 2],
+    [DirectCommand.STOP_PROGRAM, 2],
+    [DirectCommand.PLAY_SOUND_FILE, 2],
+    [DirectCommand.PLAY_TONE, 2],
+    [DirectCommand.SET_OUTPUT_STATE, 2],
+    [DirectCommand.SET_INPUT_MODE, 2],
+    [DirectCommand.GET_OUTPUT_STATE, 24],
+    [DirectCommand.GET_INPUT_VALUES, 15],
+    [DirectCommand.RESET_INPUT_SCALED_VALUE, 2],
+    [DirectCommand.MESSAGE_WRITE, 2],
+    [DirectCommand.RESET_MOTOR_POSITION, 2],
+    [DirectCommand.GET_BATTERY_LEVEL, 4],
+    [DirectCommand.STOP_SOUND_PLAYBACK, 2],
+    [DirectCommand.KEEP_ALIVE, 6],
+    [DirectCommand.LS_GET_STATUS, 3],
+    [DirectCommand.LS_READ, 19],
+    [DirectCommand.LS_WRITE, 0],
+    [DirectCommand.GET_CURRENT_PROGRAM_NAME, 22],
+    [DirectCommand.MESSAGE_READ, 63],
+    [SystemCommand.OPEN_READ, 7],
+    [SystemCommand.OPEN_WRITE, 3],
+    [SystemCommand.WRITE, 5],
+    [SystemCommand.CLOSE, 3],
+    [SystemCommand.DELETE, 22],
+    [SystemCommand.FIND_FIRST, 27],
+    [SystemCommand.FIND_NEXT, 27],
+    [SystemCommand.GET_FIRMWARE_VERSION, 6],
+    [SystemCommand.OPEN_WRITE_LINEAR, 3],
+    [SystemCommand.OPEN_READ_LINEAR, 6],
+    [SystemCommand.OPEN_WRITE_DATA, 3],
+    [SystemCommand.OPEN_APPEND_DATA, 7],
+    [SystemCommand.SET_BRICK_NAME, 2],
+    [SystemCommand.GET_DEVICE_INFO, 32]
+  ]);
+
+  public static outputToSystemOutput(port: OutputPort): SystemOutputPort[] {
+    let ports: SystemOutputPort[] = [];
+    if (port == OutputPort.A || port == OutputPort.A_B || port == OutputPort.A_C || port == OutputPort.A_B_C) {
+      ports.push(SystemOutputPort.A);
+    }
+    if (port == OutputPort.B || port == OutputPort.A_B || port == OutputPort.B_C || port == OutputPort.A_B_C) {
+      ports.push(SystemOutputPort.B);
+    }
+    if (port == OutputPort.C || port == OutputPort.A_C || port == OutputPort.B_C || port == OutputPort.A_B_C) {
+      ports.push(SystemOutputPort.C);
+    }
+    return ports;
   }
 }

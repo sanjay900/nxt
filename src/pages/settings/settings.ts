@@ -1,5 +1,4 @@
 import {Component} from '@angular/core';
-import {ActionSheetController, NavController, NavParams} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {NxtConstants} from "../../providers/nxt/nxt-constants";
