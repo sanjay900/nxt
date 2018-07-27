@@ -17,6 +17,7 @@ import {NXTFile, NXTFileState} from "../../providers/nxt/nxt-constants";
 export class FileUploadPage {
   private file: NXTFile;
   public unregister: Function;
+  private status: NXTFileState;
 
   constructor(private platform:Platform, public viewCtrl: ViewController, public bluetooth: BluetoothProvider) {
     this.file = viewCtrl.data.file;
@@ -24,6 +25,7 @@ export class FileUploadPage {
       if (status == NXTFileState.DONE || status == NXTFileState.ERROR) {
         this.unregister();
       }
+      this.status = this.file.status;
     });
   }
 
@@ -51,11 +53,7 @@ export class FileUploadPage {
   }
 
   canDismiss() {
-    return this.file.isFinished || !this.bluetooth.connected || this.file.hasError();
-  }
-
-  getStatus() {
-    return this.file.status;
+    return !this.bluetooth.connected || this.file.hasError() || this.status == NXTFileState.DONE;
   }
 
   isExisting() {

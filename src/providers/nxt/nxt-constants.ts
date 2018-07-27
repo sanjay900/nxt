@@ -175,12 +175,12 @@ export enum NXTFileState {
 }
 
 export class NXTFile {
+  private static PACKET_SIZE: number = 64;
   public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
   public handle: number;
   public errorMessage: string;
   public writtenBytes: number;
   private state: NXTFileState = NXTFileState.OPENING;
-  private static PACKET_SIZE: number = 64;
 
   constructor(public name: string, private data: Uint8Array, public size: number, public autoStart: boolean, private zone: NgZone) {
   }
@@ -203,10 +203,6 @@ export class NXTFile {
     let msg: string = this.errorMessage
       .replace(/_/g, " ");
     return msg.charAt(0).toLocaleUpperCase() + msg.substring(1);
-  }
-
-  isFinished(): boolean {
-    return this.data.length == 0;
   }
 
   nextChunk(): Uint8Array {

@@ -18,7 +18,7 @@
   <br/>
   Total Size: {{file.size}} bytes
   <br/>
-  Status: {{getStatus()}}
+  Status: {{status}}
   <div *ngIf="file.hasError() && !isExisting()">
     Error: {{file.formattedErrorMessage}}
   </div>

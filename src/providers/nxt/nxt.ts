@@ -131,7 +131,7 @@ export class NxtProvider {
   }
 
   writeSection(file: NXTFile) {
-    if (file.isFinished()) {
+    if (file.size == file.writtenBytes) {
       this.closeFileHandle(file);
       return;
     }
