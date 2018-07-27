@@ -172,11 +172,12 @@ export enum NXTFileState {
 export class NXTFile {
   public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
   public name: string;
-  public data: Uint8Array;
   public size: number;
   public handle: number;
   public errorMessage: string;
   public autoStart: boolean;
+  public writtenBytes: number;
+  private data: Uint8Array;
   private state: NXTFileState = NXTFileState.OPENING;
   private static PACKET_SIZE: number = 64;
 
@@ -197,7 +198,7 @@ export class NXTFile {
   }
 
   get percentage(): number {
-    return 100 - (this.data.length / this.size * 100);
+    return (this.writtenBytes / this.size * 100);
   }
 
   get formattedErrorMessage(): string {
@@ -215,6 +216,7 @@ export class NXTFile {
     let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
     let ret: Uint8Array = this.data.slice(0, chunkSize);
     this.data = this.data.slice(chunkSize, this.data.length);
+    this.writtenBytes = this.size - this.data.length;
     return ret;
   }
 
