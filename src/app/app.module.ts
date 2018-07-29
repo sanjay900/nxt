@@ -4,7 +4,7 @@ import {IonicApp, IonicErrorHandler, IonicModule} from 'ionic-angular';
 import {MyApp} from './app.component';
 
 import {AboutPage} from '../pages/about/about';
-import {ContactPage} from '../pages/contact/contact';
+import {SensorPage} from '../pages/sensors/sensor';
 import {MainPage} from '../pages/main/main';
 import {TabsPage} from '../pages/tabs/tabs';
 
@@ -24,7 +24,7 @@ import {FileUploadModule} from "../pages/file-upload/file-upload.module";
   declarations: [
     MyApp,
     AboutPage,
-    ContactPage,
+    SensorPage,
     MainPage,
     TabsPage,
     SettingsPage,
@@ -39,7 +39,7 @@ import {FileUploadModule} from "../pages/file-upload/file-upload.module";
   entryComponents: [
     MyApp,
     AboutPage,
-    ContactPage,
+    SensorPage,
     MainPage,
     TabsPage,
     SettingsPage,

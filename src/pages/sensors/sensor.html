@@ -1,0 +1,40 @@
+<!--
+  Generated template for the MotorStatusPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>Sensor status</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <ion-card *ngFor="let sensor of sensors">
+    <ion-card-header>Sensor {{sensor.port}}</ion-card-header>
+    <ion-card-content>
+      <p>Raw value: {{sensor.rawValue}}</p>
+      <ion-item>
+        <ion-label>Sensor Mode</ion-label>
+        <ion-select>
+          <ion-option *ngFor="let mode of getSensorModes()" [value]="mode.id" [selected]="mode.id == sensor.mode" (ionSelect)="setMode(sensor, $event)">
+            {{mode.name}}
+          </ion-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Sensor Type</ion-label>
+        <ion-select>
+          <ion-option *ngFor="let type of getSensorTypes()" [value]="type.id" [selected]="type.id == sensor.type" (ionSelect)="setType(sensor, $event)">
+            {{type.name}}
+          </ion-option>
+        </ion-select>
+      </ion-item>
+      <!--TODO: buttons for adjusting the sensor mode, tye-->
+    </ion-card-content>
+  </ion-card>
+</ion-content>

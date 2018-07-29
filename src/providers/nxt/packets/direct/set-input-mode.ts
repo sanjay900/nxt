@@ -7,14 +7,15 @@ export class SetInputMode extends DirectPacket {
   private mode: InputSensorMode;
 
   constructor() {
-    super(DirectCommand.PLAY_SOUND_FILE);
+    super(DirectCommand.SET_INPUT_MODE);
   }
 
-  public static createPacket(port: SystemOutputPort, type: InputSensorType, mode: InputSensorMode) {
+  public static createPacket(port: number, type: InputSensorType, mode: InputSensorMode) {
     let packet: SetInputMode = new SetInputMode();
     packet.port = port;
     packet.type = type;
     packet.mode = mode;
+    console.log(packet);
     return packet;
   }
 
