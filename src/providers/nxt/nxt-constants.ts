@@ -1,4 +1,24 @@
 import {EventEmitter, NgZone} from "@angular/core";
+import {Packet} from "./packets/packet";
+import {StartProgram} from "./packets/direct/start-program";
+import {StopProgram} from "./packets/direct/stop-program";
+import {PlaySoundFile} from "./packets/direct/play-sound-file";
+import {PlayTone} from "./packets/direct/play-tone";
+import {SetOutputState} from "./packets/direct/set-output-state";
+import {SetInputMode} from "./packets/direct/set-input-mode";
+import {GetOutputState} from "./packets/direct/get-output-state";
+import {GetInputValues} from "./packets/direct/get-input-values";
+import {ResetInputScaledValue} from "./packets/direct/reset-input-scaled-value";
+import {MessageWrite} from "./packets/direct/message-write";
+import {ResetMotorPosition} from "./packets/direct/reset-motor-position";
+import {GetBatteryLevel} from "./packets/direct/get-battery-level";
+import {StopSoundPlayback} from "./packets/direct/stop-sound-playback";
+import {KeepAlive} from "./packets/direct/keep-alive";
+import {LsGetStatus} from "./packets/direct/ls-get-status";
+import {LsRead} from "./packets/direct/ls-read";
+import {LsWrite} from "./packets/direct/ls-write";
+import {GetCurrentProgramName} from "./packets/direct/get-current-program-name";
+import {MessageRead} from "./packets/direct/message-read";
 
 export enum DirectCommand {
   START_PROGRAM = 0x00,
@@ -67,13 +87,6 @@ export enum SystemCommand {
   OPEN_APPEND_DATA = 0x8C,
   SET_BRICK_NAME = 0x98,
   GET_DEVICE_INFO = 0x9B
-}
-
-export enum ExtendedSystemCommand {
-  DELETE_USER_FLASH = 0xA0,
-  POLL_COMMAND_LENGTH = 0xA1,
-  POLL_COMMAND = 0xA2,
-  BLUETOOTH_FACTORY_RESET = 0xA4
 }
 
 export enum SystemCommandResponse {
@@ -166,20 +179,30 @@ export enum NXTFileState {
   OPENING = "Opening File",
   WRITING = "Writing File",
   CLOSING = "Closing File",
-  DONE = "Finished",
+  WRITTEN = "Written File",
+  DELETED = "Deleted File",
+  READ = "Read File",
   ERROR = "Error",
   FILE_EXISTS = "File already exists"
 }
 
+export enum NXTFileMode {
+  READ, WRITE
+}
+
 export class NXTFile {
-  private static PACKET_SIZE: number = 64;
+  public static PACKET_SIZE: number = 64;
   public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
   public handle: number;
-  public errorMessage: string;
+  public response: DirectCommandResponse | SystemCommandResponse;
   public writtenBytes: number;
+  public mode: NXTFileMode;
+  public size: number;
+  public autoStart: boolean;
   private state: NXTFileState = NXTFileState.OPENING;
+  private data: number[];
 
-  constructor(public name: string, private data: Uint8Array, public size: number, public autoStart: boolean, private zone: NgZone) {
+  constructor(public name: string) {
   }
 
   set status(status: NXTFileState) {
@@ -197,64 +220,68 @@ export class NXTFile {
 
   get formattedErrorMessage(): string {
     if (!this.hasError()) return "No Error";
-    let msg: string = this.errorMessage
-      .replace(/_/g, " ");
+    let msg: string = DirectCommandResponse[this.response] || SystemCommandResponse[this.response];
+    msg = msg.replace(/_/g, " ");
     return msg.charAt(0).toLocaleUpperCase() + msg.substring(1);
   }
 
-  nextChunk(): Uint8Array {
+  nextChunk(): number[] {
+    if (this.mode == NXTFileMode.READ) return;
     let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
-    let ret: Uint8Array = this.data.slice(0, chunkSize);
+    let ret: number[] = this.data.slice(0, chunkSize);
     this.data = this.data.slice(chunkSize, this.data.length);
-    this.zone.run(() => {
-      this.writtenBytes = this.size - this.data.length;
-    });
+    this.writtenBytes = this.size - this.data.length;
     return ret;
   }
 
   hasError() {
     return this.state == NXTFileState.ERROR || this.state == NXTFileState.FILE_EXISTS;
   }
+
+  readData(number: number[]) {
+    this.data.push(...number);
+  }
 }
 
 
 export class NxtConstants {
   public static MOTOR_PROGRAM: string = "MotorControl22.rxe";
-  public static COMMAND_RESPONSE_LENGTH: Map<DirectCommand | SystemCommand, number> = new Map(<[DirectCommand | SystemCommand, number][]>[
-    [DirectCommand.START_PROGRAM, 2],
-    [DirectCommand.STOP_PROGRAM, 2],
-    [DirectCommand.PLAY_SOUND_FILE, 2],
-    [DirectCommand.PLAY_TONE, 2],
-    [DirectCommand.SET_OUTPUT_STATE, 2],
-    [DirectCommand.SET_INPUT_MODE, 2],
-    [DirectCommand.GET_OUTPUT_STATE, 24],
-    [DirectCommand.GET_INPUT_VALUES, 15],
-    [DirectCommand.RESET_INPUT_SCALED_VALUE, 2],
-    [DirectCommand.MESSAGE_WRITE, 2],
-    [DirectCommand.RESET_MOTOR_POSITION, 2],
-    [DirectCommand.GET_BATTERY_LEVEL, 4],
-    [DirectCommand.STOP_SOUND_PLAYBACK, 2],
-    [DirectCommand.KEEP_ALIVE, 6],
-    [DirectCommand.LS_GET_STATUS, 3],
-    [DirectCommand.LS_READ, 19],
-    [DirectCommand.LS_WRITE, 0],
-    [DirectCommand.GET_CURRENT_PROGRAM_NAME, 22],
-    [DirectCommand.MESSAGE_READ, 63],
-    [SystemCommand.OPEN_READ, 7],
-    [SystemCommand.OPEN_WRITE, 3],
-    [SystemCommand.WRITE, 5],
-    [SystemCommand.CLOSE, 3],
-    [SystemCommand.DELETE, 22],
-    [SystemCommand.FIND_FIRST, 27],
-    [SystemCommand.FIND_NEXT, 27],
-    [SystemCommand.GET_FIRMWARE_VERSION, 6],
-    [SystemCommand.OPEN_WRITE_LINEAR, 3],
-    [SystemCommand.OPEN_READ_LINEAR, 6],
-    [SystemCommand.OPEN_WRITE_DATA, 3],
-    [SystemCommand.OPEN_APPEND_DATA, 7],
-    [SystemCommand.SET_BRICK_NAME, 2],
-    [SystemCommand.GET_DEVICE_INFO, 32]
-  ]);
+  public static COMMAND_MAP: Map<DirectCommand | SystemCommand, new () => Packet> = new Map(
+    <[DirectCommand | SystemCommand, new () => Packet][]> [
+      [DirectCommand.START_PROGRAM, StartProgram],
+      [DirectCommand.STOP_PROGRAM, StopProgram],
+      [DirectCommand.PLAY_SOUND_FILE, PlaySoundFile],
+      [DirectCommand.PLAY_TONE, PlayTone],
+      [DirectCommand.SET_OUTPUT_STATE, SetOutputState],
+      [DirectCommand.SET_INPUT_MODE, SetInputMode],
+      [DirectCommand.GET_OUTPUT_STATE, GetOutputState],
+      [DirectCommand.GET_INPUT_VALUES, GetInputValues],
+      [DirectCommand.RESET_INPUT_SCALED_VALUE, ResetInputScaledValue],
+      [DirectCommand.MESSAGE_WRITE, MessageWrite],
+      [DirectCommand.RESET_MOTOR_POSITION, ResetMotorPosition],
+      [DirectCommand.GET_BATTERY_LEVEL, GetBatteryLevel],
+      [DirectCommand.STOP_SOUND_PLAYBACK, StopSoundPlayback],
+      [DirectCommand.KEEP_ALIVE, KeepAlive],
+      [DirectCommand.LS_GET_STATUS, LsGetStatus],
+      [DirectCommand.LS_READ, LsRead],
+      [DirectCommand.LS_WRITE, LsWrite],
+      [DirectCommand.GET_CURRENT_PROGRAM_NAME, GetCurrentProgramName],
+      [DirectCommand.MESSAGE_READ, MessageRead],
+      // [SystemCommand.OPEN_READ, 7],
+      // [SystemCommand.OPEN_WRITE, 3],
+      // [SystemCommand.WRITE, 5],
+      // [SystemCommand.CLOSE, 3],
+      // [SystemCommand.DELETE, 22],
+      // [SystemCommand.FIND_FIRST, 27],
+      // [SystemCommand.FIND_NEXT, 27],
+      // [SystemCommand.GET_FIRMWARE_VERSION, 6],
+      // [SystemCommand.OPEN_WRITE_LINEAR, 3],
+      // [SystemCommand.OPEN_READ_LINEAR, 6],
+      // [SystemCommand.OPEN_WRITE_DATA, 3],
+      // [SystemCommand.OPEN_APPEND_DATA, 7],
+      // [SystemCommand.SET_BRICK_NAME, 2],
+      // [SystemCommand.GET_DEVICE_INFO, 32]
+    ]);
 
   public static outputToSystemOutput(port: OutputPort): SystemOutputPort[] {
     let ports: SystemOutputPort[] = [];

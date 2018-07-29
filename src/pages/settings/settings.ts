@@ -20,6 +20,6 @@ export class SettingsPage {
   }
 
   startMotorProgram() {
-    this.nxt.startProgram(NxtConstants.MOTOR_PROGRAM);
+    // this.nxt.startProgram(NxtConstants.MOTOR_PROGRAM);
   }
 }

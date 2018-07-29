@@ -22,7 +22,7 @@ export class FileUploadPage {
   constructor(private platform:Platform, public viewCtrl: ViewController, public bluetooth: BluetoothProvider) {
     this.file = viewCtrl.data.file;
     this.file.uploadStatus$.subscribe((status: NXTFileState) => {
-      if (status == NXTFileState.DONE || status == NXTFileState.ERROR) {
+      if (status == NXTFileState.WRITTEN || status == NXTFileState.ERROR) {
         this.unregister();
       }
       this.status = this.file.status;
@@ -43,7 +43,7 @@ export class FileUploadPage {
   }
 
   getColor() {
-    if (this.file.status == NXTFileState.DONE) {
+    if (this.file.status == NXTFileState.WRITTEN) {
       return "#5cb85c";
     } else if (this.bluetooth.connected && !this.file.hasError()) {
       return "#5bc0de";
@@ -53,7 +53,7 @@ export class FileUploadPage {
   }
 
   canDismiss() {
-    return !this.bluetooth.connected || this.file.hasError() || this.status == NXTFileState.DONE;
+    return !this.bluetooth.connected || this.file.hasError() || this.status == NXTFileState.WRITTEN;
   }
 
   isExisting() {
