@@ -9,20 +9,17 @@ export class GetDeviceInfo extends SystemPacket {
   public freeSpace: number;
 
   constructor() {
-    super(SystemCommand.GET_FIRMWARE_VERSION);
+    super(SystemCommand.GET_DEVICE_INFO);
   }
 
-  public static createPacket(handle: number) {
+  public static createPacket() {
     return new GetDeviceInfo();
   }
 
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.name = Packet.readAsciiz(data, 15);
-    this.btAddress = "";
-    for (let i =0; i < 6; i++) {
-      this.btAddress += data.pop().toString(16);
-    }
+    this.btAddress = data.splice(0,6).map(bt=>bt.toString(16).padStart(2,'0')).join(":");
     this.btSignalStrength = Packet.readLong(data);
     this.freeSpace = Packet.readLong(data);
   }

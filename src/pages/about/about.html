@@ -1,11 +1,19 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>
-      About
-    </ion-title>
+    <ion-title>About Device - Status: {{bluetooth.status}}</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-
+  <ion-card>
+    <ion-card-header>Device Information</ion-card-header>
+    <ion-card-content>
+      <p>Firmware Version: {{deviceFirmware.firmwareVersion}}</p>
+      <p>Protocol Version: {{deviceFirmware.protocolVersion}}</p>
+      <p>Bluetooth Address: {{deviceInfo.btAddress}}</p>
+      <p>Name: {{deviceInfo.name}}</p>
+      <p>Free Space: {{deviceInfo.freeSpace}} bytes</p>
+      <button (click)="changeName()" ion-button>Change Name</button>
+    </ion-card-content>
+  </ion-card>
 </ion-content>

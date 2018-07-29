@@ -26,11 +26,11 @@ export class NxtProvider {
     //Start up a thread for reading packets
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
-      if (this.buffer.length == 0 || this.buffer.length < len) {
+      if (this.buffer.length == 0 || this.buffer.length < len+2) {
         return;
       }
       this.buffer.splice(0, 2);
-      this.readPacket();
+      this.readPacket(this.buffer.splice(0, len));
     });
     //Listen to and handle responses from the NXT
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
@@ -46,16 +46,19 @@ export class NxtProvider {
       .subscribe(this.missingFileHandler.bind(this));
   }
 
-  readPacket() {
-    let telegramType: number = this.buffer.shift();
-    let messageType: number = this.buffer.shift();
+  readPacket(data: number[]) {
+    let telegramType: number = data.shift();
+    let messageType: number = data.shift();
     if (telegramType == TelegramType.REPLY) {
       //Look up this packet, and construct it from the available data.
       let packetCtor: new () => Packet = NxtConstants.COMMAND_MAP.get(messageType);
       let packet: Packet = new packetCtor();
       if (packet) {
-        packet.readPacket(this.buffer);
-        this.packetEvent$.next(packet);
+        packet.readPacket(data);
+        //Emit events inside the angular thread so things update correctly
+        this.zone.run(()=>{
+          this.packetEvent$.next(packet);
+        });
       } else {
         console.log("Unknown packet id: " + messageType.toString(16));
       }

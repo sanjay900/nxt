@@ -10,7 +10,7 @@ export class GetFirmwareVersion extends SystemPacket {
     super(SystemCommand.GET_FIRMWARE_VERSION);
   }
 
-  public static createPacket(handle: number) {
+  public static createPacket() {
     return new GetFirmwareVersion();
   }
 
