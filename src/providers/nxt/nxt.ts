@@ -18,6 +18,7 @@ import {
 import {Packet} from "./packets/packet";
 import {GetOutputState} from "./packets/direct/get-output-state";
 import {StartProgram} from "./packets/direct/start-program";
+import {Subject} from "rxjs";
 
 
 /**
@@ -25,11 +26,12 @@ import {StartProgram} from "./packets/direct/start-program";
  */
 @Injectable()
 export class NxtProvider {
-
+  public packetEvent$: Subject<Packet> = new Subject<Packet>();
   private files: Map<number, NXTFile> = new Map();
   private nextFile: NXTFile;
   private currentProgram: string = null;
   private programToStart: string;
+  private buffer: number[] = [];
 
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
     //Clear state for the current device when it is disconnected.
@@ -38,121 +40,37 @@ export class NxtProvider {
       this.nextFile = null;
       this.currentProgram = null;
     });
+    //Start up a thread for reading packets
     setInterval(() => {
-      this.writePacket(true, ...GetOutputState.createMultiple(OutputPort.A_B_C));
-    }, 10);
+      let len: number = this.buffer[0] | this.buffer[1] << 8;
+      if (this.buffer.length == 0 || this.buffer.length < len) {
+        return;
+      }
+      this.buffer.splice(0, 2);
+      this.readPacket();
+    });
     //Listen to and handle responses from the NXT
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
-      this.readPacket(Array.from(new Uint8Array(data)));
+      this.buffer.push(...Array.from(new Uint8Array(data)));
     });
-    this.bluetooth.deviceConnect$.subscribe(() => {
-      this.writePacket(true, StartProgram.createPacket(NxtConstants.MOTOR_PROGRAM));
-    });
+    // this.bluetooth.deviceConnect$.subscribe(() => {
+    //   this.writePacket(true, StartProgram.createPacket(NxtConstants.MOTOR_PROGRAM));
+    // });
 
   }
 
-  readPacket(data: number[]) {
-    let telegramType: number = data.shift();
-    let messageType: number = data.shift();
+  readPacket() {
+    let telegramType: number = this.buffer.shift();
+    let messageType: number = this.buffer.shift();
     if (telegramType == TelegramType.REPLY) {
       //Look up this packet, and construct it from the available data.
       let packetCtor: new () => Packet = NxtConstants.COMMAND_MAP.get(messageType);
       let packet: Packet = new packetCtor();
       if (packet) {
-        packet.readPacket(data);
+        packet.readPacket(this.buffer);
+        this.packetEvent$.next(packet);
       } else {
         console.log("Unknown packet id: " + messageType.toString(16));
-      }
-      //   if (NxtConstants.COMMAND_RESPONSE_LENGTH.has(messageType)) {
-      //     let packetSize: number = NxtConstants.COMMAND_RESPONSE_LENGTH.get(messageType)+1;
-      //     this.data = data.slice(0,packetSize);
-      //     remaining = data.slice(packetSize);
-      //   }
-      //
-      //   if (messageType == DirectCommand.GET_OUTPUT_STATE) {
-      //     let port: number = this.data[3];
-      //     let portN: OutputPort = OutputPort.A;
-      //     if (port == 1) portN = OutputPort.B;
-      //     if (port == 2) portN = OutputPort.C;
-      //     this.lastRotation[portN] = this.currentRotation[portN];
-      //     this.currentRotation[portN] = NxtProvider.bytesToLong(this.data.slice(this.data.length - 4, this.data.length));
-      //   }
-      //   if (messageType == SystemCommand.READ) {
-      //     let size: number = data[3] | data[4] << 8;
-      //     //TODO: this
-      //     let packetSize = 8+size;
-      //     this.data = data.slice(0,packetSize);
-      //     remaining = data.slice(packetSize);
-      //   }
-      //   if (messageType == DirectCommand.MESSAGE_READ) {
-      //     if (status == DirectCommandResponse.SUCCESS) {
-      //       let messageBox: number = this.data[3];
-      //       let size: number = this.data[4];
-      //       let response: string = NxtProvider.asciiToString(this.data.slice(5,5+size-1));
-      //       if (messageBox == 1) {
-      //         if (response.charAt(0) == "0") {
-      //           this.ready[OutputPort.A] = response.charAt(1) == '1';
-      //         }
-      //         if (response.charAt(0) == "1") {
-      //           this.ready[OutputPort.B] = response.charAt(1) == '1';
-      //         }
-      //         if (response.charAt(0) == "2") {
-      //           this.ready[OutputPort.C] = response.charAt(1) == '1';
-      //         }
-      //       }
-      //     }else if (status != DirectCommandResponse.SUCCESS) {
-      //       console.log("Error Recieving: " + status.toString(16));
-      //     }
-      //   }
-      //   if (messageType == DirectCommand.START_PROGRAM) {
-      //     //Out of range is sent back if the file was not found on the brick.
-      //     if (status == DirectCommandResponse.SUCCESS) {
-      //       this.currentProgram = this.programToStart;
-      //     } else if (status == DirectCommandResponse.OUT_OF_RANGE) {
-      //       //File not found, so lets upload it.
-      //       this.askUserToUploadFile();
-      //     } else if (status != DirectCommandResponse.SUCCESS) {
-      //       console.log("Error Starting: " + status.toString(16));
-      //     }
-      //   }
-      //   if (messageType == DirectCommand.MESSAGE_WRITE) {
-      //     if (status != 0) {
-      //       console.log("Error Writing msg: " + status.toString(16));
-      //     }
-      //   }
-      //   if (messageType >= SystemCommand.OPEN_WRITE && messageType <= SystemCommand.CLOSE) {
-      //     let handle: number = this.data[3];
-      //     let file: NXTFile = this.files[handle] || this.nextFile;
-      //     file.errorMessage = SystemCommandResponse[status];
-      //     if (status == 0) {
-      //       switch (messageType) {
-      //         case SystemCommand.OPEN_WRITE:
-      //           this.nextFile.handle = handle;
-      //           this.files[this.nextFile.handle] = file;
-      //           file.status = NXTFileState.WRITING;
-      //         case SystemCommand.WRITE:
-      //           this.writeSection(file);
-      //           break;
-      //         case SystemCommand.CLOSE:
-      //           file.status = NXTFileState.DONE;
-      //           delete this.files[handle];
-      //           if (file.autoStart) {
-      //             this.startProgram(NxtConstants.MOTOR_PROGRAM);
-      //           }
-      //           break;
-      //       }
-      //     } else if (status == SystemCommandResponse.FILE_ALREADY_EXISTS) {
-      //       file.status = NXTFileState.FILE_EXISTS;
-      //     } else {
-      //       file.status = NXTFileState.ERROR;
-      //     }
-      //   }
-      // }
-      // //If there is extra data remaining, we probably recieved two packets together, so parse the next packet
-      // if (remaining && remaining.length > 0) {
-      //   this.readPacket(remaining);
-      if (data.length != 0) {
-        this.readPacket(data);
       }
     }
   }
@@ -237,7 +155,6 @@ export class NxtProvider {
   //   let header: Uint8Array = new Uint8Array([TelegramType.SYSTEM_COMMAND_RESPONSE, SystemCommand.WRITE, file.handle]);
   //   this.writePacketOld(NxtProvider.appendBefore(file.nextChunk(), header));
   // }
-
 
 
   /**

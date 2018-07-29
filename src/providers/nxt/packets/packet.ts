@@ -8,7 +8,11 @@ export class PacketConstants {
 export abstract class Packet {
   public status: DirectCommandResponse | SystemCommandResponse;
 
-  protected constructor(protected id: SystemCommand | DirectCommand) {
+  protected constructor(protected _id: SystemCommand | DirectCommand) {
+  }
+
+  get id(): SystemCommand | DirectCommand {
+    return this._id;
   }
 
   protected static readSWord(data: number[]): number {

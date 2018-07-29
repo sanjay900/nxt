@@ -19,6 +19,7 @@ import { NxtProvider } from '../providers/nxt/nxt';
 import { File } from '@ionic-native/file';
 import {FileUploadPage} from "../pages/file-upload/file-upload";
 import {ProgressBarModule} from "angular-progress-bar"
+import {MotorStatusPage} from "../pages/motor-status/motor-status";
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import {ProgressBarModule} from "angular-progress-bar"
     MainPage,
     TabsPage,
     SettingsPage,
-    FileUploadPage
+    FileUploadPage,
+    MotorStatusPage
   ],
   imports: [
     BrowserModule,
@@ -43,7 +45,8 @@ import {ProgressBarModule} from "angular-progress-bar"
     MainPage,
     TabsPage,
     SettingsPage,
-    FileUploadPage
+    FileUploadPage,
+    MotorStatusPage
   ],
   providers: [
     StatusBar,
