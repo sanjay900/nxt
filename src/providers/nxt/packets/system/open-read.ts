@@ -30,5 +30,6 @@ export class OpenRead extends SystemPacket {
     this.file = OpenRead.lastFile;
     this.file.size = Packet.readLong(data);
     this.file.response = this.status;
+    SystemPacket.filesByHandle[this.file.handle] = this.file;
   }
 }

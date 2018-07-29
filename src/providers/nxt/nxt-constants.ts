@@ -19,6 +19,16 @@ import {LsRead} from "./packets/direct/ls-read";
 import {LsWrite} from "./packets/direct/ls-write";
 import {GetCurrentProgramName} from "./packets/direct/get-current-program-name";
 import {MessageRead} from "./packets/direct/message-read";
+import {OpenRead} from "./packets/system/open-read";
+import {OpenWrite} from "./packets/system/open-write";
+import {Write} from "./packets/system/write";
+import {Close} from "./packets/system/close";
+import {Delete} from "./packets/system/delete";
+import {FindFirst} from "./packets/system/find-first";
+import {FindNext} from "./packets/system/find-next";
+import {GetFirmwareVersion} from "./packets/system/get-firmware-version";
+import {SetBrickName} from "./packets/system/set-brick-name";
+import {GetDeviceInfo} from "./packets/system/get-device-info";
 
 export enum DirectCommand {
   START_PROGRAM = 0x00,
@@ -200,7 +210,7 @@ export class NXTFile {
   public size: number;
   public autoStart: boolean;
   private state: NXTFileState = NXTFileState.OPENING;
-  private data: number[];
+  private data: number[] = [];
 
   constructor(public name: string) {
   }
@@ -267,20 +277,20 @@ export class NxtConstants {
       [DirectCommand.LS_WRITE, LsWrite],
       [DirectCommand.GET_CURRENT_PROGRAM_NAME, GetCurrentProgramName],
       [DirectCommand.MESSAGE_READ, MessageRead],
-      // [SystemCommand.OPEN_READ, 7],
-      // [SystemCommand.OPEN_WRITE, 3],
-      // [SystemCommand.WRITE, 5],
-      // [SystemCommand.CLOSE, 3],
-      // [SystemCommand.DELETE, 22],
-      // [SystemCommand.FIND_FIRST, 27],
-      // [SystemCommand.FIND_NEXT, 27],
-      // [SystemCommand.GET_FIRMWARE_VERSION, 6],
+      [SystemCommand.OPEN_READ, OpenRead],
+      [SystemCommand.OPEN_WRITE, OpenWrite],
+      [SystemCommand.WRITE, Write],
+      [SystemCommand.CLOSE, Close],
+      [SystemCommand.DELETE, Delete],
+      [SystemCommand.FIND_FIRST, FindFirst],
+      [SystemCommand.FIND_NEXT, FindNext],
+      [SystemCommand.GET_FIRMWARE_VERSION, GetFirmwareVersion],
       // [SystemCommand.OPEN_WRITE_LINEAR, 3],
       // [SystemCommand.OPEN_READ_LINEAR, 6],
       // [SystemCommand.OPEN_WRITE_DATA, 3],
       // [SystemCommand.OPEN_APPEND_DATA, 7],
-      // [SystemCommand.SET_BRICK_NAME, 2],
-      // [SystemCommand.GET_DEVICE_INFO, 32]
+      [SystemCommand.SET_BRICK_NAME, SetBrickName],
+      [SystemCommand.GET_DEVICE_INFO, GetDeviceInfo]
     ]);
 
   public static outputToSystemOutput(port: OutputPort): SystemOutputPort[] {

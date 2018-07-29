@@ -27,7 +27,7 @@
     <br/>
     If the file does not appear on the NXT, reboot the NXT as a partially written file may reside on the NXT.
   </div>
-  <div *ngIf="!bluetooth.connected && !file.isFinished()">Error: The NXT has lost connection!</div>
+  <div *ngIf="!bluetooth.connected && !isWritten()">Error: The NXT has lost connection!</div>
   <progress-bar [progress]="file.percentage" [color]="getColor()"></progress-bar>
   <br/>
 
