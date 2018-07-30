@@ -21,16 +21,18 @@ import {NxtProvider} from "../../providers/nxt/nxt";
   templateUrl: 'sensor-graph.html',
 })
 export class SensorGraphPage {
-  @ViewChild('lineCanvas') lineCanvas;
+  @ViewChild('scaledChartCanvas') scaledChartCanvas;
+  @ViewChild('rawChartCanvas') rawChartCanvas;
   private readonly port: number;
   private readonly sensor: string;
-  private lineChart: Chart;
+  private scaledChart: Chart;
+  private rawChart: Chart;
   private intervalId: number;
   private packetReciever: Subscription;
   private current: number = 0;
 
   constructor(public viewCtrl: ViewController, public navCtrl: NavController, public navParams: NavParams, public nxt: NxtProvider) {
-    this.port = this.viewCtrl.data.port;
+    this.port = this.viewCtrl.data.port+1;
     this.sensor = this.viewCtrl.data.sensor;
 
   }
@@ -46,34 +48,42 @@ export class SensorGraphPage {
       .subscribe(this.sensorUpdate.bind(this));
   }
   sensorUpdate(packet: GetInputValues) {
-    this.lineChart.data.labels.push(this.current++);
-    this.lineChart.data.datasets.forEach((dataset) => {
+    this.scaledChart.data.labels.push(this.current);
+    this.scaledChart.data.datasets.forEach((dataset) => {
       dataset.data.push(packet.scaledValue);
       if (dataset.data.length > 100) {
         dataset.data.shift();
-        this.lineChart.data.labels.shift();
+        this.scaledChart.data.labels.shift();
       }
     });
-    this.lineChart.update();
+    this.scaledChart.update();
+
+    this.rawChart.data.labels.push(this.current++);
+    this.rawChart.data.datasets.forEach((dataset) => {
+      dataset.data.push(packet.rawValue);
+      if (dataset.data.length > 100) {
+        dataset.data.shift();
+        this.rawChart.data.labels.shift();
+      }
+    });
+    this.rawChart.update();
   }
   ionViewDidLeave() {
     clearInterval(this.intervalId);
     this.packetReciever.unsubscribe();
   }
   ionViewDidLoad() {
-    console.log('ionViewDidLoad SensorGraphPage');
-    this.lineChart = new Chart(this.lineCanvas.nativeElement, {
+    this.scaledChart = new Chart(this.scaledChartCanvas.nativeElement, {
       type: 'line',
-      legend: {
-        display: false
-      },
-      tooltips: {
-        enabled: false
-      },
-      data: {
+      options: {
+        legend: {
+          display: false
+        }, tooltips: {
+          enabled: false
+        }
+      }, data: {
         datasets: [
           {
-            label: "Sensor Data",
             fill: false,
             lineTension: 0.1,
             backgroundColor: "rgba(75,192,192,0.4)",
@@ -85,10 +95,6 @@ export class SensorGraphPage {
             pointBorderColor: "rgba(75,192,192,1)",
             pointBackgroundColor: "#fff",
             pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: "rgba(75,192,192,1)",
-            pointHoverBorderColor: "rgba(220,220,220,1)",
-            pointHoverBorderWidth: 2,
             pointRadius: 1,
             pointHitRadius: 10,
             data: [],
@@ -96,7 +102,36 @@ export class SensorGraphPage {
           }
         ]
       }
-
+    });
+    this.rawChart = new Chart(this.rawChartCanvas.nativeElement, {
+      type: 'line',
+      options: {
+        legend: {
+          display: false
+        }, tooltips: {
+          enabled: false
+        }
+      }, data: {
+        datasets: [
+          {
+            fill: false,
+            lineTension: 0.1,
+            backgroundColor: "rgba(75,192,192,0.4)",
+            borderColor: "rgba(75,192,192,1)",
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: "rgba(75,192,192,1)",
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointRadius: 1,
+            pointHitRadius: 10,
+            data: [],
+            spanGaps: false,
+          }
+        ]
+      }
     });
   }
 
