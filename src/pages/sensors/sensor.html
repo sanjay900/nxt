@@ -15,26 +15,36 @@
 
 <ion-content padding>
   <ion-card *ngFor="let sensor of sensors">
-    <ion-card-header>Sensor {{sensor.port}}</ion-card-header>
-    <ion-card-content>
-      <p>Raw value: {{sensor.rawValue}}</p>
+    <ion-card-header>Sensor {{sensor.lastPacket.port}}</ion-card-header>
+    <ion-list>
+      <ion-item>
+        <ion-label>Raw value</ion-label>
+        <ion-note item-end>{{sensor.lastPacket.rawValue}}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Scaled Value</ion-label>
+        <ion-note item-end>{{sensor.lastPacket.scaledValue}}</ion-note>
+      </ion-item>
+      <ion-item *ngIf="sensor.lastPacket.calibrated">
+        <ion-label>Calibrated Value</ion-label>
+        <ion-note item-end>{{sensor.lastPacket.calibratedValue}}</ion-note>
+      </ion-item>
       <ion-item>
         <ion-label>Sensor Mode</ion-label>
-        <ion-select>
-          <ion-option *ngFor="let mode of getSensorModes()" [value]="mode.id" [selected]="mode.id == sensor.mode" (ionSelect)="setMode(sensor, $event)">
-            {{mode.name}}
-          </ion-option>
+        <ion-select [(ngModel)]="sensor.mode">
+          <ion-option *ngFor="let mode of getSensorModes()" [value]="mode.id"> {{mode.name}} </ion-option>
         </ion-select>
       </ion-item>
       <ion-item>
         <ion-label>Sensor Type</ion-label>
-        <ion-select>
-          <ion-option *ngFor="let type of getSensorTypes()" [value]="type.id" [selected]="type.id == sensor.type" (ionSelect)="setType(sensor, $event)">
-            {{type.name}}
-          </ion-option>
+        <ion-select [(ngModel)]="sensor.type">
+          <ion-option *ngFor="let type of getSensorTypes()" [value]="type.id"> {{type.name}} </ion-option>
         </ion-select>
       </ion-item>
+      <ion-item>
+        <button (click)="showGraph(sensor)" ion-button>Graph view</button>
+      </ion-item>
       <!--TODO: buttons for adjusting the sensor mode, tye-->
-    </ion-card-content>
+    </ion-list>
   </ion-card>
 </ion-content>

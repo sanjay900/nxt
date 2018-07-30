@@ -26,11 +26,11 @@ export class NxtProvider {
     //Start up a thread for reading packets
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
-      if (this.buffer.length == 0 || this.buffer.length < len+2) {
-        return;
+      while (this.buffer.length > len+2) {
+        this.buffer.splice(0, 2);
+        this.readPacket(this.buffer.splice(0, len));
+        len = this.buffer[0] | this.buffer[1] << 8;
       }
-      this.buffer.splice(0, 2);
-      this.readPacket(this.buffer.splice(0, len));
     });
     //Listen to and handle responses from the NXT
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {

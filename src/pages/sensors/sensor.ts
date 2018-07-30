@@ -1,32 +1,29 @@
-import {Component, NgZone} from '@angular/core';
+import {Component} from '@angular/core';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {DirectCommand, InputSensorMode, InputSensorType} from "../../providers/nxt/nxt-constants";
 import {Subscription} from "rxjs";
 import {GetInputValues} from "../../providers/nxt/packets/direct/get-input-values";
 import {SetInputMode} from "../../providers/nxt/packets/direct/set-input-mode";
-
-/**
- * Generated class for the MotorStatusPage page.
- *
- * See https://ionicframework.com/docs/components/#navigation for more info on
- * Ionic pages and navigation.
- */
+import {NavController, ViewController} from "ionic-angular";
 
 @Component({
   selector: 'sensor-page',
   templateUrl: 'sensor.html'
 })
 export class SensorPage {
-  public sensors: GetInputValues[] = [new GetInputValues(), new GetInputValues(), new GetInputValues(), new GetInputValues()];
+  public sensors: SensorStatus[] = [
+    new SensorStatus(this.nxt),
+    new SensorStatus(this.nxt),
+    new SensorStatus(this.nxt),
+    new SensorStatus(this.nxt)
+  ];
   private intervalId: number;
   private packetReciever: Subscription;
 
-  constructor(public nxt: NxtProvider, private zone: NgZone) {}
+  constructor(public nxt: NxtProvider, public navCtrl: NavController) {}
 
   sensorUpdate(packet: GetInputValues) {
-    this.zone.run(() => {
-      this.sensors[packet.port] = packet;
-    });
+    this.sensors[packet.port].lastPacket = packet;
   }
 
   ionViewDidEnter() {
@@ -51,6 +48,10 @@ export class SensorPage {
       }
     });
   }
+  ionViewDidLeave() {
+    clearInterval(this.intervalId);
+    this.packetReciever.unsubscribe();
+  }
   private formatEnum(enumLabel: string) {
     enumLabel = enumLabel.toLowerCase().replace(/_/g, " ");
     return enumLabel.charAt(0).toLocaleUpperCase() + enumLabel.substring(1);
@@ -63,20 +64,49 @@ export class SensorPage {
       }
     });
   }
-  ionViewDidLeave() {
-    clearInterval(this.intervalId);
-    this.packetReciever.unsubscribe();
+
+  showGraph(sensor: SensorStatus) {
+    this.navCtrl.push("sensor-graph", {
+      port: sensor.lastPacket.port,
+      sensor: this.formatEnum(InputSensorType[sensor.lastPacket.type])
+    });
+  }
+}
+
+export class SensorStatus {
+  private _lastPacket: GetInputValues = new GetInputValues();
+  private _type: InputSensorType;
+  private _mode: InputSensorMode;
+  private _port: number;
+  constructor(private nxt: NxtProvider) {};
+
+
+  get lastPacket(): GetInputValues {
+    return this._lastPacket;
   }
 
-  setType(packet: GetInputValues, type: number) {
-    console.log(packet);
-    console.log(type);
-    this.nxt.writePacket(true, SetInputMode.createPacket(packet.port, type, packet.mode));
+  set lastPacket(value: GetInputValues) {
+    this._lastPacket = value;
+    this._type = this._lastPacket.type;
+    this._mode = this._lastPacket.mode;
+    this._port = this._lastPacket.port;
   }
 
-  setMode(packet: GetInputValues, mode: number) {
-    console.log(packet);
-    console.log(mode);
-    this.nxt.writePacket(true, SetInputMode.createPacket(packet.port, packet.type, mode));
+  get mode(): InputSensorMode {
+    return this._mode;
+  }
+
+  get type(): InputSensorType {
+    return this._type;
+  }
+
+  set mode(value: InputSensorMode) {
+    this._mode = value;
+    this.nxt.writePacket(true, SetInputMode.createPacket(this._port, this._type, this._mode));
+  }
+
+  set type(value: InputSensorType) {
+    this._type = value;
+    this.nxt.writePacket(true, SetInputMode.createPacket(this._port, this._type, this._mode));
   }
 }
