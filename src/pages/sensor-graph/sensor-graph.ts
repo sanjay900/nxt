@@ -31,6 +31,7 @@ export class SensorGraphPage {
   private intervalId: number;
   private packetReciever: Subscription;
   private current: number = 0;
+  private static readonly GRAPH_SIZE: number = 50;
 
   constructor(public viewCtrl: ViewController, public nxt: NxtProvider) {
     this.port = this.viewCtrl.data.port+1;
@@ -49,8 +50,8 @@ export class SensorGraphPage {
       .subscribe(this.sensorUpdate.bind(this));
   }
   sensorUpdate(packet: GetInputValues) {
-    ChartProvider.addData(this.scaledChart, packet.scaledValue, this.current+"", 100);
-    ChartProvider.addData(this.rawChart, packet.rawValue, this.current+"", 100);
+    ChartProvider.addData(this.scaledChart, packet.scaledValue, this.current+"", SensorGraphPage.GRAPH_SIZE);
+    ChartProvider.addData(this.rawChart, packet.rawValue, this.current+"", SensorGraphPage.GRAPH_SIZE);
     this.current++;
   }
   ionViewDidLeave() {

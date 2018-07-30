@@ -42,6 +42,7 @@ export class MotorGraphPage {
   private packetReciever: Subscription;
   private current: number = 0;
   private packet: GetOutputState = new GetOutputState();
+  private static readonly GRAPH_SIZE: number = 50;
 
   constructor(public viewCtrl: ViewController, public navCtrl: NavController, public navParams: NavParams, public nxt: NxtProvider) {
     this.port = this.viewCtrl.data.port;
@@ -50,8 +51,7 @@ export class MotorGraphPage {
   ionViewDidEnter() {
     //Start up a thread for requesting the state of all motors
     this.intervalId = setInterval(() => {
-      this.nxt.writePacket(true, GetOutputState.createPacket(this.port),
-      );
+      this.nxt.writePacket(true, GetOutputState.createPacket(this.port));
     }, 100);
 
     this.packetReciever = this.nxt.packetEvent$
@@ -59,11 +59,11 @@ export class MotorGraphPage {
       .subscribe(this.sensorUpdate.bind(this));
   }
   sensorUpdate(packet: GetOutputState) {
-    ChartProvider.addData(this.powerChart, packet.power, this.current+"", 100);
-    ChartProvider.addData(this.rotationCountChart, packet.rotationCount, this.current+"", 100);
-    ChartProvider.addData(this.limitChart, packet.tachoLimit, this.current+"", 100);
-    ChartProvider.addData(this.blockCountChart, packet.blockTachoCount, this.current+"", 100);
-    ChartProvider.addData(this.countChart, packet.tachoCount, this.current+"", 100);
+    ChartProvider.addData(this.powerChart, packet.power, this.current+"", MotorGraphPage.GRAPH_SIZE);
+    ChartProvider.addData(this.rotationCountChart, packet.rotationCount, this.current+"", MotorGraphPage.GRAPH_SIZE);
+    ChartProvider.addData(this.limitChart, packet.tachoLimit, this.current+"", MotorGraphPage.GRAPH_SIZE);
+    ChartProvider.addData(this.blockCountChart, packet.blockTachoCount, this.current+"", MotorGraphPage.GRAPH_SIZE);
+    ChartProvider.addData(this.countChart, packet.tachoCount, this.current+"", MotorGraphPage.GRAPH_SIZE);
     this.current++;
     this.packet = packet;
   }
