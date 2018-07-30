@@ -47,7 +47,6 @@ export class NxtProvider {
   }
 
   readPacket(data: number[]) {
-    console.log(this.buffer);
     let telegramType: number = data.shift();
     let messageType: number = data.shift();
     if (telegramType == TelegramType.REPLY) {
