@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, NgZone} from '@angular/core';
 import {AlertController, NavController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetDeviceInfo} from "../../providers/nxt/packets/system/get-device-info";
@@ -18,18 +18,20 @@ export class AboutPage {
   public deviceFirmware: GetFirmwareVersion = new GetFirmwareVersion();
   private connectSubscribe: Subscription;
 
-  constructor(public navCtrl: NavController, private nxt: NxtProvider, private alertCtrl: AlertController, public bluetooth: BluetoothProvider) {
+  constructor(public navCtrl: NavController, private nxt: NxtProvider, private alertCtrl: AlertController, public bluetooth: BluetoothProvider, private zone: NgZone) {
     this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.GET_DEVICE_INFO)
       .subscribe(packet => {
         this.deviceInfo = packet as GetDeviceInfo;
-        console.log(this.deviceInfo.name);
       });
     this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.GET_FIRMWARE_VERSION)
       .subscribe(packet => {
         this.deviceFirmware = packet as GetFirmwareVersion;
       });
+    this.nxt.packetEvent$
+      .filter(packet => packet.id == SystemCommand.SET_BRICK_NAME)
+      .subscribe(()=>setTimeout(this.loadInfo.bind(this),100));
   }
 
   ionViewDidEnter() {
@@ -60,8 +62,7 @@ export class AboutPage {
             let name: string = data.name;
             name = name.substring(0, Math.min(14, name.length));
             name = name.padEnd(15, '\0');
-            this.nxt.writePacket(false, SetBrickName.createPacket(name));
-            this.loadInfo();
+            this.nxt.writePacket(true, SetBrickName.createPacket(name));
           }
         }
       ]
