@@ -1,0 +1,73 @@
+<!--
+  Generated template for the SensorGraphPage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
+<ion-header>
+
+  <ion-navbar>
+    <ion-title>Motor Data for motor on port {{SystemOutputPort[port]}}</ion-title>
+  </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+  <ion-card>
+    <ion-card-header>
+      Data
+    </ion-card-header>
+    <ion-card-content>
+      <p>Mode: {{OutputMode[packet.mode] || "OFF"}}</p>
+      <p>Regulation Mode: {{OutputRegulationMode[packet.regulationMode]}}</p>
+      <p>Power: {{packet.power}}</p>
+      <p>Run State: {{OutputRunState[packet.runState]}}</p>
+      <p>Turn Ratio: {{packet.turnRatio}}</p>
+      <p>Rotation Count: {{packet.rotationCount}}</p>
+      <p>Block Tachometer Count: {{packet.blockTachoCount}}</p>
+      <p>Tachometer Count: {{packet.tachoCount}}</p>
+      <p>Tachometer Limit: {{packet.tachoLimit}}</p>
+      <button (click)="resetMotorStats()" ion-button>Reset Tachometer Count</button>
+    </ion-card-content>
+
+    <ion-card-header>
+      Power
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #powerChartCanvas></canvas>
+    </ion-card-content>
+  </ion-card>
+  <ion-card>
+    <ion-card-header>
+      Rotation Count
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #rotationCountChartCanvas></canvas>
+    </ion-card-content>
+  </ion-card>
+  <ion-card>
+    <ion-card-header>
+      Tachometer Count
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #countChartCanvas></canvas>
+    </ion-card-content>
+  </ion-card>
+  <ion-card>
+    <ion-card-header>
+      Tachometer Limit
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #limitChartCanvas></canvas>
+    </ion-card-content>
+  </ion-card>
+  <ion-card>
+    <ion-card-header>
+      Block Tachometer Count
+    </ion-card-header>
+    <ion-card-content>
+      <canvas #blockCountChartCanvas></canvas>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

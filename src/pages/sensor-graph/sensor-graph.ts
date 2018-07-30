@@ -5,6 +5,7 @@ import {GetInputValues} from "../../providers/nxt/packets/direct/get-input-value
 import {DirectCommand, InputSensorType} from "../../providers/nxt/nxt-constants";
 import {Subscription} from "rxjs";
 import {NxtProvider} from "../../providers/nxt/nxt";
+import {ChartProvider} from "../../providers/chart/chart";
 
 /**
  * Generated class for the SensorGraphPage page.
@@ -31,7 +32,7 @@ export class SensorGraphPage {
   private packetReciever: Subscription;
   private current: number = 0;
 
-  constructor(public viewCtrl: ViewController, public navCtrl: NavController, public navParams: NavParams, public nxt: NxtProvider) {
+  constructor(public viewCtrl: ViewController, public nxt: NxtProvider) {
     this.port = this.viewCtrl.data.port+1;
     this.sensor = this.viewCtrl.data.sensor;
 
@@ -48,91 +49,17 @@ export class SensorGraphPage {
       .subscribe(this.sensorUpdate.bind(this));
   }
   sensorUpdate(packet: GetInputValues) {
-    this.scaledChart.data.labels.push(this.current);
-    this.scaledChart.data.datasets.forEach((dataset) => {
-      dataset.data.push(packet.scaledValue);
-      if (dataset.data.length > 100) {
-        dataset.data.shift();
-        this.scaledChart.data.labels.shift();
-      }
-    });
-    this.scaledChart.update();
-
-    this.rawChart.data.labels.push(this.current++);
-    this.rawChart.data.datasets.forEach((dataset) => {
-      dataset.data.push(packet.rawValue);
-      if (dataset.data.length > 100) {
-        dataset.data.shift();
-        this.rawChart.data.labels.shift();
-      }
-    });
-    this.rawChart.update();
+    ChartProvider.addData(this.scaledChart, packet.scaledValue, this.current+"", 100);
+    ChartProvider.addData(this.rawChart, packet.rawValue, this.current+"", 100);
+    this.current++;
   }
   ionViewDidLeave() {
     clearInterval(this.intervalId);
     this.packetReciever.unsubscribe();
   }
   ionViewDidLoad() {
-    this.scaledChart = new Chart(this.scaledChartCanvas.nativeElement, {
-      type: 'line',
-      options: {
-        legend: {
-          display: false
-        }, tooltips: {
-          enabled: false
-        }
-      }, data: {
-        datasets: [
-          {
-            fill: false,
-            lineTension: 0.1,
-            backgroundColor: "rgba(75,192,192,0.4)",
-            borderColor: "rgba(75,192,192,1)",
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: "rgba(75,192,192,1)",
-            pointBackgroundColor: "#fff",
-            pointBorderWidth: 1,
-            pointRadius: 1,
-            pointHitRadius: 10,
-            data: [],
-            spanGaps: false,
-          }
-        ]
-      }
-    });
-    this.rawChart = new Chart(this.rawChartCanvas.nativeElement, {
-      type: 'line',
-      options: {
-        legend: {
-          display: false
-        }, tooltips: {
-          enabled: false
-        }
-      }, data: {
-        datasets: [
-          {
-            fill: false,
-            lineTension: 0.1,
-            backgroundColor: "rgba(75,192,192,0.4)",
-            borderColor: "rgba(75,192,192,1)",
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: "rgba(75,192,192,1)",
-            pointBackgroundColor: "#fff",
-            pointBorderWidth: 1,
-            pointRadius: 1,
-            pointHitRadius: 10,
-            data: [],
-            spanGaps: false,
-          }
-        ]
-      }
-    });
+    this.scaledChart = ChartProvider.createLineChart(this.scaledChartCanvas.nativeElement);
+    this.rawChart = ChartProvider.createLineChart(this.rawChartCanvas.nativeElement);
   }
 
 }

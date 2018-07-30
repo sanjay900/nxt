@@ -15,14 +15,11 @@
 
 <ion-content padding>
   <ion-card *ngFor="let motor of motors">
-    <ion-card-header>Motor {{getMotorName(motor.port)}}</ion-card-header>
+    <ion-card-header>Motor {{SystemOutputPort[motor.port]}}</ion-card-header>
     <ion-card-content>
-      <p>Tachometer Count: {{motor.tachoCount}}</p>
-      <p>Tachometer Limit: {{motor.tachoLimit}}</p>
-      <p>Block Tachometer Count: {{motor.blockTachoCount}}</p>
-      <p>Rotation Count: {{motor.rotationCount}}</p>
-      <p>Motor power: {{motor.power}}</p>
-      <button (click)="resetMotorStats(motor)" ion-button>Reset Tachometer Count</button>
+      <p>Motor Power: {{motor.power}}</p>
+      <p>Motor Tachometer Count: {{motor.tachoCount}}</p>
+      <button (click)="showMotorGraph(motor)" ion-button>More information</button>
     </ion-card-content>
   </ion-card>
 </ion-content>

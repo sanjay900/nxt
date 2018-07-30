@@ -47,6 +47,7 @@ export class NxtProvider {
   }
 
   readPacket(data: number[]) {
+    console.log(this.buffer);
     let telegramType: number = data.shift();
     let messageType: number = data.shift();
     if (telegramType == TelegramType.REPLY) {
@@ -93,8 +94,7 @@ export class NxtProvider {
 
   /**
    * Write a file to the NXT device
-   * @param {string} fileName the file to write
-   * @param {boolean} autoStart if true, the file will be started on the NXT if it is a program once uploaded.
+   * @param {NXTFile} file the file to write
    */
   writeFile(file: NXTFile) {
     this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + file.name).then(contents => {

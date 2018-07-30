@@ -19,6 +19,7 @@ import {NxtProvider} from '../providers/nxt/nxt';
 import {File} from '@ionic-native/file';
 import {MotorStatusPage} from "../pages/motor-status/motor-status";
 import {FileUploadModule} from "../pages/file-upload/file-upload.module";
+import { ChartProvider } from '../providers/chart/chart';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import {FileUploadModule} from "../pages/file-upload/file-upload.module";
     BluetoothProvider,
     NxtProvider,
     File,
+    ChartProvider,
   ]
 })
 export class AppModule {}
