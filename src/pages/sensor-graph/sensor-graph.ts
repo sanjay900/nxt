@@ -34,7 +34,7 @@ export class SensorGraphPage {
   private static readonly GRAPH_SIZE: number = 50;
 
   constructor(public viewCtrl: ViewController, public nxt: NxtProvider) {
-    this.port = this.viewCtrl.data.port+1;
+    this.port = this.viewCtrl.data.port;
     this.sensor = this.viewCtrl.data.sensor;
 
   }

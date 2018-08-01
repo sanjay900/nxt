@@ -15,7 +15,7 @@
 
 <ion-content padding>
   <ion-card *ngFor="let sensor of sensors">
-    <ion-card-header>Sensor {{sensor.lastPacket.port}}</ion-card-header>
+    <ion-card-header>Sensor {{sensor.lastPacket.port+1}}</ion-card-header>
     <ion-list>
       <ion-item>
         <ion-label>Raw value</ion-label>
