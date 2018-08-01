@@ -4,7 +4,7 @@ import {DirectCommand, InputSensorMode, InputSensorType} from "../../providers/n
 import {Subscription} from "rxjs";
 import {GetInputValues} from "../../providers/nxt/packets/direct/get-input-values";
 import {SetInputMode} from "../../providers/nxt/packets/direct/set-input-mode";
-import {NavController, ViewController} from "ionic-angular";
+import {NavController} from "ionic-angular";
 
 @Component({
   selector: 'sensor-page',
@@ -12,10 +12,10 @@ import {NavController, ViewController} from "ionic-angular";
 })
 export class SensorPage {
   public sensors: SensorStatus[] = [
-    new SensorStatus(this.nxt),
-    new SensorStatus(this.nxt),
-    new SensorStatus(this.nxt),
-    new SensorStatus(this.nxt)
+    new SensorStatus(this.nxt, 0),
+    new SensorStatus(this.nxt, 1),
+    new SensorStatus(this.nxt, 2),
+    new SensorStatus(this.nxt, 3)
   ];
   private intervalId: number;
   private packetReciever: Subscription;
@@ -77,8 +77,8 @@ export class SensorStatus {
   private _lastPacket: GetInputValues = new GetInputValues();
   private _type: InputSensorType;
   private _mode: InputSensorMode;
-  private _port: number;
-  constructor(private nxt: NxtProvider) {};
+
+  constructor(private nxt: NxtProvider, public port: number) {};
 
 
   get lastPacket(): GetInputValues {
@@ -89,7 +89,7 @@ export class SensorStatus {
     this._lastPacket = value;
     this._type = this._lastPacket.type;
     this._mode = this._lastPacket.mode;
-    this._port = this._lastPacket.port;
+    this.port = this._lastPacket.port;
   }
 
   get mode(): InputSensorMode {
@@ -102,11 +102,11 @@ export class SensorStatus {
 
   set mode(value: InputSensorMode) {
     this._mode = value;
-    this.nxt.writePacket(true, SetInputMode.createPacket(this._port, this._type, this._mode));
+    this.nxt.writePacket(true, SetInputMode.createPacket(this.port, this._type, this._mode));
   }
 
   set type(value: InputSensorType) {
     this._type = value;
-    this.nxt.writePacket(true, SetInputMode.createPacket(this._port, this._type, this._mode));
+    this.nxt.writePacket(true, SetInputMode.createPacket(this.port, this._type, this._mode));
   }
 }

@@ -15,7 +15,7 @@ export class MainPage {
   ionViewDidEnter() {
     (<any>navigator).fusion.setMode(()=>{},()=>{},{mode:1});
     let options = {
-      frequency: 1000
+      frequency: 100
     };
     this.watchId = (<any>navigator).fusion.watchSensorFusion(data=>this.sensorUpdate(data),console.log, options);
 

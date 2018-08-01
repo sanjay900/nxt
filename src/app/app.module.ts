@@ -20,6 +20,7 @@ import {File} from '@ionic-native/file';
 import {MotorStatusPage} from "../pages/motor-status/motor-status";
 import {FileUploadModule} from "../pages/file-upload/file-upload.module";
 import { ChartProvider } from '../providers/chart/chart';
+import {KeyboardPage} from "../pages/keyboard/keyboard";
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { ChartProvider } from '../providers/chart/chart';
     MainPage,
     TabsPage,
     SettingsPage,
-    MotorStatusPage
+    MotorStatusPage,
+    KeyboardPage
   ],
   imports: [
     BrowserModule,
@@ -44,7 +46,8 @@ import { ChartProvider } from '../providers/chart/chart';
     MainPage,
     TabsPage,
     SettingsPage,
-    MotorStatusPage
+    MotorStatusPage,
+    KeyboardPage
   ],
   providers: [
     StatusBar,
