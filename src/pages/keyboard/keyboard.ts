@@ -1,6 +1,5 @@
-import { Component, EventEmitter, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
-import { IPianoKey } from './ipiano-key';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
 
@@ -9,9 +8,8 @@ import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
   templateUrl: 'keyboard.html'
 })
 export class KeyboardPage implements OnInit {
-  keyPlayed = new EventEmitter<number>()
-
   private pianoKeys: IPianoKey[];
+  private active: Map<number, boolean> = new Map<number, boolean>();
 
   constructor(private nxt: NxtProvider) {
 
@@ -52,8 +50,17 @@ export class KeyboardPage implements OnInit {
   }
 
   keyPress(keyNumber: number) {
+    //The equation below maps midi notes to their respective frequency
     let f: number = 27.5 * Math.pow(2,((keyNumber + 21)/12));
     this.nxt.writePacket(false, PlayTone.createPacket(f, 100));
+    this.active.set(keyNumber, true);
   }
 
+  keyRelease(keyNumber: number) {
+    this.active.set(keyNumber, false);
+  }
+}
+export interface IPianoKey {
+  whiteKeyId: number;
+  blackKeyId?: number;
 }

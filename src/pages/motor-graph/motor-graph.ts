@@ -56,9 +56,9 @@ export class MotorGraphPage {
 
     this.packetReciever = this.nxt.packetEvent$
       .filter(packet => packet.id == DirectCommand.GET_OUTPUT_STATE)
-      .subscribe(this.sensorUpdate.bind(this));
+      .subscribe(this.motorUpdate.bind(this));
   }
-  sensorUpdate(packet: GetOutputState) {
+  motorUpdate(packet: GetOutputState) {
     ChartProvider.addData(this.powerChart, packet.power, this.current+"", MotorGraphPage.GRAPH_SIZE);
     ChartProvider.addData(this.rotationCountChart, packet.rotationCount, this.current+"", MotorGraphPage.GRAPH_SIZE);
     ChartProvider.addData(this.limitChart, packet.tachoLimit, this.current+"", MotorGraphPage.GRAPH_SIZE);
