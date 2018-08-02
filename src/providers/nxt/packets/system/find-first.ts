@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, NXTFileState, SystemCommand, SystemCommandResponse} from "../../nxt-constants";
+import {NXTFile, SystemCommand} from "../../nxt-constants";
 import {Packet, PacketConstants} from "../packet";
 
 export class FindFirst extends SystemPacket {
@@ -17,15 +17,15 @@ export class FindFirst extends SystemPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    Packet.writeFileName(this.search, data);
-  }
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.handle = data.shift();
     this.file = new NXTFile(Packet.readAsciiz(data, PacketConstants.FILE_NAME_LENGTH));
     this.file.size = Packet.readLong(data);
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    Packet.writeFileName(this.search, data);
   }
 }

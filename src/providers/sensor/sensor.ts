@@ -14,12 +14,6 @@ import {NxtProvider} from "../nxt/nxt";
 import {Subject} from "rxjs";
 import {GetInputValues} from "../nxt/packets/direct/get-input-values";
 
-/*
-  Generated class for the SensorProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
 @Injectable()
 export class SensorProvider {
   private static readonly CM_TO_INCH = 0.393700;
@@ -44,6 +38,7 @@ export class SensorProvider {
     [SensorType.ULTRASONIC_INCH, InputSensorType.LOW_SPEED_9V],
     [SensorType.ULTRASONIC_CM, InputSensorType.LOW_SPEED_9V],
   ]);
+
   constructor(private nxt: NxtProvider) {
     nxt.bluetooth.deviceConnect$.subscribe(() => {
       this.sensors.forEach(this.setSensorType.bind(this));
@@ -68,7 +63,7 @@ export class SensorProvider {
       });
     this.nxt.packetEvent$
       .filter(packet => packet.id == DirectCommand.GET_INPUT_VALUES)
-      .subscribe((packet: GetInputValues)=>{
+      .subscribe((packet: GetInputValues) => {
         if (packet.valid) {
           this.sensorEvent$.next(new SensorData(
             packet.port,
@@ -82,31 +77,12 @@ export class SensorProvider {
 
   }
 
-  private tickNextSensor() {
-    let sensorsExist = this.sensors.filter(type => type != SensorType.NONE).length != 0;
-    if (!sensorsExist) return;
-    this.lastSensorUpdate++;
-    if (this.lastSensorUpdate >= 4) {
-      this.lastSensorUpdate = 0;
-    }
-    switch (this.sensors[this.lastSensorUpdate]) {
-      case SensorType.ULTRASONIC_INCH:
-      case SensorType.ULTRASONIC_CM:
-        this.readI2CRegister(UltrasonicSensorRegisters.MEASUREMENT_BYTE_0, this.lastSensorUpdate);
-        break;
-      case SensorType.NONE:
-        this.tickNextSensor();
-        break;
-      default:
-        this.nxt.writePacket(true, GetInputValues.createPacket(this.lastSensorUpdate));
-        break;
-    }
-  }
   disableAllSensors() {
     this.sensors.forEach((type, port) => {
       this.setSensorType(SensorType.NONE, port);
     })
   }
+
   setSensorType(type: SensorType, port: number) {
     let sensorsExist = this.sensors.filter(type => type != SensorType.NONE).length != 0;
     this.sensors[port] = type;
@@ -123,8 +99,6 @@ export class SensorProvider {
       }, 1000)
     }
   }
-
-
 
   initUS(port: number) {
     setTimeout(() => {
@@ -146,6 +120,27 @@ export class SensorProvider {
           this.nxt.writePacket(true, LsRead.createPacket(port));
         }
       });
+  }
+
+  private tickNextSensor() {
+    let sensorsExist = this.sensors.filter(type => type != SensorType.NONE).length != 0;
+    if (!sensorsExist) return;
+    this.lastSensorUpdate++;
+    if (this.lastSensorUpdate >= 4) {
+      this.lastSensorUpdate = 0;
+    }
+    switch (this.sensors[this.lastSensorUpdate]) {
+      case SensorType.ULTRASONIC_INCH:
+      case SensorType.ULTRASONIC_CM:
+        this.readI2CRegister(UltrasonicSensorRegisters.MEASUREMENT_BYTE_0, this.lastSensorUpdate);
+        break;
+      case SensorType.NONE:
+        this.tickNextSensor();
+        break;
+      default:
+        this.nxt.writePacket(true, GetInputValues.createPacket(this.lastSensorUpdate));
+        break;
+    }
   }
 
 }

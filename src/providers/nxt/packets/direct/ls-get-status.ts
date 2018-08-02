@@ -2,8 +2,8 @@ import {DirectCommand} from "../../nxt-constants";
 import {DirectPacket} from "./direct-packet";
 
 export class LsGetStatus extends DirectPacket {
-  private port: number;
   public bytesReady: number;
+  private port: number;
 
   constructor() {
     super(DirectCommand.LS_GET_STATUS);
@@ -15,14 +15,13 @@ export class LsGetStatus extends DirectPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    data.push(this.port);
-  }
-
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.bytesReady = data.shift();
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    data.push(this.port);
   }
 }

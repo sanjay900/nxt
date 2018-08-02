@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, NXTFileMode, NXTFileState, SystemCommand, SystemCommandResponse} from "../../nxt-constants";
+import {SystemCommand} from "../../nxt-constants";
 import {Packet} from "../packet";
 
 export class SetBrickName extends SystemPacket {
@@ -17,6 +17,6 @@ export class SetBrickName extends SystemPacket {
 
   protected writePacketData(expectResponse: boolean, data: number[]): void {
     super.writePacketData(expectResponse, data);
-    Packet.writeAsciiz(this.name.padEnd(16,"\0"),data);
+    Packet.writeAsciiz(this.name.padEnd(16, "\0"), data);
   }
 }

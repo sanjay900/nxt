@@ -12,4 +12,5 @@ import {ProgressBarModule} from "angular-progress-bar";
     IonicPageModule.forChild(FileUploadPage),
   ],
 })
-export class FileUploadModule {}
+export class FileUploadModule {
+}

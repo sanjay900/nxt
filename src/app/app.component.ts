@@ -1,16 +1,16 @@
-import { Component } from '@angular/core';
-import { Platform } from 'ionic-angular';
-import { StatusBar } from '@ionic-native/status-bar';
-import { SplashScreen } from '@ionic-native/splash-screen';
+import {Component} from '@angular/core';
+import {Platform} from 'ionic-angular';
+import {StatusBar} from '@ionic-native/status-bar';
+import {SplashScreen} from '@ionic-native/splash-screen';
 
-import { TabsPage } from '../pages/tabs/tabs';
+import {TabsPage} from '../pages/tabs/tabs';
 import {BluetoothProvider} from "../providers/bluetooth/bluetooth";
 
 @Component({
   templateUrl: 'app.html'
 })
 export class MyApp {
-  rootPage:any = TabsPage;
+  rootPage: any = TabsPage;
 
   constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen, bluetooth: BluetoothProvider) {
     platform.ready().then(() => {
@@ -19,7 +19,7 @@ export class MyApp {
       statusBar.styleDefault();
       splashScreen.hide();
       // Give the application some time before initializing the bluetooth connection.
-      setTimeout(()=>bluetooth.init(),1000);
+      setTimeout(() => bluetooth.init(), 1000);
     });
   }
 }

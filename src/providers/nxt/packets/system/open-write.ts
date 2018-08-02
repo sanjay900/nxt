@@ -3,8 +3,8 @@ import {NXTFile, NXTFileMode, NXTFileState, SystemCommand, SystemCommandResponse
 import {Packet} from "../packet";
 
 export class OpenWrite extends SystemPacket {
-  public file: NXTFile;
   private static lastFile: NXTFile;
+  public file: NXTFile;
 
   constructor() {
     super(SystemCommand.OPEN_WRITE);
@@ -16,17 +16,6 @@ export class OpenWrite extends SystemPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    Packet.writeFileName(this.file.name, data);
-    //For whatever reason, an extra null terminator is required that is not documented anywhere.
-    data.push(0);
-    Packet.writeLong(this.file.size, data);
-    OpenWrite.lastFile = this.file;
-    this.file.mode = NXTFileMode.WRITE;
-    this.file.status = NXTFileState.OPENING;
-  }
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.file = OpenWrite.lastFile;
@@ -36,5 +25,16 @@ export class OpenWrite extends SystemPacket {
     }
     this.file.response = this.status;
     SystemPacket.filesByHandle[this.file.handle] = this.file;
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    Packet.writeFileName(this.file.name, data);
+    //For whatever reason, an extra null terminator is required that is not documented anywhere.
+    data.push(0);
+    Packet.writeLong(this.file.size, data);
+    OpenWrite.lastFile = this.file;
+    this.file.mode = NXTFileMode.WRITE;
+    this.file.status = NXTFileState.OPENING;
   }
 }

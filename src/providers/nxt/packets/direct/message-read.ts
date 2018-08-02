@@ -21,17 +21,17 @@ export class MessageRead extends DirectPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    data.push(this.remoteInbox, this.localInbox);
-    Packet.writeBoolean(this.removeFromDevice, data);
-  }
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.localInbox = data.shift();
     let messageSize: number = data.shift();
     this.message = Packet.readAsciiz(data, MessageRead.MESSAGE_LENGTH);
     this.message = this.message.substring(0, messageSize);
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    data.push(this.remoteInbox, this.localInbox);
+    Packet.writeBoolean(this.removeFromDevice, data);
   }
 }

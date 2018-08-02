@@ -31,17 +31,12 @@ export class GetOutputState extends DirectPacket {
     return packet;
   }
 
-  public static createMultiple(ports: OutputPort):GetOutputState[] {
+  public static createMultiple(ports: OutputPort): GetOutputState[] {
     let ret: GetOutputState[] = [];
     for (let systemOutputPort of NxtConstants.outputToSystemOutput(ports)) {
       ret.push(GetOutputState.createPacket(systemOutputPort));
     }
     return ret;
-  }
-
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    data.push(this.port);
   }
 
   readPacket(data: number[]): void {
@@ -56,5 +51,10 @@ export class GetOutputState extends DirectPacket {
     this.tachoCount = Packet.readLong(data);
     this.blockTachoCount = Packet.readLong(data);
     this.rotationCount = Packet.readLong(data);
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    data.push(this.port);
   }
 }

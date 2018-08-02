@@ -3,8 +3,8 @@ import {NXTFile, NXTFileMode, NXTFileState, SystemCommand} from "../../nxt-const
 import {Packet} from "../packet";
 
 export class OpenRead extends SystemPacket {
-  public file: NXTFile;
   private static lastFile: NXTFile;
+  public file: NXTFile;
 
   constructor() {
     super(SystemCommand.OPEN_READ);
@@ -16,14 +16,6 @@ export class OpenRead extends SystemPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    Packet.writeFileName(this.file.name, data);
-    OpenRead.lastFile = this.file;
-    this.file.mode = NXTFileMode.READ;
-    this.file.status = NXTFileState.OPENING;
-  }
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     OpenRead.lastFile.handle = data.shift();
@@ -31,5 +23,13 @@ export class OpenRead extends SystemPacket {
     this.file.size = Packet.readLong(data);
     this.file.response = this.status;
     SystemPacket.filesByHandle[this.file.handle] = this.file;
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    Packet.writeFileName(this.file.name, data);
+    OpenRead.lastFile = this.file;
+    this.file.mode = NXTFileMode.READ;
+    this.file.status = NXTFileState.OPENING;
   }
 }

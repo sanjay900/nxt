@@ -1,5 +1,5 @@
-import {Component, NgZone} from '@angular/core';
-import {AlertController, NavController} from 'ionic-angular';
+import {Component} from '@angular/core';
+import {AlertController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetDeviceInfo} from "../../providers/nxt/packets/system/get-device-info";
 import {SystemCommand} from "../../providers/nxt/nxt-constants";
@@ -18,7 +18,7 @@ export class AboutPage {
   public deviceFirmware: GetFirmwareVersion = new GetFirmwareVersion();
   private connectSubscribe: Subscription;
 
-  constructor(public navCtrl: NavController, private nxt: NxtProvider, private alertCtrl: AlertController, public bluetooth: BluetoothProvider, private zone: NgZone) {
+  constructor(private nxt: NxtProvider, private alertCtrl: AlertController, public bluetooth: BluetoothProvider) {
     this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.GET_DEVICE_INFO)
       .subscribe(packet => {
@@ -31,7 +31,7 @@ export class AboutPage {
       });
     this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.SET_BRICK_NAME)
-      .subscribe(()=>setTimeout(this.loadInfo.bind(this),100));
+      .subscribe(this.loadInfo.bind(this));
   }
 
   ionViewDidEnter() {

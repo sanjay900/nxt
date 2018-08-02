@@ -1,6 +1,6 @@
-import { NgModule } from '@angular/core';
-import { IonicPageModule } from 'ionic-angular';
-import { MotorGraphPage } from './motor-graph';
+import {NgModule} from '@angular/core';
+import {IonicPageModule} from 'ionic-angular';
+import {MotorGraphPage} from './motor-graph';
 
 @NgModule({
   declarations: [
@@ -10,4 +10,5 @@ import { MotorGraphPage } from './motor-graph';
     IonicPageModule.forChild(MotorGraphPage),
   ],
 })
-export class MotorGraphPageModule {}
+export class MotorGraphPageModule {
+}

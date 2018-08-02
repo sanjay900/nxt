@@ -19,9 +19,9 @@ import {NxtProvider} from '../providers/nxt/nxt';
 import {File} from '@ionic-native/file';
 import {MotorStatusPage} from "../pages/motor-status/motor-status";
 import {FileUploadModule} from "../pages/file-upload/file-upload.module";
-import { ChartProvider } from '../providers/chart/chart';
+import {ChartProvider} from '../providers/chart/chart';
 import {KeyboardPage} from "../pages/keyboard/keyboard";
-import { SensorProvider } from '../providers/sensor/sensor';
+import {SensorProvider} from '../providers/sensor/sensor';
 
 @NgModule({
   declarations: [
@@ -64,4 +64,5 @@ import { SensorProvider } from '../providers/sensor/sensor';
     SensorProvider,
   ]
 })
-export class AppModule {}
+export class AppModule {
+}

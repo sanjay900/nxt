@@ -1,5 +1,5 @@
 import {Packet} from "../packet";
-import {DirectCommand, InputSensorMode, InputSensorType, SystemOutputPort} from "../../nxt-constants";
+import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt-constants";
 import {DirectPacket} from "./direct-packet";
 
 export class GetInputValues extends DirectPacket {
@@ -23,12 +23,6 @@ export class GetInputValues extends DirectPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    data.push(this.port);
-  }
-
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.port = data.shift();
@@ -40,5 +34,10 @@ export class GetInputValues extends DirectPacket {
     this.normalizedValue = Packet.readUWord(data);
     this.scaledValue = Packet.readSWord(data);
     this.calibratedValue = Packet.readSWord(data);
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    data.push(this.port);
   }
 }

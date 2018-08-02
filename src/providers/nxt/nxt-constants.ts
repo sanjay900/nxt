@@ -1,4 +1,4 @@
-import {EventEmitter, NgZone} from "@angular/core";
+import {EventEmitter} from "@angular/core";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {StopProgram} from "./packets/direct/stop-program";
@@ -264,13 +264,13 @@ export class NXTFile {
   constructor(public name: string) {
   }
 
+  get status() {
+    return this.state;
+  }
+
   set status(status: NXTFileState) {
     this.state = status;
     this.uploadStatus$.emit(this.state);
-  }
-
-  get status() {
-    return this.state;
   }
 
   get percentage(): number {

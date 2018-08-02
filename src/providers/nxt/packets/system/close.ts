@@ -14,12 +14,6 @@ export class Close extends SystemPacket {
     return packet;
   }
 
-  protected writePacketData(expectResponse: boolean, data: number[]): void {
-    super.writePacketData(expectResponse, data);
-    data.push(this.file.handle);
-    this.file.status = NXTFileState.CLOSING;
-  }
-
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.file = SystemPacket.filesByHandle[data.shift()];
@@ -29,5 +23,11 @@ export class Close extends SystemPacket {
     } else {
       this.file.status = NXTFileState.WRITTEN;
     }
+  }
+
+  protected writePacketData(expectResponse: boolean, data: number[]): void {
+    super.writePacketData(expectResponse, data);
+    data.push(this.file.handle);
+    this.file.status = NXTFileState.CLOSING;
   }
 }

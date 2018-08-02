@@ -13,13 +13,45 @@ export class BluetoothProvider {
 
   public deviceConnect$: EventEmitter<String> = new EventEmitter<String>();
   public deviceDisconnect$: EventEmitter<String> = new EventEmitter<String>();
-  private _bluetoothDevices: any[];
-  private _device: any;
   private observer: Subscription;
-  private _status: String;
 
   constructor(private _bluetoothSerial: BluetoothSerial, private appPreferences: AppPreferences, public alertCtrl: AlertController) {
     this._status = "Disconnected";
+  }
+
+  private _bluetoothDevices: any[];
+
+  get bluetoothDevices(): any[] {
+    return this._bluetoothDevices;
+  }
+
+  private _device: any;
+
+  get device(): any {
+    return this._device;
+  }
+
+  set device(device: any) {
+    this._device = device;
+    if (this.connected) {
+      this.observer.unsubscribe();
+    }
+    this.connect();
+    this.appPreferences.store("bluetooth-device", this._device);
+  }
+
+  private _status: String;
+
+  get status(): String {
+    return this._status;
+  }
+
+  get connected(): boolean {
+    return this.observer && !this.observer.closed;
+  }
+
+  get bluetoothSerial(): BluetoothSerial {
+    return this._bluetoothSerial;
   }
 
   init() {
@@ -35,6 +67,16 @@ export class BluetoothProvider {
       this._device = res;
       this.connect();
     });
+  }
+
+  write(data: Uint8Array): Promise<any> {
+    if (!this.connected) return;
+    return this._bluetoothSerial.write(data);
+  }
+
+  read(): Promise<any> {
+    if (!this.connected) return new Promise<any>(() => []);
+    return this._bluetoothSerial.read();
   }
 
   private connect() {
@@ -58,44 +100,5 @@ export class BluetoothProvider {
       buttons: ['OK']
     });
     alert.present();
-  }
-
-  write(data: Uint8Array): Promise<any> {
-    if (!this.connected) return;
-    return this._bluetoothSerial.write(data);
-  }
-
-  read(): Promise<any> {
-    if (!this.connected) return new Promise<any>(() => []);
-    return this._bluetoothSerial.read();
-  }
-
-  get bluetoothDevices(): any[] {
-    return this._bluetoothDevices;
-  }
-
-  get device(): any {
-    return this._device;
-  }
-
-  set device(device: any) {
-    this._device = device;
-    if (this.connected) {
-      this.observer.unsubscribe();
-    }
-    this.connect();
-    this.appPreferences.store("bluetooth-device", this._device);
-  }
-
-  get status(): String {
-    return this._status;
-  }
-
-  get connected(): boolean {
-    return this.observer && !this.observer.closed;
-  }
-
-  get bluetoothSerial(): BluetoothSerial {
-    return this._bluetoothSerial;
   }
 }

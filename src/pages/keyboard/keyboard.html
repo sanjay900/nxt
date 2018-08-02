@@ -1,7 +1,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Play Tone</ion-title>
+    <ion-title>Play Tone - Status: {{bluetooth.status}}</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -12,8 +12,11 @@
     <ul id="piano">
       <li *ngFor="let pianoKey of pianoKeys">
         <div style="height: 0;">&nbsp;</div>
-        <div style="touch-action:none;" [ngClass]="{'down':active.get(pianoKey.whiteKeyId)}" class="anchor" (touchstart)="keyPress(pianoKey.whiteKeyId)" (touchend)="keyRelease(pianoKey.whiteKeyId)"></div>
-        <span *ngIf="pianoKey.blackKeyId" style="touch-action:none;" [ngClass]="{'down':active.get(pianoKey.blackKeyId)}" (touchstart)="keyPress(pianoKey.blackKeyId)" (touchend)="keyRelease(pianoKey.blackKeyId)"></span>
+        <div style="touch-action:none;" [ngClass]="{'down':active.get(pianoKey.whiteKeyId)}" class="anchor"
+             (touchstart)="keyPress(pianoKey.whiteKeyId)" (touchend)="keyRelease(pianoKey.whiteKeyId)"></div>
+        <span *ngIf="pianoKey.blackKeyId" style="touch-action:none;"
+              [ngClass]="{'down':active.get(pianoKey.blackKeyId)}" (touchstart)="keyPress(pianoKey.blackKeyId)"
+              (touchend)="keyRelease(pianoKey.blackKeyId)"></span>
       </li>
     </ul>
   </div>

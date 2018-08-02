@@ -1,6 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, NXTFileState, SystemCommand, SystemCommandResponse} from "../../nxt-constants";
-import {Packet, PacketConstants} from "../packet";
+import {SystemCommand} from "../../nxt-constants";
 
 export class GetFirmwareVersion extends SystemPacket {
   public protocolVersion: string;
@@ -20,7 +19,7 @@ export class GetFirmwareVersion extends SystemPacket {
     let protocolMajor: number = data.shift();
     let firmwareMinor: number = data.shift();
     let firmwareMajor: number = data.shift();
-    this.protocolVersion = protocolMajor+"."+protocolMinor;
-    this.firmwareVersion = firmwareMajor+"."+firmwareMinor;
+    this.protocolVersion = protocolMajor + "." + protocolMinor;
+    this.firmwareVersion = firmwareMajor + "." + firmwareMinor;
   }
 }

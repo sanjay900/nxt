@@ -1,4 +1,4 @@
-import {DirectCommand, InputSensorMode, InputSensorType, SystemOutputPort} from "../../nxt-constants";
+import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt-constants";
 import {DirectPacket} from "./direct-packet";
 
 export class SetInputMode extends DirectPacket {
@@ -20,6 +20,6 @@ export class SetInputMode extends DirectPacket {
 
   protected writePacketData(expectResponse: boolean, data: number[]): void {
     super.writePacketData(expectResponse, data);
-    data.push(this.port,this.type,this.mode);
+    data.push(this.port, this.type, this.mode);
   }
 }

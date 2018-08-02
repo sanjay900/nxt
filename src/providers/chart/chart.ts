@@ -14,6 +14,7 @@ export class ChartProvider {
     chart.update();
 
   }
+
   static createLineChart(nativeElement): Chart {
     return new Chart(nativeElement, {
       type: 'line',

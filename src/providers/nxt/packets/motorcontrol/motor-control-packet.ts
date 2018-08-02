@@ -8,6 +8,7 @@ export class MotorControlPacket extends MessageWrite {
     power = Math.min(power, 200);
     return power;
   }
+
   public static padDigits(number, digits) {
     return Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
   }

@@ -7,7 +7,7 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Sensor status</ion-title>
+    <ion-title>Sensor Status - Status: {{bluetooth.status}}</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -28,7 +28,7 @@
       <ion-item>
         <ion-label>Sensor Type</ion-label>
         <ion-select [(ngModel)]="sensor.type">
-          <ion-option *ngFor="let type of SensorType" [value]="type"> {{type}} </ion-option>
+          <ion-option *ngFor="let type of SensorType" [value]="type"> {{type}}</ion-option>
         </ion-select>
       </ion-item>
       <ion-item>

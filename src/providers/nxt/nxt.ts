@@ -2,14 +2,7 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {AlertController, ModalController} from 'ionic-angular';
-import {
-  DirectCommand,
-  DirectCommandResponse,
-  NxtConstants,
-  NXTFile,
-  TelegramType,
-  UltrasonicSensorRegisters
-} from "./nxt-constants";
+import {DirectCommand, DirectCommandResponse, NxtConstants, NXTFile, TelegramType} from "./nxt-constants";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {Subject, Subscription} from "rxjs";
@@ -21,19 +14,14 @@ import {Subject, Subscription} from "rxjs";
 @Injectable()
 export class NxtProvider {
   public packetEvent$: Subject<Packet> = new Subject<Packet>();
-  private currentProgram: string = null;
   private buffer: number[] = [];
   private uploadFile: Subscription;
 
   constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
-    //Clear state for the current device when it is disconnected.
-    this.bluetooth.deviceDisconnect$.subscribe(() => {
-      this.currentProgram = null;
-    });
     //Start up a thread for reading packets
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
-      while (this.buffer.length >= len+2) {
+      while (this.buffer.length >= len + 2) {
         this.buffer.splice(0, 2);
         this.readPacket(this.buffer.splice(0, len));
         len = this.buffer[0] | this.buffer[1] << 8;
@@ -62,12 +50,32 @@ export class NxtProvider {
       if (packet) {
         packet.readPacket(data);
         //Emit events inside the angular thread so things update correctly
-        this.zone.run(()=>{
+        this.zone.run(() => {
           this.packetEvent$.next(packet);
         });
       } else {
         console.log("Unknown packet id: " + messageType.toString(16));
       }
+    }
+  }
+
+  /**
+   * Write a file to the NXT device
+   * @param {NXTFile} file the file to write
+   */
+  writeFile(file: NXTFile) {
+    this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + file.name).then(contents => {
+      file.readData(Array.from(new Uint8Array(contents)));
+      file.size = contents.byteLength;
+      let uploadModal = this.modalCtrl.create("file-upload", {file: file});
+      uploadModal.present();
+    });
+
+  }
+
+  writePacket(expectResponse: boolean, ...packets: Packet[]) {
+    for (let packet of packets) {
+      this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
   }
 
@@ -94,27 +102,5 @@ export class NxtProvider {
       ]
     });
     alert.present();
-  }
-
-
-  /**
-   * Write a file to the NXT device
-   * @param {NXTFile} file the file to write
-   */
-  writeFile(file: NXTFile) {
-    this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + file.name).then(contents => {
-      file.readData(Array.from(new Uint8Array(contents)));
-      file.size = contents.byteLength;
-      let uploadModal = this.modalCtrl.create("file-upload", {file: file});
-      uploadModal.present();
-    });
-
-  }
-
-
-  writePacket(expectResponse: boolean, ...packets: Packet[]) {
-    for (let packet of packets) {
-      this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
-    }
   }
 }

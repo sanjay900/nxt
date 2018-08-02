@@ -1,17 +1,10 @@
-import {ChangeDetectionStrategy, Component, NgZone} from '@angular/core';
-import {NavController, NavParams} from 'ionic-angular';
+import {Component} from '@angular/core';
+import {NavController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
-import {DirectCommand, OutputMode, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt-constants";
+import {DirectCommand, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt-constants";
 import {Subscription} from "rxjs";
-import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
-
-/**
- * Generated class for the MotorStatusPage page.
- *
- * See https://ionicframework.com/docs/components/#navigation for more info on
- * Ionic pages and navigation.
- */
+import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
 @Component({
   selector: 'page-motor-status',
@@ -23,7 +16,8 @@ export class MotorStatusPage {
   private packetReciever: Subscription;
   private readonly SystemOutputPort = SystemOutputPort;
 
-  constructor(public nxt: NxtProvider, public navCtrl: NavController) {}
+  constructor(public nxt: NxtProvider, public navCtrl: NavController, public bluetooth: BluetoothProvider) {
+  }
 
   motorUpdate(packet: GetOutputState) {
     this.motors[packet.port] = packet;
@@ -38,8 +32,6 @@ export class MotorStatusPage {
     this.packetReciever = this.nxt.packetEvent$
       .filter(packet => packet.id == DirectCommand.GET_OUTPUT_STATE)
       .subscribe(this.motorUpdate.bind(this));
-
-    console.log('ionViewDidLoad MotorStatusPage');
   }
 
   ionViewDidLeave() {
@@ -48,6 +40,6 @@ export class MotorStatusPage {
   }
 
   showMotorGraph(motor: GetOutputState) {
-    this.navCtrl.push("motor-graph",{port: motor.port})
+    this.navCtrl.push("motor-graph", {port: motor.port})
   }
 }
