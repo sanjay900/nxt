@@ -21,6 +21,7 @@ import {MotorStatusPage} from "../pages/motor-status/motor-status";
 import {FileUploadModule} from "../pages/file-upload/file-upload.module";
 import { ChartProvider } from '../providers/chart/chart';
 import {KeyboardPage} from "../pages/keyboard/keyboard";
+import { SensorProvider } from '../providers/sensor/sensor';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import {KeyboardPage} from "../pages/keyboard/keyboard";
     NxtProvider,
     File,
     ChartProvider,
+    SensorProvider,
   ]
 })
 export class AppModule {}

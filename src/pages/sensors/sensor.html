@@ -15,34 +15,24 @@
 
 <ion-content padding>
   <ion-card *ngFor="let sensor of sensors">
-    <ion-card-header>Sensor {{sensor.port+1}}</ion-card-header>
+    <ion-card-header>Sensor {{sensor.data.port+1}}</ion-card-header>
     <ion-list>
       <ion-item>
         <ion-label>Raw value</ion-label>
-        <ion-note item-end>{{sensor.lastPacket.rawValue}}</ion-note>
+        <ion-note item-end>{{sensor.data.rawValue}}</ion-note>
       </ion-item>
       <ion-item>
         <ion-label>Scaled Value</ion-label>
-        <ion-note item-end>{{sensor.lastPacket.scaledValue}}</ion-note>
-      </ion-item>
-      <ion-item *ngIf="sensor.lastPacket.calibrated">
-        <ion-label>Calibrated Value</ion-label>
-        <ion-note item-end>{{sensor.lastPacket.calibratedValue}}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Sensor Mode</ion-label>
-        <ion-select [(ngModel)]="sensor.mode">
-          <ion-option *ngFor="let mode of getSensorModes()" [value]="mode.id"> {{mode.name}} </ion-option>
-        </ion-select>
+        <ion-note item-end>{{sensor.data.scaledValue}}</ion-note>
       </ion-item>
       <ion-item>
         <ion-label>Sensor Type</ion-label>
         <ion-select [(ngModel)]="sensor.type">
-          <ion-option *ngFor="let type of getSensorTypes()" [value]="type.id"> {{type.name}} </ion-option>
+          <ion-option *ngFor="let type of SensorType" [value]="type"> {{type}} </ion-option>
         </ion-select>
       </ion-item>
       <ion-item>
-        <button (click)="showGraph(sensor)" ion-button>Show graph</button>
+        <button (click)="showGraph(sensor.data)" ion-button>Show graph</button>
       </ion-item>
     </ion-list>
   </ion-card>

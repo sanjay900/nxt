@@ -15,7 +15,6 @@ export class SetInputMode extends DirectPacket {
     packet.port = port;
     packet.type = type;
     packet.mode = mode;
-    console.log(packet);
     return packet;
   }
 

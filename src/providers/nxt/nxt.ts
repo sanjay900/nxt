@@ -4,19 +4,15 @@ import {File} from '@ionic-native/file';
 import {AlertController, ModalController} from 'ionic-angular';
 import {
   DirectCommand,
-  DirectCommandResponse, InputSensorMode,
-  InputSensorType,
+  DirectCommandResponse,
   NxtConstants,
   NXTFile,
-  TelegramType
+  TelegramType,
+  UltrasonicSensorRegisters
 } from "./nxt-constants";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {Subject, Subscription} from "rxjs";
-import {SetInputMode} from "./packets/direct/set-input-mode";
-import {LsRead} from "./packets/direct/ls-read";
-import {LsWrite} from "./packets/direct/ls-write";
-import {LsGetStatus} from "./packets/direct/ls-get-status";
 
 
 /**
@@ -37,7 +33,7 @@ export class NxtProvider {
     //Start up a thread for reading packets
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
-      while (this.buffer.length > len+2) {
+      while (this.buffer.length >= len+2) {
         this.buffer.splice(0, 2);
         this.readPacket(this.buffer.splice(0, len));
         len = this.buffer[0] | this.buffer[1] << 8;
@@ -50,20 +46,10 @@ export class NxtProvider {
     this.bluetooth.deviceConnect$.subscribe(() => {
       this.writePacket(true, StartProgram.createPacket(NxtConstants.MOTOR_PROGRAM));
     });
-
     this.uploadFile = this.packetEvent$
       .filter(packet => packet.id == DirectCommand.START_PROGRAM)
       .filter(packet => packet.status == DirectCommandResponse.OUT_OF_RANGE)
       .subscribe(this.missingFileHandler.bind(this));
-    this.packetEvent$.subscribe(console.log);
-    // this.writePacket(true, SetInputMode.createPacket(0, InputSensorType.LOW_SPEED, InputSensorMode.RAW));
-    this.writePacket(true, LsWrite.createPacket(0, [0x02, 0x41, 0x02], 0));
-    setTimeout(()=>{
-      this.writePacket(true, LsWrite.createPacket(0, [0x02, 0x42], 1));
-      setInterval(()=>{
-        this.writePacket(true, LsGetStatus.createPacket(0));
-      },100)
-    },100);
   }
 
   readPacket(data: number[]) {
@@ -128,8 +114,6 @@ export class NxtProvider {
 
   writePacket(expectResponse: boolean, ...packets: Packet[]) {
     for (let packet of packets) {
-      console.log(packet);
-      console.log(new Uint8Array(packet.writePacket(expectResponse)));
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
   }
