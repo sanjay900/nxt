@@ -7,7 +7,7 @@ export class LsWrite extends DirectPacket {
   private rxDataLength: number;
 
   constructor() {
-    super(DirectCommand.LS_GET_STATUS);
+    super(DirectCommand.LS_WRITE);
   }
 
   public static createPacket(port: number, txData: number[], rxDataLength: number) {

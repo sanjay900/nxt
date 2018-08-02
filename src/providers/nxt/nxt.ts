@@ -2,10 +2,21 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {AlertController, ModalController} from 'ionic-angular';
-import {DirectCommand, DirectCommandResponse, NxtConstants, NXTFile, TelegramType} from "./nxt-constants";
+import {
+  DirectCommand,
+  DirectCommandResponse, InputSensorMode,
+  InputSensorType,
+  NxtConstants,
+  NXTFile,
+  TelegramType
+} from "./nxt-constants";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {Subject, Subscription} from "rxjs";
+import {SetInputMode} from "./packets/direct/set-input-mode";
+import {LsRead} from "./packets/direct/ls-read";
+import {LsWrite} from "./packets/direct/ls-write";
+import {LsGetStatus} from "./packets/direct/ls-get-status";
 
 
 /**
@@ -44,6 +55,15 @@ export class NxtProvider {
       .filter(packet => packet.id == DirectCommand.START_PROGRAM)
       .filter(packet => packet.status == DirectCommandResponse.OUT_OF_RANGE)
       .subscribe(this.missingFileHandler.bind(this));
+    this.packetEvent$.subscribe(console.log);
+    // this.writePacket(true, SetInputMode.createPacket(0, InputSensorType.LOW_SPEED, InputSensorMode.RAW));
+    this.writePacket(true, LsWrite.createPacket(0, [0x02, 0x41, 0x02], 0));
+    setTimeout(()=>{
+      this.writePacket(true, LsWrite.createPacket(0, [0x02, 0x42], 1));
+      setInterval(()=>{
+        this.writePacket(true, LsGetStatus.createPacket(0));
+      },100)
+    },100);
   }
 
   readPacket(data: number[]) {
@@ -108,6 +128,8 @@ export class NxtProvider {
 
   writePacket(expectResponse: boolean, ...packets: Packet[]) {
     for (let packet of packets) {
+      console.log(packet);
+      console.log(new Uint8Array(packet.writePacket(expectResponse)));
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
   }

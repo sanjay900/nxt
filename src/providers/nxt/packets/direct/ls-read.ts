@@ -2,13 +2,13 @@ import {DirectCommand} from "../../nxt-constants";
 import {DirectPacket} from "./direct-packet";
 
 export class LsRead extends DirectPacket {
-  private static RX_DATA_SIZE: number = 19;
+  private static RX_DATA_SIZE: number = 20;
   private port: number;
   public bytesRead: number;
   public rxData: number[];
 
   constructor() {
-    super(DirectCommand.LS_GET_STATUS);
+    super(DirectCommand.LS_READ);
   }
 
   public static createPacket(port: number) {

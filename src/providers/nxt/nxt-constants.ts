@@ -122,6 +122,55 @@ export enum SystemCommandResponse {
   ILLEGAL_FILE_HANDLE = 0x93
 }
 
+export enum I2CSensorCommands {
+  READ_VERSION = 0x00,
+  READ_PRODUCT_ID = 0x08,
+  READ_SENSOR_TYPE = 0x10,
+}
+
+export enum UltrasonicSensorRegisters {
+  FACTORY_ZERO = 0x11,
+  FACTORY_SCALE_FACTOR = 0x12,
+  FACTORY_SCALE_DIVISOR = 0x13,
+  MEASUREMENT_UNITS = 0x14,
+  CONTIUNOUS_MEASUREMENT_INTERVAL = 0x40,
+  MEASUREMENT_BYTE_0 = 0x42,
+  MEASUREMENT_BYTE_1 = 0x43,
+  MEASUREMENT_BYTE_2 = 0x44,
+  MEASUREMENT_BYTE_3 = 0x45,
+  MEASUREMENT_BYTE_4 = 0x46,
+  MEASUREMENT_BYTE_5 = 0x47,
+  MEASUREMENT_BYTE_6 = 0x48,
+  MEASUREMENT_BYTE_7 = 0x49,
+  COMMAND = 0x41,
+  ACTUAL_ZERO = 0x50,
+  ACTUAL_SCALE_FACTOR = 0x51,
+  ACTUAL_SCALE_DIVISOR = 0x52
+}
+
+export enum UltrasonicSensorCommands {
+  OFF = 0x00,
+  /**
+   * In this mode the ultrasonic sensor will only make a new measurement every time the command byte is send to the sensor. The sensor will measure distances for up to 8 objects and save the
+   distances within the “Read measurement byte 0 – 7”.
+   * @type {number}
+   */
+  SINGLE_SHOT = 0x01,
+  /**
+   * This is the default mode, where the sensor continuously makes new measurement with the specified interval.
+   * @type {number}
+   */
+  CONTINUOUS_MEASUREMENT = 0x02,
+  /**
+   * Within this mode the sensor will measure whether any other ultrasonic sensors are within the vicinity. With this information a program can evaluate when it is best to make a new
+   measurement which will not conflict with other ultrasonic sensors.
+   * @type {number}
+   */
+  EVENT_CAPTURE = 0x03,
+  REQUEST_WARM_RESET = 0x04
+}
+
+
 export enum OutputMode {
   MOTOR_ON = 0x01,
   BRAKE = 0x02,
