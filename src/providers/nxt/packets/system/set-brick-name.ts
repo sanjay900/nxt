@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand} from "../../nxt-constants";
+import {SystemCommand} from "../../nxt.model";
 import {Packet} from "../packet";
 
 export class SetBrickName extends SystemPacket {

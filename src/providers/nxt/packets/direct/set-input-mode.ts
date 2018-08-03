@@ -1,4 +1,4 @@
-import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt-constants";
+import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class SetInputMode extends DirectPacket {

@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
-import {ConnectionStatus, ConnectionUpdate} from "../nxt/nxt-constants";
+import {ConnectionStatus, ConnectionUpdate} from "../nxt/nxt.model";
 import {BehaviorSubject} from "rxjs";
 
 /**

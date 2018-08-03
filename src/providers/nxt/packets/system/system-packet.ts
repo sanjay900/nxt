@@ -1,5 +1,5 @@
 import {Packet} from "../packet";
-import {NXTFile, TelegramType} from "../../nxt-constants";
+import {NXTFile, TelegramType} from "../../nxt.model";
 
 export abstract class SystemPacket extends Packet {
   public static filesByHandle: Map<number, NXTFile> = new Map();

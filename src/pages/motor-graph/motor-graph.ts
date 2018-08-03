@@ -7,7 +7,7 @@ import {
   OutputRegulationMode,
   OutputRunState,
   SystemOutputPort
-} from "../../providers/nxt/nxt-constants";
+} from "../../providers/nxt/nxt.model";
 import {Subscription} from "rxjs";
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
@@ -45,7 +45,7 @@ export class MotorGraphPage {
   private current: number = 0;
   private packet: GetOutputState = new GetOutputState();
 
-  constructor(public viewCtrl: ViewController, public nxt: NxtProvider, private bluetooth: BluetoothProvider) {
+  constructor(public viewCtrl: ViewController, public nxt: NxtProvider) {
     this.port = this.viewCtrl.data.port;
 
   }

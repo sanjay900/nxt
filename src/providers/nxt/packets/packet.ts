@@ -1,4 +1,4 @@
-import {DirectCommand, DirectCommandResponse, SystemCommand, SystemCommandResponse} from "../nxt-constants";
+import {DirectCommand, DirectCommandResponse, SystemCommand, SystemCommandResponse} from "../nxt.model";
 
 export class PacketConstants {
   static FILE_NAME_LENGTH: number = 20;

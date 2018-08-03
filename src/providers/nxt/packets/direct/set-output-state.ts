@@ -1,5 +1,5 @@
 import {Packet} from "../packet";
-import {DirectCommand, OutputRegulationMode, OutputRunState, SystemOutputPort} from "../../nxt-constants";
+import {DirectCommand, OutputRegulationMode, OutputRunState, SystemOutputPort} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class SetOutputState extends DirectPacket {

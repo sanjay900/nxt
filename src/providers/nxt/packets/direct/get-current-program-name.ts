@@ -1,5 +1,5 @@
 import {Packet, PacketConstants} from "../packet";
-import {DirectCommand} from "../../nxt-constants";
+import {DirectCommand} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class GetCurrentProgramName extends DirectPacket {

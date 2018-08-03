@@ -1,6 +1,5 @@
 import {Component} from '@angular/core';
 import {NxtProvider} from "../../providers/nxt/nxt";
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
 @Component({
   selector: 'page-main',
@@ -11,7 +10,7 @@ export class MainPage {
   private throttle: number;
   private watchId: number;
 
-  constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider) {
+  constructor(public nxt: NxtProvider) {
   }
 
   ionViewDidEnter() {

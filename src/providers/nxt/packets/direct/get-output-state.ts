@@ -1,12 +1,12 @@
 import {Packet} from "../packet";
 import {
   DirectCommand,
-  NxtConstants,
+  NxtModel,
   OutputPort,
   OutputRegulationMode,
   OutputRunState,
   SystemOutputPort
-} from "../../nxt-constants";
+} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class GetOutputState extends DirectPacket {
@@ -33,7 +33,7 @@ export class GetOutputState extends DirectPacket {
 
   public static createMultiple(ports: OutputPort): GetOutputState[] {
     let ret: GetOutputState[] = [];
-    for (let systemOutputPort of NxtConstants.outputToSystemOutput(ports)) {
+    for (let systemOutputPort of NxtModel.outputToSystemOutput(ports)) {
       ret.push(GetOutputState.createPacket(systemOutputPort));
     }
     return ret;

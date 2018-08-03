@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {ConnectionStatus} from "../../providers/nxt/nxt-constants";
+import {ConnectionStatus} from "../../providers/nxt/nxt.model";
 import {AlertController} from "ionic-angular";
 import {Toast} from '@ionic-native/toast';
 

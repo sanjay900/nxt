@@ -1,5 +1,5 @@
 import {Packet} from "../packet";
-import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt-constants";
+import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class GetInputValues extends DirectPacket {

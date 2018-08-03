@@ -314,7 +314,7 @@ export class NXTFile {
 }
 
 
-export class NxtConstants {
+export class NxtModel {
   public static MOTOR_PROGRAM: string = "MotorControl22.rxe";
   public static COMMAND_MAP: Map<DirectCommand | SystemCommand, new () => Packet> = new Map(
     <[DirectCommand | SystemCommand, new () => Packet][]> [

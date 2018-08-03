@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {IonicPage, Platform, ViewController} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {ConnectionStatus, NXTFile, NXTFileState, SystemCommand} from "../../providers/nxt/nxt-constants";
+import {ConnectionStatus, NXTFile, NXTFileState, SystemCommand} from "../../providers/nxt/nxt.model";
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {OpenWrite} from "../../providers/nxt/packets/system/open-write";
 import {Subscription} from "rxjs";
@@ -21,7 +21,7 @@ export class FileUploadPage {
   private status: NXTFileState;
   private writeSubscription: Subscription;
 
-  constructor(private platform: Platform, public viewCtrl: ViewController, public bluetooth: BluetoothProvider, public nxt: NxtProvider) {
+  constructor(private platform: Platform, private viewCtrl: ViewController, public bluetooth: BluetoothProvider, private nxt: NxtProvider) {
     this.file = viewCtrl.data.file;
     this.file.uploadStatus$.subscribe((status: NXTFileState) => {
       if (status == NXTFileState.WRITTEN || status == NXTFileState.ERROR) {
@@ -40,7 +40,6 @@ export class FileUploadPage {
           .subscribe(this.write.bind(this));
         this.write();
       });
-    console.log(OpenWrite.createPacket(this.file).writePacket(true))
     this.nxt.writePacket(true, OpenWrite.createPacket(this.file));
   }
 
@@ -71,7 +70,7 @@ export class FileUploadPage {
   }
 
   canDismiss() {
-    return !this.bluetooth.connected || this.file.hasError() || this.status == NXTFileState.WRITTEN;
+    return !this.bluetooth.connected || this.file.hasError() || this.isWritten();
   }
 
   isWritten() {

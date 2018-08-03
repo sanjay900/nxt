@@ -1,5 +1,5 @@
 import {Packet} from "../packet";
-import {DirectCommand, NxtConstants, OutputPort, SystemOutputPort} from "../../nxt-constants";
+import {DirectCommand, NxtModel, OutputPort, SystemOutputPort} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class ResetMotorPosition extends DirectPacket {
@@ -19,7 +19,7 @@ export class ResetMotorPosition extends DirectPacket {
 
   public static createMultiple(ports: OutputPort, relative: boolean) {
     let ret: ResetMotorPosition[] = [];
-    for (let systemOutputPort of NxtConstants.outputToSystemOutput(ports)) {
+    for (let systemOutputPort of NxtModel.outputToSystemOutput(ports)) {
       ret.push(ResetMotorPosition.createPacket(systemOutputPort, relative));
     }
     return ret;

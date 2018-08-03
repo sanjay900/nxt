@@ -1,4 +1,4 @@
-import {DirectCommand} from "../../nxt-constants";
+import {DirectCommand} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
 
 export class ResetInputScaledValue extends DirectPacket {

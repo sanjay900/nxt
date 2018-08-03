@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, SystemCommand} from "../../nxt-constants";
+import {NXTFile, SystemCommand} from "../../nxt.model";
 import {Packet, PacketConstants} from "../packet";
 
 export class FindNext extends SystemPacket {

@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand} from "../../nxt-constants";
+import {SystemCommand} from "../../nxt.model";
 
 export class GetFirmwareVersion extends SystemPacket {
   public protocolVersion: string;

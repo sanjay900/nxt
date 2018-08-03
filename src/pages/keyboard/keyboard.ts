@@ -2,7 +2,6 @@ import {Component, OnInit} from '@angular/core';
 
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
 @Component({
   selector: 'keyboard',
@@ -12,7 +11,7 @@ export class KeyboardPage implements OnInit {
   private pianoKeys: IPianoKey[];
   private active: Map<number, boolean> = new Map<number, boolean>();
 
-  constructor(private nxt: NxtProvider, private bluetooth: BluetoothProvider) {
+  constructor(private nxt: NxtProvider) {
 
     this.pianoKeys = [
       {whiteKeyId: 16},

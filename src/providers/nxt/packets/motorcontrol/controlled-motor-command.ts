@@ -1,4 +1,4 @@
-import {OutputPort} from "../../nxt-constants";
+import {OutputPort} from "../../nxt.model";
 import {MotorControlPacket} from "./motor-control-packet";
 
 export class ControlledMotorCommand extends MotorControlPacket {

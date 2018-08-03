@@ -3,10 +3,10 @@ import {
   ConnectionStatus,
   DirectCommand,
   InputSensorMode,
-  InputSensorType, NxtConstants,
+  InputSensorType, NxtModel,
   UltrasonicSensorCommands,
   UltrasonicSensorRegisters
-} from "../nxt/nxt-constants";
+} from "../nxt/nxt.model";
 import {LsRead} from "../nxt/packets/direct/ls-read";
 import {SetInputMode} from "../nxt/packets/direct/set-input-mode";
 import {LsWrite} from "../nxt/packets/direct/ls-write";

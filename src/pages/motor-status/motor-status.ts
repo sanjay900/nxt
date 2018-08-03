@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
-import {DirectCommand, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt-constants";
+import {DirectCommand, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt.model";
 import {Subscription} from "rxjs";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 

@@ -6,10 +6,10 @@ import {
   ConnectionStatus,
   DirectCommand,
   DirectCommandResponse,
-  NxtConstants,
+  NxtModel,
   NXTFile,
   TelegramType
-} from "./nxt-constants";
+} from "./nxt.model";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {Subject, Subscription} from "rxjs";
@@ -24,7 +24,7 @@ export class NxtProvider {
   private buffer: number[] = [];
   private uploadFile: Subscription;
 
-  constructor(public bluetooth: BluetoothProvider, private file: File, public modalCtrl: ModalController, public alertCtrl: AlertController, private zone: NgZone) {
+  constructor(private bluetooth: BluetoothProvider, private file: File, private modalCtrl: ModalController, private alertCtrl: AlertController, private zone: NgZone) {
     //Start up a thread for reading packets
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
@@ -41,7 +41,7 @@ export class NxtProvider {
     this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.CONNECTED)
       .subscribe(()=>{
-        this.writePacket(true, StartProgram.createPacket(NxtConstants.MOTOR_PROGRAM));
+        this.writePacket(true, StartProgram.createPacket(NxtModel.MOTOR_PROGRAM));
       });
     this.uploadFile = this.packetEvent$
       .filter(packet => packet.id == DirectCommand.START_PROGRAM)
@@ -54,7 +54,7 @@ export class NxtProvider {
     let messageType: number = data.shift();
     if (telegramType == TelegramType.REPLY) {
       //Look up this packet, and construct it from the available data.
-      let packetCtor: new () => Packet = NxtConstants.COMMAND_MAP.get(messageType);
+      let packetCtor: new () => Packet = NxtModel.COMMAND_MAP.get(messageType);
       let packet: Packet = new packetCtor();
       if (packet) {
         packet.readPacket(data);
@@ -89,7 +89,6 @@ export class NxtProvider {
   }
 
   private missingFileHandler() {
-    this.uploadFile.unsubscribe();
     let alert = this.alertCtrl.create({
       title: 'Motor Control Program Missing',
       message: `The program for controlling NXT motors is missing on your NXT Device.<br/>
@@ -103,7 +102,7 @@ export class NxtProvider {
         {
           text: 'Upload',
           handler: () => {
-            let file: NXTFile = new NXTFile(NxtConstants.MOTOR_PROGRAM);
+            let file: NXTFile = new NXTFile(NxtModel.MOTOR_PROGRAM);
             file.autoStart = true;
             this.writeFile(file);
           }

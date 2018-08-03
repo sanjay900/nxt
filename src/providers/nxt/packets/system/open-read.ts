@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, NXTFileMode, NXTFileState, SystemCommand} from "../../nxt-constants";
+import {NXTFile, NXTFileMode, NXTFileState, SystemCommand} from "../../nxt.model";
 import {Packet} from "../packet";
 
 export class OpenRead extends SystemPacket {

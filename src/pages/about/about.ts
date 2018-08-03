@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {AlertController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetDeviceInfo} from "../../providers/nxt/packets/system/get-device-info";
-import {ConnectionStatus, SystemCommand} from "../../providers/nxt/nxt-constants";
+import {ConnectionStatus, SystemCommand} from "../../providers/nxt/nxt.model";
 import {GetFirmwareVersion} from "../../providers/nxt/packets/system/get-firmware-version";
 import {SetBrickName} from "../../providers/nxt/packets/system/set-brick-name";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";

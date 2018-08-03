@@ -1,9 +1,7 @@
 import {Component} from '@angular/core';
-import {NxtProvider} from "../../providers/nxt/nxt";
 import {Subscription} from "rxjs";
 import {NavController} from "ionic-angular";
 import {SensorData, SensorProvider, SensorType} from "../../providers/sensor/sensor";
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
 @Component({
   selector: 'sensor-page',
@@ -19,7 +17,7 @@ export class SensorPage {
   private SensorType = Object.values(SensorType);
   private packetReciever: Subscription;
 
-  constructor(public nxt: NxtProvider, public navCtrl: NavController, private sensor: SensorProvider, public bluetooth: BluetoothProvider) {
+  constructor(public navCtrl: NavController, private sensor: SensorProvider) {
   }
 
 
