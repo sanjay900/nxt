@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {IonicPage, Platform, ViewController} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {NXTFile, NXTFileState, SystemCommand} from "../../providers/nxt/nxt-constants";
+import {ConnectionStatus, NXTFile, NXTFileState, SystemCommand} from "../../providers/nxt/nxt-constants";
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {OpenWrite} from "../../providers/nxt/packets/system/open-write";
 import {Subscription} from "rxjs";
@@ -47,7 +47,9 @@ export class FileUploadPage {
   ionViewDidEnter() {
     //Disable the back button during this dialog
     this.unregister = this.platform.registerBackButtonAction(() => {}, 100);
-    this.bluetooth.deviceDisconnect$.subscribe(() => this.unregister());
+    this.bluetooth.deviceStatus$
+      .filter(status => status.status == ConnectionStatus.DISCONNECTED)
+      .subscribe(this.unregister.bind(this));
   }
 
   ionViewDidLeave() {

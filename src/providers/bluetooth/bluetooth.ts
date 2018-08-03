@@ -1,8 +1,9 @@
-import {EventEmitter, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
-import {AlertController} from "ionic-angular";
+import {ConnectionStatus, ConnectionUpdate} from "../nxt/nxt-constants";
+import {BehaviorSubject} from "rxjs";
 
 /**
  * This provider facilitates connections over bluetooth, handling emitting connect and disconnect events, and
@@ -11,13 +12,10 @@ import {AlertController} from "ionic-angular";
 @Injectable()
 export class BluetoothProvider {
 
-  public deviceConnect$: EventEmitter<String> = new EventEmitter<String>();
-  public deviceDisconnect$: EventEmitter<String> = new EventEmitter<String>();
+  public deviceStatus$: BehaviorSubject<ConnectionUpdate> = new BehaviorSubject<ConnectionUpdate>(new ConnectionUpdate(ConnectionStatus.DISCONNECTED));
   private observer: Subscription;
 
-  constructor(private _bluetoothSerial: BluetoothSerial, private appPreferences: AppPreferences, public alertCtrl: AlertController) {
-    this._status = "Disconnected";
-  }
+  constructor(private _bluetoothSerial: BluetoothSerial, private appPreferences: AppPreferences) {}
 
   private _bluetoothDevices: any[];
 
@@ -40,12 +38,6 @@ export class BluetoothProvider {
     this.appPreferences.store("bluetooth-device", this._device);
   }
 
-  private _status: String;
-
-  get status(): String {
-    return this._status;
-  }
-
   get connected(): boolean {
     return this.observer && !this.observer.closed;
   }
@@ -55,9 +47,10 @@ export class BluetoothProvider {
   }
 
   init() {
-    this._bluetoothSerial.isEnabled().then(() => this.search(), () => {
-      this._bluetoothSerial.enable().then(() => this.search())
-    })
+    this._bluetoothSerial.isEnabled().then(
+      this.search.bind(this),
+      () => this._bluetoothSerial.enable().then(this.search.bind(this))
+    )
   }
 
   search() {
@@ -80,25 +73,13 @@ export class BluetoothProvider {
   }
 
   private connect() {
-    this._status = "Connecting";
+    this.deviceStatus$.next(new ConnectionUpdate(ConnectionStatus.CONNECTING));
     if (this._device) {
       this.observer = this._bluetoothSerial.connect(this._device).subscribe(() => {
-        this._status = "Connected";
-        this.deviceConnect$.emit(this.device);
-      }, ret => {
-        this.showAlert(ret);
-        this.deviceDisconnect$.emit(this.device);
+        this.deviceStatus$.next(new ConnectionUpdate(ConnectionStatus.CONNECTED));
+      }, reason => {
+        this.deviceStatus$.next(new ConnectionUpdate(ConnectionStatus.DISCONNECTED, reason));
       });
     }
-  }
-
-  private showAlert(message: any) {
-    this._status = "Disconnected";
-    const alert = this.alertCtrl.create({
-      title: 'Error connecting to the selected bluetooth device',
-      subTitle: "Error: " + message + "<br>Try connecting to another device, or power cycling the device you are trying to connect to.",
-      buttons: ['OK']
-    });
-    alert.present();
   }
 }

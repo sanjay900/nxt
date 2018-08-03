@@ -2,7 +2,14 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {AlertController, ModalController} from 'ionic-angular';
-import {DirectCommand, DirectCommandResponse, NxtConstants, NXTFile, TelegramType} from "./nxt-constants";
+import {
+  ConnectionStatus,
+  DirectCommand,
+  DirectCommandResponse,
+  NxtConstants,
+  NXTFile,
+  TelegramType
+} from "./nxt-constants";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {Subject, Subscription} from "rxjs";
@@ -31,9 +38,11 @@ export class NxtProvider {
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
       this.buffer.push(...Array.from(new Uint8Array(data)));
     });
-    this.bluetooth.deviceConnect$.subscribe(() => {
-      this.writePacket(true, StartProgram.createPacket(NxtConstants.MOTOR_PROGRAM));
-    });
+    this.bluetooth.deviceStatus$
+      .filter(status => status.status == ConnectionStatus.CONNECTED)
+      .subscribe(()=>{
+        this.writePacket(true, StartProgram.createPacket(NxtConstants.MOTOR_PROGRAM));
+      });
     this.uploadFile = this.packetEvent$
       .filter(packet => packet.id == DirectCommand.START_PROGRAM)
       .filter(packet => packet.status == DirectCommandResponse.OUT_OF_RANGE)

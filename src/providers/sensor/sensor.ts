@@ -1,8 +1,9 @@
 import {Injectable} from '@angular/core';
 import {
+  ConnectionStatus,
   DirectCommand,
   InputSensorMode,
-  InputSensorType,
+  InputSensorType, NxtConstants,
   UltrasonicSensorCommands,
   UltrasonicSensorRegisters
 } from "../nxt/nxt-constants";
@@ -13,6 +14,7 @@ import {LsGetStatus} from "../nxt/packets/direct/ls-get-status";
 import {NxtProvider} from "../nxt/nxt";
 import {Subject} from "rxjs";
 import {GetInputValues} from "../nxt/packets/direct/get-input-values";
+import {StartProgram} from "../nxt/packets/direct/start-program";
 
 @Injectable()
 export class SensorProvider {
@@ -40,10 +42,12 @@ export class SensorProvider {
   ]);
 
   constructor(private nxt: NxtProvider) {
-    nxt.bluetooth.deviceConnect$.subscribe(() => {
-      this.sensors.forEach(this.setSensorType.bind(this));
-      this.tickNextSensor();
-    });
+    nxt.bluetooth.deviceStatus$
+      .filter(status => status.status == ConnectionStatus.CONNECTED)
+      .subscribe(()=>{
+        this.sensors.forEach(this.setSensorType.bind(this));
+        this.tickNextSensor();
+      });
     this.nxt.packetEvent$
       .filter(packet => packet.id == DirectCommand.LS_READ)
       .subscribe((packet: LsRead) => {

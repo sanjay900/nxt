@@ -1,0 +1,17 @@
+.connecting {
+  animation: connecting 1s linear infinite;
+}
+
+@keyframes connecting {
+  50% {
+    opacity: 0;
+  }
+}
+
+.connected {
+  color: green;
+}
+
+.disconnected {
+  color: red
+}

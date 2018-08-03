@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {AlertController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetDeviceInfo} from "../../providers/nxt/packets/system/get-device-info";
-import {SystemCommand} from "../../providers/nxt/nxt-constants";
+import {ConnectionStatus, SystemCommand} from "../../providers/nxt/nxt-constants";
 import {GetFirmwareVersion} from "../../providers/nxt/packets/system/get-firmware-version";
 import {SetBrickName} from "../../providers/nxt/packets/system/set-brick-name";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
@@ -18,7 +18,7 @@ export class AboutPage {
   public deviceFirmware: GetFirmwareVersion = new GetFirmwareVersion();
   private connectSubscribe: Subscription;
 
-  constructor(private nxt: NxtProvider, private alertCtrl: AlertController, public bluetooth: BluetoothProvider) {
+  constructor(private nxt: NxtProvider, private alertCtrl: AlertController, private bluetooth: BluetoothProvider) {
     this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.GET_DEVICE_INFO)
       .subscribe(packet => {
@@ -36,7 +36,9 @@ export class AboutPage {
 
   ionViewDidEnter() {
     this.loadInfo();
-    this.connectSubscribe = this.bluetooth.deviceConnect$.subscribe(this.loadInfo.bind(this));
+    this.connectSubscribe = this.bluetooth.deviceStatus$
+      .filter(status => status.status == ConnectionStatus.CONNECTED)
+      .subscribe(this.loadInfo.bind(this));
   }
 
   ionViewDidLeave() {

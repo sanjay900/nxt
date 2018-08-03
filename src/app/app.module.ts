@@ -22,6 +22,8 @@ import {FileUploadModule} from "../pages/file-upload/file-upload.module";
 import {ChartProvider} from '../providers/chart/chart';
 import {KeyboardPage} from "../pages/keyboard/keyboard";
 import {SensorProvider} from '../providers/sensor/sensor';
+import {ComponentsModule} from "../components/components.module";
+import {Toast} from "@ionic-native/toast";
 
 @NgModule({
   declarations: [
@@ -37,6 +39,7 @@ import {SensorProvider} from '../providers/sensor/sensor';
   imports: [
     BrowserModule,
     FileUploadModule,
+    ComponentsModule,
     IonicModule.forRoot(MyApp)
   ],
   bootstrap: [IonicApp],
@@ -62,6 +65,7 @@ import {SensorProvider} from '../providers/sensor/sensor';
     File,
     ChartProvider,
     SensorProvider,
+    Toast
   ]
 })
 export class AppModule {

@@ -1,13 +1,7 @@
-<!--
-  Generated template for the MotorStatusPage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Motor Status - Status: {{bluetooth.status}}</ion-title>
+    <ion-title>Motor Status<status></status></ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -15,7 +9,7 @@
 
 <ion-content padding>
   <ion-card *ngFor="let motor of motors">
-    <ion-card-header>Motor {{SystemOutputPort[motor.port]}} - Status: {{bluetooth.status}}</ion-card-header>
+    <ion-card-header>Motor {{SystemOutputPort[motor.port]}}</ion-card-header>
     <ion-card-content>
       <p>Motor Power: {{motor.power}}</p>
       <p>Motor Tachometer Count: {{motor.tachoCount}}</p>

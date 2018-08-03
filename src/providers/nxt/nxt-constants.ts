@@ -29,7 +29,18 @@ import {FindNext} from "./packets/system/find-next";
 import {GetFirmwareVersion} from "./packets/system/get-firmware-version";
 import {SetBrickName} from "./packets/system/set-brick-name";
 import {GetDeviceInfo} from "./packets/system/get-device-info";
+export enum ConnectionStatus {
+  CONNECTED, CONNECTING, DISCONNECTED
+}
+export class ConnectionUpdate {
+  readonly status: ConnectionStatus;
+  readonly statusMessage: string;
 
+  constructor(status: ConnectionStatus, statusMessage?: string) {
+    this.status = status;
+    this.statusMessage = statusMessage;
+  }
+}
 export enum DirectCommand {
   START_PROGRAM = 0x00,
   STOP_PROGRAM = 0x01,
