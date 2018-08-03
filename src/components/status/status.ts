@@ -24,9 +24,13 @@ export class StatusComponent {
       } else {
         let statusMessage = ConnectionStatus[update.status].toLowerCase();
         statusMessage = statusMessage.charAt(0).toLocaleUpperCase()+statusMessage.substring(1);
-        this.toastCtrl.show("NXT "+statusMessage,'3000', 'bottom');
+        this.toastCtrl.showWithOptions({
+          message: "NXT "+statusMessage,
+          duration: 1000,
+          position: 'bottom',
+          addPixelsY: -125
+        }).subscribe(() => {});
       }
-      console.log(this._status);
       this._status = update.status;
     })
   }
