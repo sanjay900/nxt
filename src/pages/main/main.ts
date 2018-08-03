@@ -1,5 +1,7 @@
 import {Component} from '@angular/core';
 import {NxtProvider} from "../../providers/nxt/nxt";
+import {MotorProvider} from "../../providers/motor/motor";
+import {OutputPort} from "../../providers/nxt/nxt.model";
 
 @Component({
   selector: 'page-main',
@@ -10,7 +12,7 @@ export class MainPage {
   private throttle: number;
   private watchId: number;
 
-  constructor(public nxt: NxtProvider) {
+  constructor(public nxt: NxtProvider, public motor: MotorProvider) {
   }
 
   ionViewDidEnter() {
@@ -26,7 +28,7 @@ export class MainPage {
 
   ionViewDidLeave() {
     (<any>navigator).fusion.clearWatch(this.watchId);
-    // this.nxt.stopMotors(OutputPort.A_B_C);
+    this.motor.setMotorPower(OutputPort.A_B_C, 0);
   }
 
   sensorUpdate(data) {
@@ -35,14 +37,14 @@ export class MainPage {
     this.steering *= -5;
     this.throttle = (data.eulerAngles.roll + Math.PI / 2) * 2;
     if (Math.abs(this.throttle) < 0.5) {
-      // this.nxt.stopMotors(OutputPort.B_C);
+      this.motor.setMotorPower(OutputPort.B_C, 0);
     } else {
       if (this.throttle > 1) this.throttle = 1;
       if (this.throttle < -1) this.throttle = -1;
       this.throttle *= -99;
-      // this.nxt.classicMotorCommand(OutputPort.B_C, this.throttle, 0, false);
+      this.motor.setMotorPower(OutputPort.B_C, Math.round(this.throttle));
     }
-    // this.nxt.rotateTowards(OutputPort.A, this.steering);
+    this.motor.rotateTowards(OutputPort.A, Math.round(this.steering));
 
   }
 

@@ -84,6 +84,7 @@ export class NxtProvider {
 
   writePacket(expectResponse: boolean, ...packets: Packet[]) {
     for (let packet of packets) {
+      console.log(new Uint8Array(packet.writePacket(expectResponse)));
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
   }

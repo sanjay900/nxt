@@ -19,7 +19,8 @@ export class MessageWrite extends DirectPacket {
 
   protected writePacketData(expectResponse: boolean, data: number[]): void {
     super.writePacketData(expectResponse, data);
-    data.push(this.inbox, this.message.length);
+    //null terminator
+    data.push(this.inbox, this.message.length+1);
     Packet.writeAsciiz(this.message, data);
   }
 }

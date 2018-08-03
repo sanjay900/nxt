@@ -15,6 +15,7 @@ import {NxtProvider} from "../nxt/nxt";
 import {Subject} from "rxjs";
 import {GetInputValues} from "../nxt/packets/direct/get-input-values";
 import {StartProgram} from "../nxt/packets/direct/start-program";
+import {BluetoothProvider} from "../bluetooth/bluetooth";
 
 @Injectable()
 export class SensorProvider {
@@ -41,8 +42,8 @@ export class SensorProvider {
     [SensorType.ULTRASONIC_CM, InputSensorType.LOW_SPEED_9V],
   ]);
 
-  constructor(private nxt: NxtProvider) {
-    nxt.bluetooth.deviceStatus$
+  constructor(private nxt: NxtProvider, private bluetooth: BluetoothProvider) {
+    this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.CONNECTED)
       .subscribe(()=>{
         this.sensors.forEach(this.setSensorType.bind(this));
