@@ -37,6 +37,7 @@ export class MotorProvider {
       .filter(packet => packet.status == DirectCommandResponse.SUCCESS)
       .subscribe(() => {
         this.writeConfigToNXT();
+        clearInterval(this.motorTimer);
         this.motorTimer = setInterval(() => {
           //If the motors are misconfigured, reset the positions and kill the motors.
           if (this.steeringConfig == SteeringConfig.TANK &&
