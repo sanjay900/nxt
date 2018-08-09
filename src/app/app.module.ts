@@ -24,7 +24,7 @@ import {KeyboardPage} from "../pages/keyboard/keyboard";
 import {SensorProvider} from '../providers/sensor/sensor';
 import {ComponentsModule} from "../components/components.module";
 import {Toast} from "@ionic-native/toast";
-import { MotorProvider } from '../providers/motor/motor';
+import {MotorProvider} from '../providers/motor/motor';
 
 @NgModule({
   declarations: [

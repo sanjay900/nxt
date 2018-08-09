@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
-import {DirectCommand, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt.model";
+import {DirectCommand, MultiOutputPort, SystemOutputPort} from "../../providers/nxt/nxt.model";
 import {Subscription} from "rxjs";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
@@ -26,7 +26,7 @@ export class MotorStatusPage {
   ionViewDidEnter() {
     //Start up a thread for requesting the state of all motors
     this.intervalId = setInterval(() => {
-      this.nxt.writePacket(true, ...GetOutputState.createMultiple(OutputPort.A_B_C));
+      this.nxt.writePacket(true, ...GetOutputState.createMultiple(MultiOutputPort.A_B_C));
     }, 100);
 
     this.packetReciever = this.nxt.packetEvent$

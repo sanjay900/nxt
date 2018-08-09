@@ -3,7 +3,7 @@ import {
   ConnectionStatus,
   DirectCommand,
   InputSensorMode,
-  InputSensorType, NxtModel,
+  InputSensorType,
   UltrasonicSensorCommands,
   UltrasonicSensorRegisters
 } from "../nxt/nxt.model";
@@ -14,7 +14,6 @@ import {LsGetStatus} from "../nxt/packets/direct/ls-get-status";
 import {NxtProvider} from "../nxt/nxt";
 import {Subject} from "rxjs";
 import {GetInputValues} from "../nxt/packets/direct/get-input-values";
-import {StartProgram} from "../nxt/packets/direct/start-program";
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 
 @Injectable()

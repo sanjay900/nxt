@@ -17,7 +17,6 @@
   <ion-list>
     <ion-list-header>Bluetooth Settings</ion-list-header>
     <ion-item>
-      <ion-icon name="bluetooth" item-start></ion-icon>
       <ion-label>Bluetooth Device</ion-label>
       <ion-select interface="action-sheet" [(ngModel)]="bluetooth.device">
         <ion-option *ngFor="let device of bluetooth.bluetoothDevices" [value]="device.id">{{device.name}}</ion-option>
@@ -25,6 +24,44 @@
     </ion-item>
     <button ion-button (click)="bluetooth.connect()" [disabled]="bluetooth.connected">Connect to the device</button>
     <button ion-button (click)="playTone(440, 100)" [disabled]="!bluetooth.connected">Send a test tone</button>
-    <button ion-button (click)="startMotorProgram()" [disabled]="!bluetooth.connected">Start motor program</button>
+    <ion-list-header>Motor Configuration Settings</ion-list-header>
+    <ion-item>
+      <ion-label>Steering Configuration</ion-label>
+      <ion-select interface="action-sheet" [(ngModel)]="motor.steeringConfig">
+        <ion-option *ngFor="let config of STEERING_CONFIGS" [value]="config.value">{{config.formatted}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item *ngIf="isTankControlled()">
+      <ion-label>Left Motor</ion-label>
+      <ion-select interface="action-sheet" [(ngModel)]="motor.leftPort">
+        <ion-option *ngFor="let port of SINGLE_PORT" [value]="port.value">{{port.formatted}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item *ngIf="isTankControlled()">
+      <ion-label>Right Motor</ion-label>
+      <ion-select interface="action-sheet" [(ngModel)]="motor.rightPort">
+        <ion-option *ngFor="let port of SINGLE_PORT" [value]="port.value">{{port.formatted}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item *ngIf="!isTankControlled()">
+      <ion-label>Steering Motor</ion-label>
+      <ion-select interface="action-sheet" [(ngModel)]="motor.steeringPort">
+        <ion-option *ngFor="let port of SINGLE_PORT" [value]="port.value">{{port.formatted}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item *ngIf="!isTankControlled()">
+      <ion-label>Drive Motor(s)</ion-label>
+      <ion-select interface="action-sheet" [(ngModel)]="motor.drivePorts">
+        <ion-option *ngFor="let port of MULTIPLE_PORT" [value]="port.value">{{port.formatted}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>Auxiliary Motor</ion-label>
+      <ion-select interface="action-sheet" [(ngModel)]="motor.auxiliaryPort">
+        <ion-option *ngFor="let port of AUXILIARY_PORT" [value]="port.value">{{port.formatted}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <button ion-button (click)="startSteeringProgram()" [disabled]="!bluetooth.connected">Start steering program</button>
+
   </ion-list>
 </ion-content>
