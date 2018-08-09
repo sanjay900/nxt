@@ -13,6 +13,7 @@ import {OpenWrite} from "../../providers/nxt/packets/system/open-write";
 import {Subscription} from "rxjs";
 import {Write} from "../../providers/nxt/packets/system/write";
 import {Close} from "../../providers/nxt/packets/system/close";
+import {StartProgram} from "../../providers/nxt/packets/direct/start-program";
 
 @IonicPage({
   name: "file-upload"
@@ -98,6 +99,9 @@ export class FileUploadPage {
         .filter((packet: Close) => packet.file == this.file)
         .subscribe(() => {
           subscription.unsubscribe();
+          if (this.file.autoStart) {
+            this.nxt.writePacket(true, StartProgram.createPacket(this.file.name));
+          }
         });
       return;
     }
