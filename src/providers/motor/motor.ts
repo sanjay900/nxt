@@ -40,13 +40,13 @@ export class MotorProvider {
         this.motorTimer = setInterval(() => {
           //If the motors are misconfigured, reset the positions and kill the motors.
           if (this.steeringConfig == SteeringConfig.TANK &&
-            !this.portExists(this.leftPort) &&
-            !this.portExists(this.rightPort)) {
+            !MotorProvider.portAssigned(this.leftPort) &&
+            !MotorProvider.portAssigned(this.rightPort)) {
             this.targetAngle = 0;
             this.power = 0;
           } else if (this.steeringConfig == SteeringConfig.FRONT_STEERING &&
-            !this.portExists(this.drivePorts) &&
-            !this.portExists(this.steeringPort)) {
+            !MotorProvider.portAssigned(this.drivePorts) &&
+            !MotorProvider.portAssigned(this.steeringPort)) {
             this.targetAngle = 0;
             this.power = 0;
           }
@@ -100,7 +100,7 @@ export class MotorProvider {
 
   private writeConfigToNXT() {
     //Note that writing a malformed configuration will result in the program crashing, so this needs to be avoided.
-    if (this.steeringConfig == SteeringConfig.TANK && this.portExists(this.leftPort) && this.portExists(this.rightPort)) {
+    if (this.steeringConfig == SteeringConfig.TANK && MotorProvider.portAssigned(this.leftPort) && MotorProvider.portAssigned(this.rightPort)) {
       this.nxt.writePacket(false, MessageWrite.createPacket(
         MotorProvider.PACKET_MAILBOX,
         MotorProvider.CONFIG_PACKET_ID +
@@ -108,7 +108,7 @@ export class MotorProvider {
         this._leftPort +
         this._rightPort
       ));
-    } else if (this.steeringConfig == SteeringConfig.FRONT_STEERING && this.portExists(this.steeringPort) && this.portExists(this.drivePorts)) {
+    } else if (this.steeringConfig == SteeringConfig.FRONT_STEERING && MotorProvider.portAssigned(this.steeringPort) && MotorProvider.portAssigned(this.drivePorts)) {
       this.nxt.writePacket(false, MessageWrite.createPacket(
         MotorProvider.PACKET_MAILBOX,
         MotorProvider.CONFIG_PACKET_ID +
@@ -247,6 +247,11 @@ export class MotorProvider {
     this.writeConfigToNXT();
   }
 
+  /**
+   * Check if a set port conflicts with any of the drive ports
+   * If it does, clear the drive ports
+   * @param value the port to check
+   */
   private disableDriveConflicts(value: SingleOutputPort) {
     if (value == SingleOutputPort.A) {
       if (this._drivePorts == SingleOutputPort.A || MultiOutputPort.A_B || MultiOutputPort.A_B) {
@@ -264,8 +269,13 @@ export class MotorProvider {
       }
     }
   }
-  //enums do some strange things, this will detect if an enum is set to null
-  private portExists(port: string) {
+
+  /**
+   * All the port enums will respond with "null" if we cast to them from an undefined or blank value
+   * This lets us detect if a port has something assigned to it
+   * @param port the port to check
+   */
+  private static portAssigned(port: string) {
     return port == "null";
   }
 
