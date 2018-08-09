@@ -1,0 +1,12 @@
+[Drawers]
+Motor 1 Connection
+Motor 2 Connection
+Sensor Connection
+Fast Power
+Slow Power
+High Threshold
+Low Threshold
+Direction
+[OpenOnDrop]
+High Threshold
+Low Threshold

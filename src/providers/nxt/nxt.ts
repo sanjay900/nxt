@@ -2,17 +2,11 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {AlertController, ModalController} from 'ionic-angular';
-import {
-  ConnectionStatus,
-  DirectCommand,
-  DirectCommandResponse,
-  NxtModel,
-  NXTFile,
-  TelegramType
-} from "./nxt.model";
+import {ConnectionStatus, DirectCommand, DirectCommandResponse, NXTFile, NxtModel, TelegramType} from "./nxt.model";
 import {Packet} from "./packets/packet";
-import {StartProgram} from "./packets/direct/start-program";
 import {Subject, Subscription} from "rxjs";
+import {MessageRead} from "./packets/direct/message-read";
+import {StartProgram} from "./packets/direct/start-program";
 
 
 /**
@@ -55,8 +49,8 @@ export class NxtProvider {
     if (telegramType == TelegramType.REPLY) {
       //Look up this packet, and construct it from the available data.
       let packetCtor: new () => Packet = NxtModel.COMMAND_MAP.get(messageType);
-      let packet: Packet = new packetCtor();
-      if (packet) {
+      if (packetCtor) {
+        let packet: Packet = new packetCtor();
         packet.readPacket(data);
         //Emit events inside the angular thread so things update correctly
         this.zone.run(() => {
@@ -81,10 +75,11 @@ export class NxtProvider {
     });
 
   }
-
+  last = Date.now();
   writePacket(expectResponse: boolean, ...packets: Packet[]) {
+    console.log("time",Date.now()-this.last,packets);
+    this.last = Date.now();
     for (let packet of packets) {
-      console.log(new Uint8Array(packet.writePacket(expectResponse)));
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
   }

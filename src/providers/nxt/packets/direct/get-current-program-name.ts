@@ -6,7 +6,7 @@ export class GetCurrentProgramName extends DirectPacket {
   public programName: string;
 
   constructor() {
-    super(DirectCommand.START_PROGRAM);
+    super(DirectCommand.GET_CURRENT_PROGRAM_NAME);
   }
 
 

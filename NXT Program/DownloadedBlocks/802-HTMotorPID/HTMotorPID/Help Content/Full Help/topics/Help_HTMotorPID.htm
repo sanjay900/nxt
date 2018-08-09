@@ -1,0 +1,209 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head profile="http://gmpg.org/xfn/11">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<title>HiTechnic Motor PID Block</title>
+
+
+<link href="../style.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../scripts.js"></script>
+
+<!--[if lt IE 7]>
+<script type="text/javascript" src="../pngfix.js"></script>
+<![endif]-->
+
+</head>
+
+<body onload="initialize();">
+
+	<!--[if IE]>
+	<iframe src="ienotice.html" frameborder="0" scrolling="No" allowtransparency="true" id="ienotice_frame" /></iframe>	
+	<![endif]-->
+
+	<img src="../topics/HTMotorPID Files/HTMotorPID Block.png" alt="Icon of block" />
+<h1>HiTechnic Motor PID Block</h1> 
+<div class="box" style="width: 887; height: 2570">
+    <p>This block uses a PID (Proportional-Integral-Derivative) controller to control an NXT motor to power it toward a specified Set Point position.  The block can be used either in a loop, where each time through the loop it will update the power, or it can be used stand-alone with the Wait for Completion option set.  The block also supports several types of Reset actions to establish a reference position based on either the current position or one or both mechanical limits.</p>
+    <div class="note"><p><img src="../images/icons/see-also.png" width="36" height="61" align="left" />A PID controller is a bit complicated but it is not necessary to fully understand how it works in order to use this block.  This block is useful when you have a motor operating something like a robotic arm or a gripper mechanism, where you need to accurately control the position of the motor.  It is less likely to be useful for controlling a driving motor where you may be more interested in controlling speed, distance or synchronization with another motor.  In that case use the Motor or Move blocks.
+    </div>
+<h2>Features</h2>
+    <ul>
+    <li>Implements a PID controller to control power to drive a motor toward a specified Set Point.</li>
+    <li>Can be used either in a loop or stand-alone with Wait for Completion checked.</li>
+    <li>Can reset its reference position (or zero position) based on mechanical limits of motor travel.</li>
+    <li>Multiple blocks can be used to control up to all three NXT motors.</li>
+    <li>Multiple blocks can be used either in a single loop or in separate threads.</li>
+    <li>Self regulating.  Does not require precise loop timing.</li>
+    <li>User adjustable PID constants based on Standard Form of PID equation.  Constants are independent of loop interval timing.</li>
+    </ul>
+
+<h2>Using the HiTechnic Motor PID Block</h2>
+	<!-- Image of block -->
+	<p><img src="../topics/HTMotorPID Files/HTMotorPID1.png" alt="Image of block" /></p>
+	<ol>
+		<li>The block’s data hub will open automatically when the block is placed in the work area. Use this plug to pass in the Set Point.</li> 
+		<li>At Set Point? This output will be true if the motor has reached the Set Point and is no longer moving.</li>
+	</ol>
+	<p>The block can be used two different ways, either stand-alone or in a loop.  When used stand-alone, the Wait for Completion option should be checked.  When used this way, the block will control the motor until the motor has reached, and stopped, at the specified Set Point position.  When this block completes and execution continues with the next block in your program, you can be assured that the motor will be stopped, positioned at the specified Set Point, and power will be 0.  Note that the output At Set Point? will always be True when Wait For Completion is checked.</p>
+	<p>If the desired Set Point changes as your program runs, for example if you want the motor position to respond to data from a sensor, then the block should be used in a loop and without Wait for Completion checked.  For example, if you want the motor to follow the position of the Angle sensor, then it should be used like this:<p>
+	<p><img src="../topics/HTMotorPID Files/HTMotorPIDInALoop.png" alt="Image of block in a loop" /></p>
+	<p>In this program the Angle Sensor's Accumulated Angle value is first read outside the loop to get its initial position.  In the loop the current Accumulated Angle value is subtracted by the initial position to get the amount that the angle has changed.  This value is then passed to the Set Point of the PID Block which will make the motor drive toward this new angle position.  When this program is run, any change to the Angle sensor will be followed by the motor.</p>
+	<p>Note that when Wait For Completion is not checked, the motor power is just updated and then the block continues execution in your program.  If you use the PID Block in a loop that exits while the motor is still powered, you will need to use a Motor block to stop the motor.</p>
+	
+<h2>Configuring the HiTechnic Motor PID Block</h2> 
+	<!-- Image of configuration panel -->
+	<p><img src="../topics/HTMotorPID Files/HTMotorPIDControl1.png" alt="Image of configuration panel" /></p>
+	<ol>
+	<li>Select NXT Motor output port.</li>
+	<li>Enter the Set Point position if not passed in with a data wire.</li>
+	<li>Specify the Max Power used in driving the motor.</li>
+	<li>Select if you want this block to continue to control the motor until the desired Set Point is reached.  If not selected, the block should be used in a loop.</li>
+	<li>To operate the PID controller function select <strong>Power Toward Set Point</strong>; otherwise choose one of the Reset actions (described below.)</li>
+	<li>Click to show PID controller equation and to edit the PID constants.  Changing the constants is usually not necessary.</li>
+	</ol>
+<h2>Resetting the reference position</h2>
+	<p>For some robots, it will be important to establish a reference position for the PID block.  When you start your NXT-G program, the start position of the motors is by default considered position 0.  Since the initial position of the motors may vary, this start position may not be very useful.  For example, if you have a robotic arm which needs to move between a low position and a high position that is 100 degrees apart, you can't Motor 100 degrees forward if you don't know the start position since this may go beyond the mechanical limit of travel.  The solution is to use one of the Reset actions to establish the reference position.  The Motor PID block supports four different Reset actions:<p>
+	<ul>
+	<li>Reset at Current Position - this is useful when you have a sensor like a Touch sensor that can detect a reference position.  For example in your robot you may start with driving the motor until the touch sensor is pressed and then use the PID Block to reset the position based on the current position of the motor.  The passed in Set Point value will be assigned to this current position.</li>
+	<li>Reset at Forward Limit - this action will drive the motor using the specified Max Power until the motor reaches the mechanical limit of travel.  The power used here should be low enough to ensure that it does not damage your robot but high enough to ensure it does reach the mechanical limit.  Once the forward limit is hit, the block will assign the current Set Point value to that position.</li>
+	<li>Reset at Backward Limit - this action will drive the motor in reverse using Max Power until the backward mechanical limit is found.  Once at the limit, the Set Point value will be assigned this position.</li>
+	<li>Rest at Mid-point of Limits - with this action the motor will first be driven to the forward mechanical limit, then reversed to the backward limit.  Then the mid point will be calculated and the Set Point will be assigned to this mid-point position.  This reset option is useful, for example, when you use a motor to control a steering mechanism and you want the 0 position to be in between the mechanical limits.</li>
+	</ul>
+<h2>About the PID Controller</h2>    
+    <p>A PID controller is a feedback control mechanism that takes multiple things into account to control a device to operate it toward a specified set point.  This block uses a PID controller to adjust the power to an NXT motor to drive it toward a user specified Set Point position.  A PID controller takes its name from the three terms used in the calculation:</p>
+    <ul>
+    <li><i>Proportion - </i>this term is based on the error between the Set Point and the current position.  This is the main source of power in the controller.  The further the motor is from the Set Point, the more power is applied.</li>
+    <li><i>Integral - </i> is the accumulation of error over time.  This term is most relevant when the motor is close to the Set Point but not quite there.</li>  
+    <li><i>Derivative - </i> is the rate of change of error.  This is essentially the speed of the motor and prevents the motor from overshooting the Set Point by effectively slowing down if approaching the Set Point too fast.</li>
+    </ul>
+	<p>The block is based on a PID controller form known as standard form.  In this form the proportion constant is applied to the derivative and integral terms in additon to the proportional term. This results in simpler units for the integral and derivative constants, in this case both of these constants are in milliseconds.</p>
+	<img src="../topics/HTMotorPID Files/PIDEq.png" alt="PID Equation" />
+	<p>The constant <i>Kp</i>, which is the proportional constant, is multiplied by a three term equation:</p>
+	<ol>
+	<li><i>e(t)</i> is the error term, the difference between the Set Point and the current motor position, in degrees.  For example, if the Set Point is 100 and the current position is 90, then the error is 10 degrees.</li>
+	<li>The next term is the Integral term, this is the accumulation of error over time.  Each sample is multiplied by the interval time, and then added to a stored variable.  The units for the integral is degree milliseconds.  For example, if the motor has temporarily stalled 2 degrees from the Set Point for 1 second, then the integral value will be 2000 deg ms.  Since the integral is divided by the constant <i>Ti</i>, which is in ms, the resultant value is in degrees.  The purpose of this term is to make sure the motor reaches the Set Point.  When the error is small, the proportion term is sometimes too low to overcome the load or friction, since the error accumulates with this term, eventually the value will be high enough to reach the Set Point.</li>
+	<li>The third term is the Derivative term, this is the rate of change in error.  The change in error is divided by time to make make this value in degrees per millisecond.  The constant <i>Td</i>, also in ms, is multiplied by this value to make this term also in degrees.  The purpose of this term is to avoid overshoot by reducing or negating power if approaching the Set Point too quickly.</li>
+	</ol>
+	<p>Since the three terms are now in degrees, they can be added together and multiplied by the <i>Kp</i> constant, which is in power per degrees, to get the motor power value.<p>
+	<p>A few extra details.  Before power is applied to the motor, the value is limited to the range <i>-Max Power</i> to <i>Max Power</i>.  The integral term also gets some special attention to prevent something known as integral windup, a phenomena where the integral term has an accumulated value prior to reaching the Set Point causing the controller to overshoot and then preventing the controller from going back to the Set Point until the integral terms winds down.</p>
+
+<h2>About using Data Wires</h2> 
+	<p>Open a block’s data hub by clicking the tab at the lower left edge of the block after it has been placed on the work area.</p>
+	<!-- Image showing unopened tab on a generic block -->
+	<p><img src="../images/connections/helpadd_01.png" alt="Image showing unopened tab on a generic block" width="76" height="80" /></p>
+	<p>Data wires carrying input information to a block are connected to the plugs on the left side of its data hub. Data wires carrying output information are connected to the plugs on the right side.</p>
+	<!-- Image of data wires -->
+	<p><img src="../images/connections/helpadd_02.png" alt="Image of data wires" width="150" height="171" /></p>
+	<p>[A] Input plug<br />
+	[B] Output plug<br />
+	[C] Number data wire (yellow)<br />
+	[D] Logic data wire (green)<br />
+	[E] Text data wire (orange)<br />
+	[F] Broken data wire (gray)</p>
+	<h3>Passing data from the input plug to the output plug</h3>
+	<p>If an input plug has a corresponding output plug (see A above), the input data will pass through from the input plug to the output plug without being changed. In this case, you can only use the output plug if the input plug is connected to an input data wire; connecting an output data wire to such an output plug without a connected input data wire will cause the output data wire to be “broken” (and colored gray).</p>
+	<h3>Data wires carry specific types of data</h3>
+	<p>Each data wire carries a specific type of data between blocks. For example, if a data wire is dragged from a logic plug on a block’s data hub, it can only be connected to a logic plug on another block’s data hub. The chart below shows what kind of data each plug can accept or send out.</p>
+	<h3>Data wire colors</h3>
+	<p>Data wires are identified with specific colors: wires carrying number data are colored yellow, wires carrying logic data are colored green, and wires carrying text data are colored orange.</p>
+	<h3>“Broken” data wires</h3>
+	<p>If you try to connect a data wire to a plug of the wrong data type, the data wire will be broken (and colored gray).  You will not be able to download your program if a data wire is broken.</p>
+	<p>If you click a broken wire you can read why it is broken in the small help window in the lower right corner of the work area.</p>
+	<h3>Data must be within the possible range of the plug</h3>
+	<p>If an input data wire transmits a value outside the possible range of the plug it is connected to, the block will either ignore the value or change it to a value within its range.  For plugs that allow just a few input values (example: just 0, 1, or 2), the plug will ignore the input if a value arrives outside its range.</p>
+	<p>For plugs that accept larger input ranges (example: 0 – 100), the plug will force any input outside its range to fit.  For example, if a Move block’s Power plug receives an input value of 150, the block will change the input value to 100 (i.e., a number within the Power plug’s range).</p> 
+<h3>This chart shows the different characteristics of the plugs on the Motor PID block's data hub: </h3>
+    <table>
+      <tr>
+        <td></td>
+        <td>Plug </td>
+        <td>Data Type </td>
+        <td>Possible Range </td>
+        <td>What the Values Mean </td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="Port" src="../images/connections/helpadd_port.png" width="41" /></td>
+        <td>Port </td>
+        <td>Number </td>
+        <td>1 - 3 </td>
+        <td> 1 = A, 2 = B, 3 = C </td>
+      </tr>
+	  <tr>
+        <td><img height="25" alt="Action" src="../images/connections/helpadd_action.png" width="41" /></td>
+        <td>Action</td>
+        <td>Number</td>
+        <td>0 - 4</td>
+        <td>0 = Power Toward Set Point<br />
+		1 = Reset at Current position<br />
+		2 = Reset at Forward Limit<br />
+		3 = Reset at Backward Limit<br />
+		4 = Reset at Mid-point of Limits</td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="SetPoint" src="../images/connections/helpadd_number.png" width="41" /></td>
+        <td>Set Point</td>
+        <td>Number</td>
+		<td>32 bit signed value</td>
+        <td>If Action is <strong>Power Toward Set Point</strong> then target motor position.<br />
+		If one of the Reset actions, then it is the value assigned to the reference position.</td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="Max Power" src="../images/connections/helpadd_power.png" width="41" /></td>
+        <td>Max Power </td>
+        <td>Number </td>
+        <td>0 - 100 </td>
+        <td>Max Power used by PID controller.  Also specifies power used to find mechanical limits during Reset.</td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="WaitForCompletion" src="../images/connections/helpadd_yesno.png" width="41" /></td>
+        <td>Wait for Completion</td>
+        <td>Logic </td>
+        <td>True/False </td>
+        <td>True = Motor will get to Set Point before continuing.<br />
+      False = Just update power.  Should be used in loop.</td>
+      </tr>
+	  <tr>
+        <td><img height="25" alt="Error" src="../images/connections/helpadd_numberout.png" width="41" /></td>
+        <td>Error</td>
+        <td>Number</td>
+        <td>32 bit signed value</td>
+        <td>Difference between Set Point and current motor position.</td>
+      </tr>
+	  <tr>
+        <td><img height="25" alt="At Set Point?" src="../images/connections/helpadd_logicout.png" width="41" /></td>
+        <td>At Set Point?</td>
+        <td>Logic</td>
+        <td>True/False</td>
+        <td>True = Motor at Set Point.<br />
+		False = Motor not at Set Point.</td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="Kp" src="../images/connections/helpadd_number.png" width="41" /></td>
+        <td>Kp</td>
+        <td>Number</td>
+		<td>32 bit signed value</td>
+        <td>Proportion constant.  Units are power/degree-of-error.  Default value is 4.</td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="Ti" src="../images/connections/helpadd_number.png" width="41" /></td>
+        <td>Ti</td>
+        <td>Number</td>
+		<td>32 bit signed value</td>
+        <td>Integral constant.  Units in milliseconds.  Default value is 200.</td>
+      </tr>
+      <tr>
+        <td><img height="25" alt="Td" src="../images/connections/helpadd_number.png" width="41" /></td>
+        <td>Td</td>
+        <td>Number</td>
+		<td>32 bit signed value</td>
+        <td>Derivative constant.  Units in milliseconds Default value is 40.</td>
+      </tr>
+    </table>
+<p>For more information, program examples, product support and more, visit <a href="http://www.hitechnic.com">www.hitechnic.com</a></p>	
+</div>
+
+		
+</body>
+</html>

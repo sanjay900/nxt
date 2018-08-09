@@ -1,45 +1,67 @@
 import {Injectable} from '@angular/core';
 import {NxtProvider} from "../nxt/nxt";
-import {DirectCommand, NxtModel, OutputMode, OutputPort} from "../nxt/nxt.model";
-import {ClassicMotorCommand} from "../nxt/packets/motorcontrol/classic-motor-command";
-import {GetOutputState} from "../nxt/packets/direct/get-output-state";
-import {Subscription} from "rxjs";
-import {SetOutputState} from "../nxt/packets/direct/set-output-state";
-import {ControlledMotorCommand} from "../nxt/packets/motorcontrol/controlled-motor-command";
+import {ConnectionStatus, DirectCommand, DirectCommandResponse, OutputPort} from "../nxt/nxt.model";
+import {BluetoothProvider} from "../bluetooth/bluetooth";
+import {MessageWrite} from "../nxt/packets/direct/message-write";
 
-/*
-  Generated class for the MotorProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
 @Injectable()
 export class MotorProvider {
+  private targetAngle: number = 0;
+  private hasAngle: boolean = false;
+  private power: number = 0;
+  private motorTimer: number = 0;
 
-  public motors: GetOutputState[] = [new GetOutputState(), new GetOutputState(), new GetOutputState()];
-  private intervalId: number;
-  private packetReciever: Subscription;
-
-  constructor(public nxt: NxtProvider) {
-    this.intervalId = setInterval(() => {
-      this.nxt.writePacket(true, ...GetOutputState.createMultiple(OutputPort.A_B_C));
-    }, 10);
-
-    this.packetReciever = this.nxt.packetEvent$
-      .filter(packet => packet.id == DirectCommand.GET_OUTPUT_STATE)
-      .subscribe(this.motorUpdate.bind(this));
+  public static padDigits(number, digits) {
+    let start = number < 0? "-":"0";
+    number = Math.abs(number);
+    return start+Array(Math.max(digits - String(number).length + 1, 0)).join('0') + number;
   }
 
-  motorUpdate(packet: GetOutputState) {
-    this.motors[packet.port] = packet;
+  constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider) {
+    this.nxt.packetEvent$
+      .filter(packet => packet.id == DirectCommand.START_PROGRAM)
+      .filter(packet => packet.status == DirectCommandResponse.SUCCESS)
+      .subscribe(()=>{
+        clearInterval(this.motorTimer);
+        this.writeTankSteeringConfig(OutputPort.B, OutputPort.C);
+        this.motorTimer = setInterval(() => {
+          this.nxt.writePacket(false, MessageWrite.createPacket(0, "A" +
+            MotorProvider.padDigits(this.targetAngle, 3) +
+            MotorProvider.padDigits(this.power,3)));
+        }, 100);
+      });
   }
 
   public setMotorPower(ports: OutputPort, power: number) {
-    this.nxt.writePacket(false, ClassicMotorCommand.createMotorPacket(ports, power, 0, false));
+    this.power = power;
   }
 
   public rotateTowards(port: OutputPort, angle: number) {
-    this.nxt.writePacket(false, SetOutputState.createPacket(NxtModel.outputToSystemOutput(port)[0],0,0,0,0,0,0));
-    this.nxt.writePacket(false, ControlledMotorCommand.createMotorPacket(port, 100, this.motors[port].rotationCount,OutputMode.MOTOR_ON | OutputMode.BRAKE | OutputMode.REGULATED));
+    this.targetAngle = angle;
+    this.hasAngle = true;
   }
+
+  public writeTankSteeringConfig(leftPort: OutputPort, rightPort: OutputPort) {
+    //A = writeMotor (FRONT,DRIVE) | (LEFT,RIGHT)
+    //B = writeConfig (0,FRONT,DRIVE) | (1,LEFT,RIGHT)
+    if (leftPort > OutputPort.C || rightPort > OutputPort.C) {
+      console.log("This command only accepts a single drive motor");
+      return;
+    }
+    this.nxt.writePacket(false, MessageWrite.createPacket(0, "B" + SteeringConfig.TANK + leftPort + rightPort));
+  }
+
+  public writeFrontSteeringConfig(steeringPort: OutputPort, drivePorts: OutputPort) {
+    //A = writeMotor (STEERING,POWER)
+    //B = writeConfig (0,FRONT,DRIVE) | (1,LEFT,RIGHT)
+    if (steeringPort > OutputPort.C) {
+      console.log("This command only accepts a single steering motor");
+      return;
+    }
+    this.nxt.writePacket(false, MessageWrite.createPacket(0, "B" + SteeringConfig.FRONT_STEERING + steeringPort + drivePorts));
+  }
+}
+
+export enum SteeringConfig {
+  FRONT_STEERING = "0", TANK = "1"
 }

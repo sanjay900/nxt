@@ -21,7 +21,7 @@ export class StatusComponent {
     this.bluetooth.deviceStatus$.subscribe(update => {
       if (update.status == ConnectionStatus.DISCONNECTED && this._status == ConnectionStatus.CONNECTING) {
         this.showAlert(update.statusMessage);
-      } else {
+      } else if (this._status) {
         let statusMessage = ConnectionStatus[update.status].toLowerCase();
         statusMessage = statusMessage.charAt(0).toLocaleUpperCase()+statusMessage.substring(1);
         this.toastCtrl.showWithOptions({

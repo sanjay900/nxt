@@ -34,14 +34,14 @@ export class MainPage {
   sensorUpdate(data) {
     this.steering = data.eulerAngles.pitch;
     this.steering *= 180 / Math.PI;
-    this.steering *= -5;
+    this.steering *= -0.5;
     this.throttle = (data.eulerAngles.roll + Math.PI / 2) * 2;
     if (Math.abs(this.throttle) < 0.5) {
       this.motor.setMotorPower(OutputPort.B_C, 0);
     } else {
       if (this.throttle > 1) this.throttle = 1;
       if (this.throttle < -1) this.throttle = -1;
-      this.throttle *= -99;
+      this.throttle *= -100;
       this.motor.setMotorPower(OutputPort.B_C, Math.round(this.throttle));
     }
     this.motor.rotateTowards(OutputPort.A, Math.round(this.steering));

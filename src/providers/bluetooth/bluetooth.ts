@@ -3,7 +3,7 @@ import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
 import {ConnectionStatus, ConnectionUpdate} from "../nxt/nxt.model";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 
 /**
  * This provider facilitates connections over bluetooth, handling emitting connect and disconnect events, and
@@ -12,7 +12,7 @@ import {BehaviorSubject} from "rxjs";
 @Injectable()
 export class BluetoothProvider {
 
-  public deviceStatus$: BehaviorSubject<ConnectionUpdate> = new BehaviorSubject<ConnectionUpdate>(new ConnectionUpdate(ConnectionStatus.DISCONNECTED));
+  public deviceStatus$: Subject<ConnectionUpdate> = new BehaviorSubject<ConnectionUpdate>(new ConnectionUpdate(ConnectionStatus.DISCONNECTED));
   private observer: Subscription;
 
   constructor(private _bluetoothSerial: BluetoothSerial, private appPreferences: AppPreferences) {}

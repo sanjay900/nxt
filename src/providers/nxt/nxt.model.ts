@@ -209,13 +209,14 @@ export enum SystemOutputPort {
 }
 
 export enum OutputPort {
-  A = "0",
-  B = "1",
-  C = "2",
-  A_B = "3",
-  A_C = "4",
-  B_C = "5",
-  A_B_C = "6"
+  NONE = "0",
+  A = "1",
+  B = "2",
+  C = "3",
+  A_B = "4",
+  A_C = "5",
+  B_C = "6",
+  A_B_C = "7"
 }
 
 export enum InputSensorType {
@@ -315,7 +316,7 @@ export class NXTFile {
 
 
 export class NxtModel {
-  public static MOTOR_PROGRAM: string = "MotorControl22.rxe";
+  public static MOTOR_PROGRAM: string = "SteeringControl.rxe";
   public static COMMAND_MAP: Map<DirectCommand | SystemCommand, new () => Packet> = new Map(
     <[DirectCommand | SystemCommand, new () => Packet][]> [
       [DirectCommand.START_PROGRAM, StartProgram],
@@ -327,7 +328,6 @@ export class NxtModel {
       [DirectCommand.GET_OUTPUT_STATE, GetOutputState],
       [DirectCommand.GET_INPUT_VALUES, GetInputValues],
       [DirectCommand.RESET_INPUT_SCALED_VALUE, ResetInputScaledValue],
-      [DirectCommand.MESSAGE_WRITE, MessageWrite],
       [DirectCommand.RESET_MOTOR_POSITION, ResetMotorPosition],
       [DirectCommand.GET_BATTERY_LEVEL, GetBatteryLevel],
       [DirectCommand.STOP_SOUND_PLAYBACK, StopSoundPlayback],
@@ -336,6 +336,7 @@ export class NxtModel {
       [DirectCommand.LS_READ, LsRead],
       [DirectCommand.LS_WRITE, LsWrite],
       [DirectCommand.GET_CURRENT_PROGRAM_NAME, GetCurrentProgramName],
+      [DirectCommand.MESSAGE_WRITE, MessageWrite],
       [DirectCommand.MESSAGE_READ, MessageRead],
       [SystemCommand.OPEN_READ, OpenRead],
       [SystemCommand.OPEN_WRITE, OpenWrite],
@@ -345,10 +346,6 @@ export class NxtModel {
       [SystemCommand.FIND_FIRST, FindFirst],
       [SystemCommand.FIND_NEXT, FindNext],
       [SystemCommand.GET_FIRMWARE_VERSION, GetFirmwareVersion],
-      // [SystemCommand.OPEN_WRITE_LINEAR, 3],
-      // [SystemCommand.OPEN_READ_LINEAR, 6],
-      // [SystemCommand.OPEN_WRITE_DATA, 3],
-      // [SystemCommand.OPEN_APPEND_DATA, 7],
       [SystemCommand.SET_BRICK_NAME, SetBrickName],
       [SystemCommand.GET_DEVICE_INFO, GetDeviceInfo]
     ]);
