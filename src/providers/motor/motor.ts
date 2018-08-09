@@ -26,6 +26,9 @@ export class MotorProvider {
   private _leftPort: SingleOutputPort;
   private _rightPort: SingleOutputPort;
   private _auxiliaryPort: SingleOutputPort | "None";
+  private static CONFIG_PACKET_ID = "B";
+  private static DRIVE_PACKET_ID = "A";
+  private static PACKET_MAILBOX = 0;
 
   constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider) {
     this.readConfigFromStorage();
@@ -33,12 +36,25 @@ export class MotorProvider {
       .filter(packet => packet.id == DirectCommand.START_PROGRAM)
       .filter(packet => packet.status == DirectCommandResponse.SUCCESS)
       .subscribe(() => {
-        clearInterval(this.motorTimer);
         this.writeConfigToNXT();
         this.motorTimer = setInterval(() => {
+          //If the motors are misconfigured, reset the positions and kill the motors.
+          if (this.steeringConfig == SteeringConfig.TANK &&
+            !this.portExists(this.leftPort) &&
+            !this.portExists(this.rightPort)) {
+            this.targetAngle = 0;
+            this.power = 0;
+          } else if (this.steeringConfig == SteeringConfig.FRONT_STEERING &&
+            !this.portExists(this.drivePorts) &&
+            !this.portExists(this.steeringPort)) {
+            this.targetAngle = 0;
+            this.power = 0;
+          }
           if (this.hasAngle) {
             this.hasAngle = false;
-            this.nxt.writePacket(false, MessageWrite.createPacket(0, "A" +
+            this.nxt.writePacket(false, MessageWrite.createPacket(
+              MotorProvider.PACKET_MAILBOX,
+              MotorProvider.DRIVE_PACKET_ID +
               MotorProvider.numberToNXT(this.targetAngle) +
               MotorProvider.numberToNXT(this.power)));
           }
@@ -63,7 +79,13 @@ export class MotorProvider {
 
   public setAux(power: number) {
     if (this.auxiliaryPort && this.auxiliaryPort != "None") {
-      this.nxt.writePacket(false, SetOutputState.createPacket(NxtModel.outputToSystemOutput(this.auxiliaryPort)[0], power, OutputMode.MOTOR_ON, OutputRegulationMode.IDLE, 0, OutputRunState.RUNNING, 0))
+      this.nxt.writePacket(false, SetOutputState.createPacket(
+        NxtModel.outputToSystemOutput(this.auxiliaryPort)[0],
+        power, OutputMode.MOTOR_ON,
+        OutputRegulationMode.IDLE,
+        0, OutputRunState.RUNNING,
+        0)
+      );
     }
   }
 
@@ -77,12 +99,23 @@ export class MotorProvider {
   }
 
   private writeConfigToNXT() {
-    if (this.steeringConfig == SteeringConfig.TANK) {
-      if (!this.rightPort || !this.leftPort) return;
-      this.nxt.writePacket(false, MessageWrite.createPacket(0, "B" + SteeringConfig.TANK + this._leftPort + this._rightPort));
-    } else if (this.steeringConfig == SteeringConfig.FRONT_STEERING) {
-      if (!this.steeringPort || !this.drivePorts) return;
-      this.nxt.writePacket(false, MessageWrite.createPacket(0, "B" + SteeringConfig.FRONT_STEERING + this._steeringPort + this._drivePorts));
+    //Note that writing a malformed configuration will result in the program crashing, so this needs to be avoided.
+    if (this.steeringConfig == SteeringConfig.TANK && this.portExists(this.leftPort) && this.portExists(this.rightPort)) {
+      this.nxt.writePacket(false, MessageWrite.createPacket(
+        MotorProvider.PACKET_MAILBOX,
+        MotorProvider.CONFIG_PACKET_ID +
+        this._steeringConfig +
+        this._leftPort +
+        this._rightPort
+      ));
+    } else if (this.steeringConfig == SteeringConfig.FRONT_STEERING && this.portExists(this.steeringPort) && this.portExists(this.drivePorts)) {
+      this.nxt.writePacket(false, MessageWrite.createPacket(
+        MotorProvider.PACKET_MAILBOX,
+        MotorProvider.CONFIG_PACKET_ID +
+        this._steeringConfig +
+        this._steeringPort +
+        this._drivePorts
+      ));
     }
   }
 
@@ -231,6 +264,11 @@ export class MotorProvider {
       }
     }
   }
+  //enums do some strange things, this will detect if an enum is set to null
+  private portExists(port: string) {
+    return port == "null";
+  }
+
 }
 
 export enum SteeringConfig {

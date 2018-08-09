@@ -75,10 +75,7 @@ export class NxtProvider {
     });
 
   }
-  last = Date.now();
   writePacket(expectResponse: boolean, ...packets: Packet[]) {
-    console.log("time",Date.now()-this.last,packets);
-    this.last = Date.now();
     for (let packet of packets) {
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
