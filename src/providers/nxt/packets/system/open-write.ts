@@ -22,6 +22,8 @@ export class OpenWrite extends SystemPacket {
     this.file.handle = data.shift();
     if (this.status == SystemCommandResponse.FILE_ALREADY_EXISTS) {
       this.file.status = NXTFileState.FILE_EXISTS;
+    } else if (this.status != SystemCommandResponse.SUCCESS) {
+      this.file.status = NXTFileState.ERROR;
     }
     this.file.response = this.status;
     SystemPacket.filesByHandle[this.file.handle] = this.file;
@@ -30,8 +32,6 @@ export class OpenWrite extends SystemPacket {
   protected writePacketData(expectResponse: boolean, data: number[]): void {
     super.writePacketData(expectResponse, data);
     Packet.writeFileName(this.file.name, data);
-    //For whatever reason, an extra null terminator is required that is not documented anywhere.
-    data.push(0);
     Packet.writeLong(this.file.size, data);
     OpenWrite.lastFile = this.file;
     this.file.mode = NXTFileMode.WRITE;

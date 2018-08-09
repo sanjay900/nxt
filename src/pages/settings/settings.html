@@ -61,7 +61,7 @@
         <ion-option *ngFor="let port of AUXILIARY_PORT" [value]="port.value">{{port.formatted}}</ion-option>
       </ion-select>
     </ion-item>
-    <button ion-button (click)="startSteeringProgram()" [disabled]="!bluetooth.connected">Start steering program</button>
+    <button ion-button (click)="motor.startMotorProgram()" [disabled]="!bluetooth.connected">Start steering program</button>
 
   </ion-list>
 </ion-content>

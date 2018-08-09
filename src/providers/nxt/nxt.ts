@@ -1,12 +1,10 @@
 import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
-import {AlertController, ModalController} from 'ionic-angular';
-import {ConnectionStatus, DirectCommand, DirectCommandResponse, NXTFile, NxtModel, TelegramType} from "./nxt.model";
+import {ModalController} from 'ionic-angular';
+import {NXTFile, NxtModel, TelegramType} from "./nxt.model";
 import {Packet} from "./packets/packet";
-import {Subject, Subscription} from "rxjs";
-import {MessageRead} from "./packets/direct/message-read";
-import {StartProgram} from "./packets/direct/start-program";
+import {Subject} from "rxjs";
 
 
 /**
@@ -16,9 +14,8 @@ import {StartProgram} from "./packets/direct/start-program";
 export class NxtProvider {
   public packetEvent$: Subject<Packet> = new Subject<Packet>();
   private buffer: number[] = [];
-  private uploadFile: Subscription;
 
-  constructor(private bluetooth: BluetoothProvider, private file: File, private modalCtrl: ModalController, private alertCtrl: AlertController, private zone: NgZone) {
+  constructor(private bluetooth: BluetoothProvider, private file: File, private modalCtrl: ModalController, private zone: NgZone) {
     //Start up a thread for reading packets
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
@@ -32,15 +29,6 @@ export class NxtProvider {
     this.bluetooth.bluetoothSerial.subscribeRawData().subscribe(data => {
       this.buffer.push(...Array.from(new Uint8Array(data)));
     });
-    this.bluetooth.deviceStatus$
-      .filter(status => status.status == ConnectionStatus.CONNECTED)
-      .subscribe(()=>{
-        this.writePacket(true, StartProgram.createPacket(NxtModel.MOTOR_PROGRAM));
-      });
-    this.uploadFile = this.packetEvent$
-      .filter(packet => packet.id == DirectCommand.START_PROGRAM)
-      .filter(packet => packet.status == DirectCommandResponse.OUT_OF_RANGE)
-      .subscribe(this.missingFileHandler.bind(this));
   }
 
   readPacket(data: number[]) {
@@ -79,29 +67,5 @@ export class NxtProvider {
     for (let packet of packets) {
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
-  }
-
-  private missingFileHandler() {
-    let alert = this.alertCtrl.create({
-      title: 'Motor Control Program Missing',
-      message: `The program for controlling NXT motors is missing on your NXT Device.<br/>
-                Would you like to upload the NXT motor control program?<br/>
-                Note that without this program, motor control will not work.`,
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Upload',
-          handler: () => {
-            let file: NXTFile = new NXTFile(NxtModel.MOTOR_PROGRAM);
-            file.autoStart = true;
-            this.writeFile(file);
-          }
-        }
-      ]
-    });
-    alert.present();
   }
 }

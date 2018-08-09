@@ -29,6 +29,7 @@ import {FindNext} from "./packets/system/find-next";
 import {GetFirmwareVersion} from "./packets/system/get-firmware-version";
 import {SetBrickName} from "./packets/system/set-brick-name";
 import {GetDeviceInfo} from "./packets/system/get-device-info";
+import {Utils} from "../utils/utils";
 export enum ConnectionStatus {
   CONNECTED, CONNECTING, DISCONNECTED
 }
@@ -263,11 +264,19 @@ export enum NXTFileMode {
 }
 
 export class NXTFile {
+  get response(): DirectCommandResponse | SystemCommandResponse {
+    return this._response;
+  }
+
+  set response(value: DirectCommandResponse | SystemCommandResponse) {
+    this._response = value;
+    console.log(SystemCommandResponse[value]);
+  }
   public static PACKET_SIZE: number = 64;
   public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
   public handle: number;
-  public response: DirectCommandResponse | SystemCommandResponse;
-  public writtenBytes: number;
+  private _response: DirectCommandResponse | SystemCommandResponse;
+  public writtenBytes: number = 0;
   public mode: NXTFileMode;
   public size: number;
   public autoStart: boolean;
@@ -292,9 +301,7 @@ export class NXTFile {
 
   get formattedErrorMessage(): string {
     if (!this.hasError()) return "No Error";
-    let msg: string = DirectCommandResponse[this.response] || SystemCommandResponse[this.response];
-    msg = msg.replace(/_/g, " ");
-    return msg.charAt(0).toLocaleUpperCase() + msg.substring(1);
+    return Utils.formatTitle(DirectCommandResponse[this._response] || SystemCommandResponse[this._response]);
   }
 
   nextChunk(): number[] {
@@ -317,7 +324,6 @@ export class NXTFile {
 
 
 export class NxtModel {
-  public static MOTOR_PROGRAM: string = "SteeringControl.rxe";
   public static COMMAND_MAP: Map<DirectCommand | SystemCommand, new () => Packet> = new Map(
     <[DirectCommand | SystemCommand, new () => Packet][]> [
       [DirectCommand.START_PROGRAM, StartProgram],

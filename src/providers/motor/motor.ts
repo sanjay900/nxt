@@ -1,21 +1,27 @@
 import {Injectable} from '@angular/core';
 import {NxtProvider} from "../nxt/nxt";
 import {
+  ConnectionStatus,
   DirectCommand,
   DirectCommandResponse,
   MultiOutputPort,
+  NXTFile,
   NxtModel,
   OutputMode,
   OutputPort,
-  OutputRegulationMode, OutputRunState,
+  OutputRegulationMode,
+  OutputRunState,
   SingleOutputPort
 } from "../nxt/nxt.model";
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {MessageWrite} from "../nxt/packets/direct/message-write";
 import {SetOutputState} from "../nxt/packets/direct/set-output-state";
+import {StartProgram} from "../nxt/packets/direct/start-program";
+import {AlertController} from "ionic-angular";
 
 @Injectable()
 export class MotorProvider {
+  private static MOTOR_PROGRAM: string = "SteeringControl.rxe";
   private targetAngle: number = 0;
   private hasAngle: boolean = false;
   private power: number = 0;
@@ -30,8 +36,15 @@ export class MotorProvider {
   private static DRIVE_PACKET_ID = "A";
   private static PACKET_MAILBOX = 0;
 
-  constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider) {
+  constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController) {
     this.readConfigFromStorage();
+    this.bluetooth.deviceStatus$
+      .filter(status => status.status == ConnectionStatus.CONNECTED)
+      .subscribe(this.startMotorProgram.bind(this));
+    this.nxt.packetEvent$
+      .filter(packet => packet.id == DirectCommand.START_PROGRAM)
+      .filter(packet => packet.status == DirectCommandResponse.OUT_OF_RANGE)
+      .subscribe(this.missingFileHandler.bind(this));
     this.nxt.packetEvent$
       .filter(packet => packet.id == DirectCommand.START_PROGRAM)
       .filter(packet => packet.status == DirectCommandResponse.SUCCESS)
@@ -61,6 +74,10 @@ export class MotorProvider {
           }
         }, 100);
       });
+  }
+
+  public startMotorProgram(){
+    this.nxt.writePacket(true, StartProgram.createPacket(MotorProvider.MOTOR_PROGRAM));
   }
 
   public static numberToNXT(number) {
@@ -272,12 +289,35 @@ export class MotorProvider {
   }
 
   /**
-   * All the port enums will respond with "null" if we cast to them from an undefined or blank value
-   * This lets us detect if a port has something assigned to it
+   * Since we use localStorage, we have to deal with the fact that port can be null, "null" or undefined.
    * @param port the port to check
    */
   private static portAssigned(port: string) {
-    return port == "null";
+    return port && port != "null";
+  }
+
+  private missingFileHandler() {
+    let alert = this.alertCtrl.create({
+      title: 'Motor Control Program Missing',
+      message: `The program for controlling NXT motors is missing on your NXT Device.<br/>
+                Would you like to upload the NXT motor control program?<br/>
+                Note that without this program, motor control will not work.`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel'
+        },
+        {
+          text: 'Upload',
+          handler: () => {
+            let file: NXTFile = new NXTFile(MotorProvider.MOTOR_PROGRAM);
+            file.autoStart = true;
+            this.nxt.writeFile(file);
+          }
+        }
+      ]
+    });
+    alert.present();
   }
 
 }

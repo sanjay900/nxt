@@ -1,7 +1,13 @@
 import {Component} from '@angular/core';
 import {IonicPage, Platform, ViewController} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {ConnectionStatus, NXTFile, NXTFileState, SystemCommand} from "../../providers/nxt/nxt.model";
+import {
+  ConnectionStatus,
+  NXTFile,
+  NXTFileState,
+  SystemCommand,
+  SystemCommandResponse
+} from "../../providers/nxt/nxt.model";
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {OpenWrite} from "../../providers/nxt/packets/system/open-write";
 import {Subscription} from "rxjs";
@@ -17,12 +23,14 @@ import {Close} from "../../providers/nxt/packets/system/close";
 })
 export class FileUploadPage {
   public unregister: Function;
-  private file: NXTFile;
-  private status: NXTFileState;
+  private file: NXTFile = new NXTFile("");
+  private status: NXTFileState = NXTFileState.OPENING;
   private writeSubscription: Subscription;
 
-  constructor(private platform: Platform, private viewCtrl: ViewController, public bluetooth: BluetoothProvider, private nxt: NxtProvider) {
-    this.file = viewCtrl.data.file;
+  constructor(private platform: Platform, private viewCtrl: ViewController, public bluetooth: BluetoothProvider, private nxt: NxtProvider) {}
+
+  ionViewDidEnter() {
+    this.file = this.viewCtrl.data.file;
     this.file.uploadStatus$.subscribe((status: NXTFileState) => {
       if (status == NXTFileState.WRITTEN || status == NXTFileState.ERROR) {
         this.unregister();
@@ -32,8 +40,11 @@ export class FileUploadPage {
     let subscription: Subscription = this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.OPEN_WRITE)
       .filter((packet: OpenWrite) => packet.file == this.file)
-      .subscribe(() => {
+      .subscribe(packet => {
         subscription.unsubscribe();
+        if (packet.status != SystemCommandResponse.SUCCESS) {
+          return;
+        }
         this.writeSubscription = this.nxt.packetEvent$
           .filter(packet => packet.id == SystemCommand.WRITE)
           .filter((packet: Write) => packet.file == this.file)
@@ -41,9 +52,6 @@ export class FileUploadPage {
         this.write();
       });
     this.nxt.writePacket(true, OpenWrite.createPacket(this.file));
-  }
-
-  ionViewDidEnter() {
     //Disable the back button during this dialog
     this.unregister = this.platform.registerBackButtonAction(() => {}, 100);
     this.bluetooth.deviceStatus$

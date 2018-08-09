@@ -1,9 +1,8 @@
 import {Component} from '@angular/core';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {NxtProvider} from "../../providers/nxt/nxt";
-import {MultiOutputPort, NxtModel, SingleOutputPort} from "../../providers/nxt/nxt.model";
+import {MultiOutputPort, SingleOutputPort} from "../../providers/nxt/nxt.model";
 import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
-import {StartProgram} from "../../providers/nxt/packets/direct/start-program";
 import {MotorProvider, SteeringConfig} from "../../providers/motor/motor";
 import {Utils} from "../../providers/utils/utils";
 
@@ -20,10 +19,6 @@ export class SettingsPage {
   public AUXILIARY_PORT = Utils.enumToMap({...SingleOutputPort, ...{none: "None"}}, " ");
 
   constructor(public bluetooth: BluetoothProvider, public nxt: NxtProvider, public motor: MotorProvider) {}
-
-  startSteeringProgram() {
-    this.nxt.writePacket(false, StartProgram.createPacket(NxtModel.MOTOR_PROGRAM));
-  }
 
   playTone(frequency: number, duration: number) {
     this.nxt.writePacket(false, PlayTone.createPacket(frequency, duration));
