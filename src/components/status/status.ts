@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {ConnectionStatus} from "../../providers/nxt/nxt.model";
-import {AlertController} from "ionic-angular";
+import {AlertController, NavController, Tabs} from "ionic-angular";
 import {Toast} from '@ionic-native/toast';
 
 /**
@@ -16,8 +16,7 @@ import {Toast} from '@ionic-native/toast';
 })
 export class StatusComponent {
   private _status: ConnectionStatus = ConnectionStatus.DISCONNECTED;
-
-  constructor(private bluetooth: BluetoothProvider, private alertCtrl: AlertController, private toastCtrl: Toast) {
+  constructor(private nav: NavController, private bluetooth: BluetoothProvider, private alertCtrl: AlertController, private toastCtrl: Toast) {
     this.bluetooth.deviceStatus$.subscribe(update => {
       if (update.status == ConnectionStatus.DISCONNECTED && this._status == ConnectionStatus.CONNECTING) {
         this.showAlert(update.statusMessage);
@@ -51,5 +50,10 @@ export class StatusComponent {
   }
   isDisconnected() {
     return this._status == ConnectionStatus.DISCONNECTED;
+  }
+
+  goToSettings() {
+    let t: Tabs = this.nav.parent;
+    t.select(5);
   }
 }

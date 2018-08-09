@@ -1,4 +1,4 @@
-<span style="float:right" [ngClass]="{
+<span (click)="goToSettings()" style="float:right" [ngClass]="{
     'connected': isConnected(),
     'disconnected': isDisconnected(),
     'connecting': isConnecting()

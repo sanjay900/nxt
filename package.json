@@ -34,6 +34,7 @@
     "big-integer": "^1.6.32",
     "chart.js": "^2.7.2",
     "cordova-android": "6.3.0",
+    "cordova-browser": "5.0.3",
     "cordova-plugin-app-preferences": "^0.99.3",
     "cordova-plugin-bluetooth-serial": "^0.4.7",
     "cordova-plugin-device": "^2.0.2",
@@ -51,7 +52,8 @@
     "rxjs": "5.5.11",
     "sw-toolbox": "3.6.0",
     "text-encoding": "^0.6.4",
-    "zone.js": "0.8.26"
+    "zone.js": "0.8.26",
+    "cordova-plugin-x-toast": "~2.6.2"
   },
   "devDependencies": {
     "@ionic/app-scripts": "3.1.11",
@@ -60,7 +62,8 @@
   "description": "An Ionic project",
   "cordova": {
     "platforms": [
-      "android"
+      "android",
+      "browser"
     ],
     "plugins": {
       "cordova-plugin-whitelist": {},
@@ -71,7 +74,8 @@
       "cordova-plugin-bluetooth-serial": {},
       "cordova-plugin-app-preferences": {},
       "cordova-plugin-device-sensor-fusion": {},
-      "cordova-plugin-file": {}
+      "cordova-plugin-file": {},
+      "cordova-plugin-x-toast": {}
     }
   }
 }
