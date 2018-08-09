@@ -9,6 +9,10 @@ export class GetBatteryLevel extends DirectPacket {
     super(DirectCommand.GET_BATTERY_LEVEL);
   }
 
+  public static createPacket() {
+    return new GetBatteryLevel();
+  }
+
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.voltage = Packet.readUWord(data);
