@@ -1,7 +1,6 @@
 import {Component} from '@angular/core';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {MotorProvider} from "../../providers/motor/motor";
-import {OutputPort, MultiOutputPort} from "../../providers/nxt/nxt.model";
 
 @Component({
   selector: 'page-main',

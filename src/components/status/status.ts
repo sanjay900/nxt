@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {ConnectionStatus} from "../../providers/nxt/nxt.model";
 import {AlertController, NavController, Tabs} from "ionic-angular";
@@ -15,14 +15,14 @@ import {Subscription} from "rxjs";
   selector: 'status',
   templateUrl: 'status.html'
 })
-export class StatusComponent {
+export class StatusComponent implements OnInit, OnDestroy{
   private _status: ConnectionStatus = ConnectionStatus.DISCONNECTED;
   private subscription: Subscription;
   constructor(private nav: NavController, private bluetooth: BluetoothProvider, private alertCtrl: AlertController, private toastCtrl: Toast) {
 
   }
 
-  ionViewDidEnter() {
+  ngOnInit() {
     this.subscription = this.bluetooth.deviceStatus$.subscribe(update => {
       if (update.status == ConnectionStatus.DISCONNECTED && this._status == ConnectionStatus.CONNECTING) {
         this.showAlert(update.statusMessage);
@@ -40,7 +40,7 @@ export class StatusComponent {
     })
   }
 
-  ionViewWillLeave() {
+  ngOnDestroy() {
     this.subscription.unsubscribe();
   }
 
