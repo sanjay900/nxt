@@ -173,11 +173,7 @@ export class MotorProvider {
   }
 
   set steeringAngle(value: number) {
-    this._steeringAngle = Math.max(0, value);
-    if (this._steeringAngle > 360) {
-      this._steeringAngle = Number.parseFloat(this._steeringAngle.toString().substr(0,3));
-    }
-    this._steeringAngle = Math.min(360, value);
+    this._steeringAngle = Math.min(360, Math.max(0, value));
     localStorage.setItem("steering.angle", this._steeringAngle+"");
   }
 
