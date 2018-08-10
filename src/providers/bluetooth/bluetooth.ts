@@ -12,7 +12,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 @Injectable()
 export class BluetoothProvider {
 
-  public deviceStatus$: Subject<ConnectionUpdate> = new BehaviorSubject<ConnectionUpdate>(new ConnectionUpdate(ConnectionStatus.DISCONNECTED));
+  public deviceStatus$: BehaviorSubject<ConnectionUpdate> = new BehaviorSubject<ConnectionUpdate>(new ConnectionUpdate(ConnectionStatus.DISCONNECTED));
   private observer: Subscription;
 
   constructor(private _bluetoothSerial: BluetoothSerial, private appPreferences: AppPreferences) {}
