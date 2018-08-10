@@ -32,9 +32,12 @@ export class MotorProvider {
   private _leftPort: SingleOutputPort;
   private _rightPort: SingleOutputPort;
   private _auxiliaryPort: SingleOutputPort | "None";
+  private _steeringAngle: number;
   private static CONFIG_PACKET_ID = "B";
   private static DRIVE_PACKET_ID = "A";
   private static PACKET_MAILBOX = 0;
+  //Angle specified by the instructions for the robot this is designed to control
+  private static DEFAULT_ANGLE = "42";
 
   constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController) {
     this.readConfigFromStorage();
@@ -76,7 +79,7 @@ export class MotorProvider {
       });
   }
 
-  public startMotorProgram(){
+  public startMotorProgram() {
     this.nxt.writePacket(true, StartProgram.createPacket(MotorProvider.MOTOR_PROGRAM));
   }
 
@@ -87,11 +90,13 @@ export class MotorProvider {
   }
 
   public setThrottle(power: number) {
-    this.power = power;
+    this.power = Math.round(power);
   }
 
   public setSteering(angle: number) {
-    this.targetAngle = angle;
+    angle = Math.min(1, angle);
+    angle = Math.max(-1, angle);
+    this.targetAngle = Math.round(angle * this._steeringAngle);
     this.hasAngle = true;
   }
 
@@ -99,7 +104,7 @@ export class MotorProvider {
     if (this.auxiliaryPort && this.auxiliaryPort != "None") {
       this.nxt.writePacket(false, SetOutputState.createPacket(
         NxtModel.outputToSystemOutput(this.auxiliaryPort)[0],
-        power, OutputMode.MOTOR_ON,
+        Math.round(power), OutputMode.MOTOR_ON,
         OutputRegulationMode.IDLE,
         0, OutputRunState.RUNNING,
         0)
@@ -108,12 +113,14 @@ export class MotorProvider {
   }
 
   public readConfigFromStorage() {
-    this.steeringConfig = localStorage.getItem("steering.config") as SteeringConfig;
-    this.steeringPort = localStorage.getItem("steering.steering") as SingleOutputPort;
-    this.drivePorts = localStorage.getItem("steering.drive") as OutputPort;
-    this.leftPort = localStorage.getItem("steering.left") as SingleOutputPort;
-    this.rightPort = localStorage.getItem("steering.right") as SingleOutputPort;
-    this.auxiliaryPort = localStorage.getItem("steering.aux") as SingleOutputPort | "None";
+    this._steeringConfig = localStorage.getItem("steering.config") as SteeringConfig;
+    this._steeringPort = localStorage.getItem("steering.steering") as SingleOutputPort;
+    let drivePorts = localStorage.getItem("steering.drive");
+    this._drivePorts = drivePorts as SingleOutputPort || drivePorts as MultiOutputPort;
+    this._leftPort = localStorage.getItem("steering.left") as SingleOutputPort;
+    this._rightPort = localStorage.getItem("steering.right") as SingleOutputPort;
+    this._auxiliaryPort = localStorage.getItem("steering.aux") as SingleOutputPort | "None";
+    this._steeringAngle = Number.parseFloat(localStorage.getItem("steering.angle") || MotorProvider.DEFAULT_ANGLE);
   }
 
   private writeConfigToNXT() {
@@ -161,6 +168,18 @@ export class MotorProvider {
     return this._auxiliaryPort;
   }
 
+  get steeringAngle(): number {
+    return this._steeringAngle;
+  }
+
+  set steeringAngle(value: number) {
+    this._steeringAngle = Math.max(0, value);
+    if (this._steeringAngle > 360) {
+      this._steeringAngle = Number.parseFloat(this._steeringAngle.toString().substr(0,3));
+    }
+    this._steeringAngle = Math.min(360, value);
+    localStorage.setItem("steering.angle", value+"");
+  }
 
   set steeringConfig(value: SteeringConfig) {
     this._steeringConfig = value;
@@ -171,7 +190,7 @@ export class MotorProvider {
   set steeringPort(value: SingleOutputPort) {
     this._steeringPort = value;
     localStorage.setItem("steering.steering", value);
-    if(!value) {
+    if (!value) {
       return;
     }
     if (this._auxiliaryPort == value) {
@@ -184,7 +203,7 @@ export class MotorProvider {
   set drivePorts(value: OutputPort) {
     this._drivePorts = value;
     localStorage.setItem("steering.drive", value);
-    if(!value) {
+    if (!value) {
       return;
     }
     if (value == MultiOutputPort.A_B || value == MultiOutputPort.A_C) {
@@ -217,7 +236,7 @@ export class MotorProvider {
   set leftPort(value: SingleOutputPort) {
     this._leftPort = value;
     localStorage.setItem("steering.left", value);
-    if(!value) {
+    if (!value) {
       return;
     }
     if (this._rightPort == value) {
@@ -232,7 +251,7 @@ export class MotorProvider {
   set rightPort(value: SingleOutputPort) {
     this._rightPort = value;
     localStorage.setItem("steering.right", value);
-    if(!value) {
+    if (!value) {
       return;
     }
     if (this._leftPort == value) {
@@ -247,7 +266,7 @@ export class MotorProvider {
   set auxiliaryPort(value: SingleOutputPort | "None") {
     this._auxiliaryPort = value;
     localStorage.setItem("steering.aux", value);
-    if(!value) {
+    if (!value) {
       return;
     }
     if (this._leftPort == value) {
@@ -272,7 +291,7 @@ export class MotorProvider {
    */
   private disableDriveConflicts(value: SingleOutputPort) {
     if (value == SingleOutputPort.A) {
-      if (this._drivePorts == SingleOutputPort.A || MultiOutputPort.A_B || MultiOutputPort.A_B) {
+      if (this._drivePorts == SingleOutputPort.A || MultiOutputPort.A_B || MultiOutputPort.A_C) {
         this.drivePorts = null;
       }
     }

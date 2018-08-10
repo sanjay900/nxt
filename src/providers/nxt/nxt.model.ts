@@ -30,6 +30,7 @@ import {GetFirmwareVersion} from "./packets/system/get-firmware-version";
 import {SetBrickName} from "./packets/system/set-brick-name";
 import {GetDeviceInfo} from "./packets/system/get-device-info";
 import {Utils} from "../utils/utils";
+
 export enum ConnectionStatus {
   CONNECTED, CONNECTING, DISCONNECTED
 }

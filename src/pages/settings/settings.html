@@ -7,7 +7,9 @@
 <ion-header>
 
   <ion-navbar>
-    <ion-title>Settings<status></status></ion-title>
+    <ion-title>Settings
+      <status></status>
+    </ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -22,8 +24,10 @@
         <ion-option *ngFor="let device of bluetooth.bluetoothDevices" [value]="device.id">{{device.name}}</ion-option>
       </ion-select>
     </ion-item>
-    <button ion-button (click)="bluetooth.connect()" [disabled]="bluetooth.connected">Connect to the device</button>
-    <button ion-button (click)="playTone(440, 100)" [disabled]="!bluetooth.connected">Send a test tone</button>
+    <ion-item>
+      <button ion-button (click)="bluetooth.connect()" [disabled]="bluetooth.connected">Connect to the device</button>
+      <button ion-button (click)="playTone(440, 100)" [disabled]="!bluetooth.connected">Send a test tone</button>
+    </ion-item>
     <ion-list-header>Motor Configuration Settings</ion-list-header>
     <ion-item>
       <ion-label>Steering Configuration</ion-label>
@@ -61,7 +65,20 @@
         <ion-option *ngFor="let port of AUXILIARY_PORT" [value]="port.value">{{port.formatted}}</ion-option>
       </ion-select>
     </ion-item>
-    <button ion-button (click)="motor.startMotorProgram()" [disabled]="!bluetooth.connected">Start steering program</button>
 
+    <ion-item>
+      <ion-label>Steering Angle Range</ion-label>
+      <ion-range [min]="0" [max]="360" [(ngModel)]="motor.steeringAngle">
+        <ion-label range-left>0</ion-label>
+        <ion-label range-right>360</ion-label>
+      </ion-range>
+    </ion-item>
+    <ion-item>
+      <ion-input type="text" maxlength="3" inputmode="numeric" pattern="[0-9]*" [(ngModel)]="motor.steeringAngle"></ion-input>
+    </ion-item>
+    <ion-item>
+      <button ion-button (click)="motor.startMotorProgram()" [disabled]="!bluetooth.connected">Start steering program
+      </button>
+    </ion-item>
   </ion-list>
 </ion-content>

@@ -13,7 +13,6 @@ import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
 import {ChartProvider} from "../../providers/chart/chart";
 import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
 @IonicPage({
   name: "motor-graph"

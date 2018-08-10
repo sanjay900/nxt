@@ -1,5 +1,5 @@
 import {Component, ViewChild} from '@angular/core';
-import {IonicPage, NavController, ViewController} from 'ionic-angular';
+import {IonicPage, ViewController} from 'ionic-angular';
 import {Chart} from 'chart.js';
 import {GetInputValues} from "../../providers/nxt/packets/direct/get-input-values";
 import {Subscription} from "rxjs";

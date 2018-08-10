@@ -20,7 +20,6 @@ export class SensorPage {
   constructor(public navCtrl: NavController, private sensor: SensorProvider) {
   }
 
-
   ionViewDidEnter() {
     this.packetReciever = this.sensor.sensorEvent$
       .subscribe(sensorData => {
