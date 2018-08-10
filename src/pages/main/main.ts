@@ -1,6 +1,7 @@
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {MotorProvider} from "../../providers/motor/motor";
+import nipplejs from 'nipplejs';
 
 @Component({
   selector: 'page-main',
@@ -10,10 +11,25 @@ export class MainPage {
   private steering: number;
   private throttle: number;
   private watchId: number;
+  @ViewChild('leftJoystick') leftJoystick;
+  @ViewChild('rightJoystick') rightJoystick;
 
   constructor(public nxt: NxtProvider, public motor: MotorProvider) {
   }
 
+  ionViewDidLoad() {
+    let options = {
+      zone: this.leftJoystick.nativeElement,
+      mode: 'static',
+      position: {left: '50%', top: '75%'},
+      color: 'black'
+    };
+
+    nipplejs.create(options);
+    options.zone = this.rightJoystick.nativeElement;
+
+    nipplejs.create(options);
+  }
   ionViewDidEnter() {
     (<any>navigator).fusion.setMode(() => {
     }, () => {
