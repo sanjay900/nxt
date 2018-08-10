@@ -1,5 +1,5 @@
-<span (click)="goToSettings()" style="float:right" [ngClass]="{
+<button (click)="goToSettings()" class="status-button" [ngClass]="{
     'connected': isConnected(),
     'disconnected': isDisconnected(),
     'connecting': isConnecting()
-  }"><ion-icon name="bluetooth"></ion-icon></span>
+  }" ion-button round><ion-icon name="bluetooth"></ion-icon></button>

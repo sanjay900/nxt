@@ -25,6 +25,7 @@ import {SensorProvider} from '../providers/sensor/sensor';
 import {ComponentsModule} from "../components/components.module";
 import {Toast} from "@ionic-native/toast";
 import {MotorProvider} from '../providers/motor/motor';
+import {FileOpener} from "@ionic-native/file-opener";
 
 @NgModule({
   declarations: [
@@ -67,7 +68,8 @@ import {MotorProvider} from '../providers/motor/motor';
     ChartProvider,
     SensorProvider,
     Toast,
-    MotorProvider
+    MotorProvider,
+    FileOpener
   ]
 })
 export class AppModule {

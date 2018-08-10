@@ -2,7 +2,7 @@ import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
-import {DirectCommand, MultiOutputPort, SystemOutputPort} from "../../providers/nxt/nxt.model";
+import {DirectCommand, MultiOutputPort, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt.model";
 import {Subscription} from "rxjs";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 
@@ -17,6 +17,9 @@ export class MotorStatusPage {
   private readonly SystemOutputPort = SystemOutputPort;
 
   constructor(public nxt: NxtProvider, public navCtrl: NavController, public bluetooth: BluetoothProvider) {
+    this.motors[0].port = SystemOutputPort.A;
+    this.motors[1].port = SystemOutputPort.B;
+    this.motors[2].port = SystemOutputPort.C;
   }
 
   motorUpdate(packet: GetOutputState) {

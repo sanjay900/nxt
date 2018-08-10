@@ -1,5 +1,6 @@
 .connecting {
   animation: connecting 1s linear infinite;
+  color: black;
 }
 
 @keyframes connecting {
@@ -9,9 +10,21 @@
 }
 
 .connected {
-  color: green;
+  color: rgb(50,219,100);
 }
 
 .disconnected {
-  color: red
+  color: rgb(245,61,61);
+}
+
+.status-button {
+  float:right;
+  padding: 0 1.1em;
+  background-color: gainsboro;
+}
+
+.toolbar-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

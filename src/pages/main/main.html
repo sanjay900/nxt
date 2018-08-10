@@ -5,17 +5,20 @@
 </ion-header>
 
 <ion-content padding>
-  <p *ngIf="tiltActive">Tilt your device to control the robot!</p>
-  <p *ngIf="!tiltActive">Use the Joystick to control the robot!</p>
-  <p>
-    Steering: {{steering}}
+  <button class="control-button" *ngIf="!tiltActive" (click)="setTilt(true)" ion-button>Swap to tilt controls</button>
+  <button class="control-button" *ngIf="tiltActive" (click)="setTilt(false)" ion-button>Swap to Joystick controls</button>
+  <span *ngIf="tiltActive">Tilt your device to control the robot</span>
+  <span *ngIf="!tiltActive">Use the left joystick to drive the robot</span>
+  <br/>
+  <span>Use the right joystick to control an additional motor (if configured)</span>
+  <h5>Current Motor Values</h5>
+  <span>
+    Steering Motor Angle: {{steering}}
     <br/>
-    Throttle: {{throttle}}
+    Throttle Motor Power: {{throttle}}
     <br/>
-    Auxiliary: {{auxiliary}}
-  </p>
-  <button *ngIf="!tiltActive" (click)="setTilt(true)" ion-button style="z-index: 1;">Swap to tilt controls</button>
-  <button *ngIf="tiltActive" (click)="setTilt(false)" ion-button style="z-index: 1;">Swap to Joystick controls</button>
+    Additional Motor Power: {{auxiliary}}
+  </span>
   <div #leftJoystick style="position: absolute; top:0; left:0;bottom:0; right: 50%;"></div>
   <div #rightJoystick style="position: absolute; top:0; left:50%;bottom:0; right: 0;"></div>
 </ion-content>

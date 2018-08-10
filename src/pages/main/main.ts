@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, ElementRef, ViewChild} from '@angular/core';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {MotorProvider} from "../../providers/motor/motor";
 import nipplejs from 'nipplejs';
@@ -13,8 +13,7 @@ export class MainPage {
   private auxiliary: number = 0;
   private watchId: number;
   private tiltActive: boolean;
-  private leftJoy: any;
-  private rightJoy: any;
+  private joysticks: any[] = new Array(2);
   @ViewChild('leftJoystick') leftJoystick;
   @ViewChild('rightJoystick') rightJoystick;
 
@@ -22,54 +21,55 @@ export class MainPage {
   }
 
   ionViewDidLoad() {
-    let options = {
-      zone: this.rightJoystick.nativeElement,
-      mode: 'static',
-      position: {left: '50%', top: '75%'},
-      color: 'black'
-    };
-
-    this.rightJoy = nipplejs.create(options)[0];
-    this.rightJoy.on("move", evt=>{
-      let pos = evt.target.instance.frontPosition;
-      this.auxiliary = pos.y/(evt.target.instance.options.size/2)*100;
-      this.motor.setAux(this.auxiliary);
-    });
-    this.rightJoy.on("end", ()=>{
-      this.motor.setAux(0);
-      this.auxiliary = 0;
-    });
-
+    this.createJoy(1, this.rightJoystick.nativeElement, this.setAux.bind(this), this.endAux.bind(this));
     this.setTilt(localStorage.getItem("tile.active") == "true");
   }
 
-  createLeftJoy() {
+  endAux() {
+    this.motor.setAux(0);
+    this.auxiliary = 0;
+  }
 
+  setAux(evt) {
+    let pos = evt.target.instance.frontPosition;
+    this.auxiliary = pos.y/(evt.target.instance.options.size/2)*100;
+    this.motor.setAux(this.auxiliary);
+  }
+
+  endDrive() {
+    this.motor.setSteering(0);
+    this.motor.setThrottle(0);
+    this.steering = this.throttle = 0;
+  }
+
+  setDrive(evt) {
+    let pos = evt.target.instance.frontPosition;
+    this.steering = pos.x/(evt.target.instance.options.size/2);
+    this.throttle = pos.y/(evt.target.instance.options.size/2)*100;
+    this.motor.setSteering(this.steering);
+    this.motor.setThrottle(this.throttle);
+  }
+
+  createJoy(index: number, element: ElementRef, move: Function, end: Function) {
     let options = {
-      zone: this.leftJoystick.nativeElement,
+      zone: element,
       mode: 'static',
       position: {left: '50%', top: '75%'},
       color: 'black'
     };
 
-    this.leftJoy = nipplejs.create(options)[0];
-    this.leftJoy.on("move", evt=>{
-      let pos = evt.target.instance.frontPosition;
-      this.steering = pos.x/(evt.target.instance.options.size/2);
-      this.throttle = pos.y/(evt.target.instance.options.size/2)*100;
-      this.motor.setSteering(this.steering);
-      this.motor.setThrottle(this.throttle);
-    });
-    this.leftJoy.on("end", () => {
-      this.motor.setSteering(0);
-      this.motor.setThrottle(0);
-      this.steering = this.throttle = 0;
-    });
+    this.joysticks[index] = nipplejs.create(options)[0];
+    this.joysticks[index].on("move", move);
+    this.joysticks[index].on("end", end);
   }
-
+  listenToTilt() {
+    if (this.tiltActive) {
+      (<any>navigator).fusion.setMode(() => {}, () => {}, {mode: 1});
+      this.watchId = (<any>navigator).fusion.watchSensorFusion(this.sensorUpdate.bind(this), ()=>{}, {frequency: 100});
+    }
+  }
   ionViewDidEnter() {
-
-
+    this.listenToTilt();
   }
 
   ionViewDidLeave() {
@@ -102,13 +102,10 @@ export class MainPage {
       this.watchId = null;
     }
     if (this.tiltActive) {
-      (<any>navigator).fusion.setMode(() => {}, () => {}, {mode: 1});
-      this.watchId = (<any>navigator).fusion.watchSensorFusion(data => this.sensorUpdate(data), console.log, {
-        frequency: 100
-      });
-      this.leftJoy.destroy();
+      this.listenToTilt();
+      this.joysticks[0].destroy();
     } else {
-      this.createLeftJoy();
+      this.createJoy(0, this.leftJoystick.nativeElement, this.setDrive.bind(this), this.endDrive.bind(this));
     }
   }
 }

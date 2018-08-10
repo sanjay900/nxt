@@ -1,5 +1,5 @@
 import {Component, ViewChild} from '@angular/core';
-import {IonicPage, ViewController} from 'ionic-angular';
+import {AlertController, IonicPage, ViewController} from 'ionic-angular';
 import {Chart} from 'chart.js';
 import {
   DirectCommand,
@@ -13,6 +13,10 @@ import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
 import {ChartProvider} from "../../providers/chart/chart";
 import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
+import {Utils} from "../../providers/utils/utils";
+import {File} from "@ionic-native/file";
+import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
+import {FileOpener} from "@ionic-native/file-opener";
 
 @IonicPage({
   name: "motor-graph"
@@ -33,6 +37,7 @@ export class MotorGraphPage {
   private countChart: Chart;
   private limitChart: Chart;
   private blockCountChart: Chart;
+  private readonly formatTitle = Utils.formatTitle;
   private readonly OutputMode = OutputMode;
   private readonly OutputRegulationMode = OutputRegulationMode;
   private readonly OutputRunState = OutputRunState;
@@ -43,8 +48,13 @@ export class MotorGraphPage {
   private packetReciever: Subscription;
   private current: number = 0;
   private packet: GetOutputState = new GetOutputState();
+  private powerData: number[] = [];
+  private rotationCountData: number[] = [];
+  private limitData: number[] = [];
+  private blockCountData: number[] = [];
+  private countData: number[] = [];
 
-  constructor(public viewCtrl: ViewController, public nxt: NxtProvider) {
+  constructor(public viewCtrl: ViewController, public nxt: NxtProvider, private file: File, private alertCtrl: AlertController, private fileOpener: FileOpener) {
     this.port = this.viewCtrl.data.port;
 
   }
@@ -65,6 +75,12 @@ export class MotorGraphPage {
     ChartProvider.addData(this.limitChart, packet.tachoLimit, this.current + "", MotorGraphPage.GRAPH_SIZE);
     ChartProvider.addData(this.blockCountChart, packet.blockTachoCount, this.current + "", MotorGraphPage.GRAPH_SIZE);
     ChartProvider.addData(this.countChart, packet.tachoCount, this.current + "", MotorGraphPage.GRAPH_SIZE);
+    this.powerData.push(packet.power);
+    this.rotationCountData.push(packet.rotationCount);
+    this.limitData.push(packet.tachoLimit);
+    this.blockCountData.push(packet.blockTachoCount);
+    this.countData.push(packet.tachoCount);
+
     this.current++;
     this.packet = packet;
   }
@@ -72,6 +88,11 @@ export class MotorGraphPage {
   ionViewDidLeave() {
     clearInterval(this.intervalId);
     this.packetReciever.unsubscribe();
+    this.powerData = [];
+    this.rotationCountData = [];
+    this.limitData = [];
+    this.blockCountData = [];
+    this.countData = [];
   }
 
   ionViewDidLoad() {
@@ -84,6 +105,31 @@ export class MotorGraphPage {
 
   resetMotorStats() {
     this.nxt.writePacket(false, ResetMotorPosition.createPacket(this.packet.port, false));
+  }
+
+  export() {
+    let data: string = "Power,Rotation Count,Tachometer Limit,Block Tachometer Limit, Tachometer Count";
+    for (let i = 0; i < this.powerData.length; i++) {
+      data += "\n" + this.powerData[i] + "," + this.rotationCountData[i] + "," + this.limitData[i] + "," + this.blockCountData[i] + "," + this.countData[i];
+    }
+    let fileName: string = "motor-values-" + this.packet.port + "-" + new Date().getTime() + ".csv";
+    this.file.writeFile(this.file.externalRootDirectory, fileName, data).then(() => {
+      const alert = this.alertCtrl.create({
+        title: 'Successfully exported data',
+        subTitle: "File written to: "+fileName,
+        buttons: ['OK', {text: 'Open File', handler: ()=>{
+          this.fileOpener.open(this.file.externalRootDirectory+"/"+fileName,"text/csv");
+        }}]
+      });
+      alert.present();
+    }).catch(reason => {
+      const alert = this.alertCtrl.create({
+        title: 'Failed to export data',
+        subTitle: "Error: "+reason,
+        buttons: ['OK']
+      });
+      alert.present();
+    })
   }
 
 }

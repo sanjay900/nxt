@@ -1,15 +1,7 @@
-<!--
-  Generated template for the SensorGraphPage page.
-
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
-
   <ion-navbar>
-    <ion-title>Motor Data for motor on port {{SystemOutputPort[port]}}<status></status></ion-title>
+    <ion-title>Motor Data for Port {{SystemOutputPort[port]}}<status></status></ion-title>
   </ion-navbar>
-
 </ion-header>
 
 
@@ -19,16 +11,17 @@
       Data
     </ion-card-header>
     <ion-card-content>
-      <p>Mode: {{OutputMode[packet.mode] || "OFF"}}</p>
-      <p>Regulation Mode: {{OutputRegulationMode[packet.regulationMode]}}</p>
-      <p>Power: {{packet.power}}</p>
-      <p>Run State: {{OutputRunState[packet.runState]}}</p>
-      <p>Turn Ratio: {{packet.turnRatio}}</p>
-      <p>Rotation Count: {{packet.rotationCount}}</p>
-      <p>Block Tachometer Count: {{packet.blockTachoCount}}</p>
-      <p>Tachometer Count: {{packet.tachoCount}}</p>
-      <p>Tachometer Limit: {{packet.tachoLimit}}</p>
+      <p>Mode: {{formatTitle(OutputMode[packet.mode] || "Off")}}</p>
+      <p>Regulation Mode: {{formatTitle(OutputRegulationMode[packet.regulationMode] || "Idle")}}</p>
+      <p>Power: {{packet.power || 0}}</p>
+      <p>Run State: {{formatTitle(OutputRunState[packet.runState] || "Idle")}}</p>
+      <p>Turn Ratio: {{packet.turnRatio || 0}}</p>
+      <p>Rotation Count: {{packet.rotationCount || 0}}</p>
+      <p>Block Tachometer Count: {{packet.blockTachoCount || 0}}</p>
+      <p>Tachometer Count: {{packet.tachoCount || 0}}</p>
+      <p>Tachometer Limit: {{packet.tachoLimit || 0}}</p>
       <button (click)="resetMotorStats()" ion-button>Reset Tachometer Count</button>
+      <button (click)="export()" ion-button>Export Data</button>
     </ion-card-content>
 
     <ion-card-header>

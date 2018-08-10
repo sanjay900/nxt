@@ -8,11 +8,11 @@
   <ion-card>
     <ion-card-header>Device Information</ion-card-header>
     <ion-card-content>
-      <p>Firmware Version: {{deviceFirmware.firmwareVersion}}</p>
-      <p>Protocol Version: {{deviceFirmware.protocolVersion}}</p>
+      <p>Firmware Version: {{deviceFirmware.firmwareVersion || "0.0"}}</p>
+      <p>Protocol Version: {{deviceFirmware.protocolVersion || "0.0"}}</p>
       <p>Bluetooth Address: {{(deviceInfo.btAddress || "").toUpperCase()}}</p>
       <p>Name: {{deviceInfo.name}}</p>
-      <p>Free Space: {{deviceInfo.freeSpace}} bytes</p>
+      <p>Free Space: {{deviceInfo.freeSpace || 0}} bytes</p>
       <p>Battery Level: {{(batteryInfo.voltage || 9000)/1000}}V out of 9V</p>
       <button (click)="changeName()" ion-button>Change Name</button>
     </ion-card-content>

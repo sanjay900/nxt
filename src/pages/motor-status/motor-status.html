@@ -11,8 +11,8 @@
   <ion-card *ngFor="let motor of motors">
     <ion-card-header>Motor {{SystemOutputPort[motor.port]}}</ion-card-header>
     <ion-card-content>
-      <p>Motor Power: {{motor.power}}</p>
-      <p>Motor Tachometer Count: {{motor.tachoCount}}</p>
+      <p>Motor Power: {{motor.power || 0}}</p>
+      <p>Motor Tachometer Count: {{motor.tachoCount || 0}}</p>
       <button (click)="showMotorGraph(motor)" ion-button>More information</button>
     </ion-card-content>
   </ion-card>

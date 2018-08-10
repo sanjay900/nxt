@@ -1,5 +1,5 @@
 import {NgModule} from '@angular/core';
-import {IonicPageModule} from 'ionic-angular';
+import {IonicModule, IonicPageModule} from 'ionic-angular';
 import {MotorGraphPage} from './motor-graph';
 import {ComponentsModule} from "../../components/components.module";
 
@@ -10,6 +10,7 @@ import {ComponentsModule} from "../../components/components.module";
   imports: [
     IonicPageModule.forChild(MotorGraphPage),
     ComponentsModule,
+    IonicModule
   ],
 })
 export class MotorGraphPageModule {
