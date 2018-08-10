@@ -1,18 +1,21 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>Main<status></status></ion-title>
+    <ion-title>Remote Control<status></status></ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  <h2>Welcome to Ionic!</h2>
+  <p *ngIf="tiltActive">Tilt your device to control the robot!</p>
+  <p *ngIf="!tiltActive">Use the Joystick to control the robot!</p>
   <p>
-    Tilt your display to control the robot!
+    Steering: {{steering}}
     <br/>
-    steering: {{steering}}
+    Throttle: {{throttle}}
     <br/>
-    throttle: {{throttle}}
+    Auxiliary: {{auxiliary}}
   </p>
+  <button *ngIf="!tiltActive" (click)="setTilt(true)" ion-button style="z-index: 1;">Swap to tilt controls</button>
+  <button *ngIf="tiltActive" (click)="setTilt(false)" ion-button style="z-index: 1;">Swap to Joystick controls</button>
   <div #leftJoystick style="position: absolute; top:0; left:0;bottom:0; right: 50%;"></div>
   <div #rightJoystick style="position: absolute; top:0; left:50%;bottom:0; right: 0;"></div>
 </ion-content>
