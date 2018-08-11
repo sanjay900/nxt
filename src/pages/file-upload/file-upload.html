@@ -28,7 +28,7 @@
     If the file does not appear on the NXT, reboot the NXT as a partially written file may reside on the NXT.
   </div>
   <div *ngIf="!bluetooth.connected && !isWritten()">Error: The NXT has lost connection!</div>
-  <progress-bar [progress]="file.writtenBytes > 0 ? file.percentage : 0" [color]="getColor()"></progress-bar>
+  <progress-bar [progress]="file.percentage" [color]="getColor()"></progress-bar>
   <br/>
 
   <button *ngIf="canDismiss()" ion-button (click)="dismiss()">Close</button>

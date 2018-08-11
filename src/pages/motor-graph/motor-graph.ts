@@ -108,7 +108,7 @@ export class MotorGraphPage {
   }
 
   export() {
-    let data: string = "Power,Rotation Count,Tachometer Limit,Block Tachometer Limit, Tachometer Count";
+    let data: string = "Power,Rotation Count,Tachometer Limit,Block Tachometer Limit,Tachometer Count";
     for (let i = 0; i < this.powerData.length; i++) {
       data += "\n" + this.powerData[i] + "," + this.rotationCountData[i] + "," + this.limitData[i] + "," + this.blockCountData[i] + "," + this.countData[i];
     }

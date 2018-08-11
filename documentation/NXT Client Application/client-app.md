@@ -3,9 +3,7 @@ This program required a client application to be written and compiled for the Le
 This file outlines the client application and how it works, and how it is used by the mobile application.
 
 # Steering Types
-There are two supported steering types, ```
-tank
-``` and ```front wheel steering```. 
+There are two supported steering types, `tank` and `front wheel steering`. 
 Tank controls control the left and right channels with different amounts of power to control steering,
 while Front Wheel uses a motor to turn the front wheels left or right, and then one or two motors to drive.
  
@@ -87,7 +85,7 @@ This program splits into two tasks, one that handles reading packets from blueto
 #### TextSubNumber Block
 ![TextSubNumber](TextSubNumber.PNG)
 
-A utility routine called ```TextSubNumber``` takes the packet and a start index and length, and then reads that section from the packet and converts it to a number, sending it back to the caller routine.
+A utility routine called `TextSubNumber` takes the packet and a start index and length, and then reads that section from the packet and converts it to a number, sending it back to the caller routine.
 #### PacketHandler Block
 ![PacketHandler](PacketHandlerAssign.PNG)
 
@@ -95,22 +93,22 @@ The packet handler has two states, which are decided based on the first characte
 #### PacketHandlerConfig Block
 ![PacketHandlerConfig](PacketHandlerConfig.PNG)
 
-In the case that the first character is a B, we pass it directly to the ```ConfigPacketHandler```.
+In the case that the first character is a B, we pass it directly to the `ConfigPacketHandler`.
 
 ![ConfigPacketFrontSteering](ConfigPacketFrontSteering.PNG)
 
-The configuration packet has two states, dependant on if the second character of the packet is a 1 or a 0. If it is a 0, we then read the next character as a digit and treat it as a single motor, writing it into a variable called ```SteeringPort```. We also configure that motor for PID control, telling it to work out its limits and recenter. We then read the next character, and using the output port table above in reverse, we map it to a ```LeftMotor``` and a ```RightMotor```, writing a 0 to the ```RightMotor``` in single motor configurations.
+The configuration packet has two states, dependant on if the second character of the packet is a 1 or a 0. If it is a 0, we then read the next character as a digit and treat it as a single motor, writing it into a variable called `SteeringPort`. We also configure that motor for PID control, telling it to work out its limits and recenter. We then read the next character, and using the output port table above in reverse, we map it to a `LeftMotor` and a `RightMotor`, writing a 0 to the `RightMotor` in single motor configurations.
 
 ![ConfigPacketTank](ConfigPacketTank.PNG)
 
-When we are in tank mode, we do not have a ```SteeringPort```, so we write a 0 to that variable. we then take the third character, and write it directly to the LeftMotor variable, treating it as a single motor. We then read the next character and do the same thing, but to the ```RightMotor``` variable.
+When we are in tank mode, we do not have a `SteeringPort`, so we write a 0 to that variable. we then take the third character, and write it directly to the LeftMotor variable, treating it as a single motor. We then read the next character and do the same thing, but to the `RightMotor` variable.
 #### MotorController Block
 ![MotorControllerFrontSteering](MotorControllerFrontSteering.PNG)
 
-In the motor control subroutine, control flow is passed to this routine. It begins by reading the ```SteeringPort``` variable, and if it is not a 0, it then writes the current `Steering` variable to the angle of a PID controller, targeting the motor stored in ```SteeringPort```. It then writes a 0 to ```SteeringTank```, as we do not want the tank controls to be affected by the ```Steering``` variable.
+In the motor control subroutine, control flow is passed to this routine. It begins by reading the `SteeringPort` variable, and if it is not a 0, it then writes the current `Steering` variable to the angle of a PID controller, targeting the motor stored in `SteeringPort`. It then writes a 0 to `SteeringTank`, as we do not want the tank controls to be affected by the `Steering` variable.
 
-We then check if the ```LeftMotor``` variable is greater than 0. We do this as a sanity check, as an unconfigured application would result in all outputs being 0, and as there is no motor 0, the program would crash. We then write ```DrivePower```, ```SteeringTank```, ```DriveDirection``` ```RightMotor``` and ```LeftMotor``` to the defined right and left motors, and in this mode, a steering value of 0 leaves both motors syncronized with eachother.
+We then check if the `LeftMotor` variable is greater than 0. We do this as a sanity check, as an unconfigured application would result in all outputs being 0, and as there is no motor 0, the program would crash. We then write `DrivePower`, `SteeringTank`, `DriveDirection` `RightMotor` and `LeftMotor` to the defined right and left motors, and in this mode, a steering value of 0 leaves both motors syncronized with eachother.
 
 ![MotorControllerTank](MotorControllerTank.PNG)
 
-In the case of tank controls, we just pass the ```Steering``` variable to ```SteeringTank```, and then we repeat the above process, however this time there is a steering value provided to the driving motors, and so they will have the power delivered to each motor adjusted based on the angle of the `Steering` variable.
+In the case of tank controls, we just pass the `Steering` variable to `SteeringTank`, and then we repeat the above process, however this time there is a steering value provided to the driving motors, and so they will have the power delivered to each motor adjusted based on the angle of the `Steering` variable.

@@ -1,6 +1,7 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, NXTFileMode, NXTFileState, SystemCommand, SystemCommandResponse} from "../../nxt.model";
+import {SystemCommand, SystemCommandResponse} from "../../nxt.model";
 import {Packet} from "../packet";
+import {NXTFile, NXTFileMode, NXTFileState} from "../../nxt-file";
 
 export class OpenWrite extends SystemPacket {
   private static lastFile: NXTFile;

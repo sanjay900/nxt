@@ -1,9 +1,10 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, SystemCommand} from "../../nxt.model";
+import {SystemCommand} from "../../nxt.model";
 import {Packet, PacketConstants} from "../packet";
 
 export class FindFirst extends SystemPacket {
-  public file: NXTFile;
+  public fileName: string;
+  public fileSize: number;
   public handle: number;
   private search: string;
 
@@ -20,8 +21,8 @@ export class FindFirst extends SystemPacket {
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.handle = data.shift();
-    this.file = new NXTFile(Packet.readAsciiz(data, PacketConstants.FILE_NAME_LENGTH));
-    this.file.size = Packet.readLong(data);
+    this.fileName = Packet.readAsciiz(data, PacketConstants.FILE_NAME_LENGTH);
+    this.fileSize = Packet.readLong(data);
   }
 
   protected writePacketData(expectResponse: boolean, data: number[]): void {

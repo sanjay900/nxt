@@ -1,4 +1,3 @@
-import {EventEmitter} from "@angular/core";
 import {Packet} from "./packets/packet";
 import {StartProgram} from "./packets/direct/start-program";
 import {StopProgram} from "./packets/direct/stop-program";
@@ -29,7 +28,6 @@ import {FindNext} from "./packets/system/find-next";
 import {GetFirmwareVersion} from "./packets/system/get-firmware-version";
 import {SetBrickName} from "./packets/system/set-brick-name";
 import {GetDeviceInfo} from "./packets/system/get-device-info";
-import {Utils} from "../utils/utils";
 
 export enum ConnectionStatus {
   CONNECTED, CONNECTING, DISCONNECTED
@@ -247,80 +245,6 @@ export enum InputSensorMode {
   CELSIUS = 0xA0,
   FAHRENHEIT = 0xC0,
   ANGLE_STEPS = 0xE0
-}
-
-export enum NXTFileState {
-  OPENING = "Opening File",
-  WRITING = "Writing File",
-  CLOSING = "Closing File",
-  WRITTEN = "Written File",
-  DELETED = "Deleted File",
-  READ = "Read File",
-  ERROR = "Error",
-  FILE_EXISTS = "File already exists"
-}
-
-export enum NXTFileMode {
-  READ, WRITE
-}
-
-export class NXTFile {
-  get response(): DirectCommandResponse | SystemCommandResponse {
-    return this._response;
-  }
-
-  set response(value: DirectCommandResponse | SystemCommandResponse) {
-    this._response = value;
-    console.log(SystemCommandResponse[value]);
-  }
-  public static PACKET_SIZE: number = 64;
-  public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
-  public handle: number;
-  private _response: DirectCommandResponse | SystemCommandResponse;
-  public writtenBytes: number = 0;
-  public mode: NXTFileMode;
-  public size: number;
-  public autoStart: boolean;
-  private state: NXTFileState = NXTFileState.OPENING;
-  private data: number[] = [];
-
-  constructor(public name: string) {
-  }
-
-  get status() {
-    return this.state;
-  }
-
-  set status(status: NXTFileState) {
-    this.state = status;
-    this.uploadStatus$.emit(this.state);
-  }
-
-  get percentage(): number {
-    return (this.writtenBytes / this.size * 100);
-  }
-
-  get formattedErrorMessage(): string {
-    if (!this.hasError()) return "No Error";
-    return Utils.formatTitle(DirectCommandResponse[this._response] || SystemCommandResponse[this._response]);
-  }
-
-  nextChunk(): number[] {
-    if (this.mode == NXTFileMode.READ) return;
-    let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
-    let ret: number[] = this.data.slice(0, chunkSize);
-    this.data = this.data.slice(chunkSize, this.data.length);
-    this.writtenBytes = this.size - this.data.length;
-    return ret;
-  }
-
-  hasError() {
-    return this.state == NXTFileState.ERROR || this.state == NXTFileState.FILE_EXISTS;
-  }
-
-  readData(number: number[]) {
-    this.data.push(...number);
-  }
 }
 
 

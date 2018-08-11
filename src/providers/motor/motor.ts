@@ -5,7 +5,6 @@ import {
   DirectCommand,
   DirectCommandResponse,
   MultiOutputPort,
-  NXTFile,
   NxtModel,
   OutputMode,
   OutputPort,
@@ -18,6 +17,7 @@ import {MessageWrite} from "../nxt/packets/direct/message-write";
 import {SetOutputState} from "../nxt/packets/direct/set-output-state";
 import {StartProgram} from "../nxt/packets/direct/start-program";
 import {AlertController} from "ionic-angular";
+import {NXTFile} from "../nxt/nxt-file";
 
 @Injectable()
 export class MotorProvider {
@@ -325,7 +325,7 @@ export class MotorProvider {
         {
           text: 'Upload',
           handler: () => {
-            let file: NXTFile = new NXTFile(MotorProvider.MOTOR_PROGRAM);
+            let file: NXTFile = new NXTFile(MotorProvider.MOTOR_PROGRAM, this.nxt);
             file.autoStart = true;
             this.nxt.writeFile(file);
           }

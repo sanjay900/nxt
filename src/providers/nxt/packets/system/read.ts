@@ -1,6 +1,7 @@
 import {SystemPacket} from "./system-packet";
-import {NXTFile, SystemCommand} from "../../nxt.model";
+import {SystemCommand} from "../../nxt.model";
 import {Packet} from "../packet";
+import {NXTFile} from "../../nxt-file";
 
 export class Read extends SystemPacket {
   public file: NXTFile;

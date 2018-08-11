@@ -2,9 +2,10 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {ModalController} from 'ionic-angular';
-import {NXTFile, NxtModel, TelegramType} from "./nxt.model";
+import {NxtModel, TelegramType} from "./nxt.model";
 import {Packet} from "./packets/packet";
 import {Subject} from "rxjs";
+import {NXTFile} from "./nxt-file";
 
 
 /**

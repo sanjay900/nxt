@@ -1,19 +1,9 @@
 import {Component} from '@angular/core';
 import {IonicPage, Platform, ViewController} from 'ionic-angular';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {
-  ConnectionStatus,
-  NXTFile,
-  NXTFileState,
-  SystemCommand,
-  SystemCommandResponse
-} from "../../providers/nxt/nxt.model";
+import {ConnectionStatus} from "../../providers/nxt/nxt.model";
 import {NxtProvider} from "../../providers/nxt/nxt";
-import {OpenWrite} from "../../providers/nxt/packets/system/open-write";
-import {Subscription} from "rxjs";
-import {Write} from "../../providers/nxt/packets/system/write";
-import {Close} from "../../providers/nxt/packets/system/close";
-import {StartProgram} from "../../providers/nxt/packets/direct/start-program";
+import {NXTFile, NXTFileState} from "../../providers/nxt/nxt-file";
 
 @IonicPage({
   name: "file-upload"
@@ -24,9 +14,8 @@ import {StartProgram} from "../../providers/nxt/packets/direct/start-program";
 })
 export class FileUploadPage {
   public unregister: Function;
-  private file: NXTFile = new NXTFile("");
+  private file: NXTFile = new NXTFile("", this.nxt);
   private status: NXTFileState = NXTFileState.OPENING;
-  private writeSubscription: Subscription;
 
   constructor(private platform: Platform, private viewCtrl: ViewController, public bluetooth: BluetoothProvider, private nxt: NxtProvider) {}
 
@@ -38,26 +27,13 @@ export class FileUploadPage {
       }
       this.status = this.file.status;
     });
-    let subscription: Subscription = this.nxt.packetEvent$
-      .filter(packet => packet.id == SystemCommand.OPEN_WRITE)
-      .filter((packet: OpenWrite) => packet.file == this.file)
-      .subscribe(packet => {
-        subscription.unsubscribe();
-        if (packet.status != SystemCommandResponse.SUCCESS) {
-          return;
-        }
-        this.writeSubscription = this.nxt.packetEvent$
-          .filter(packet => packet.id == SystemCommand.WRITE)
-          .filter((packet: Write) => packet.file == this.file)
-          .subscribe(this.write.bind(this));
-        this.write();
-      });
-    this.nxt.writePacket(true, OpenWrite.createPacket(this.file));
+
     //Disable the back button during this dialog
     this.unregister = this.platform.registerBackButtonAction(() => {}, 100);
     this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.DISCONNECTED)
       .subscribe(this.unregister.bind(this));
+    this.file.beginTransfer();
   }
 
   ionViewDidLeave() {
@@ -87,24 +63,6 @@ export class FileUploadPage {
   }
 
   isExisting() {
-    return this.file.status == NXTFileState.FILE_EXISTS;
-  }
-
-  private write() {
-    if (this.file.size == this.file.writtenBytes) {
-      this.writeSubscription.unsubscribe();
-      this.nxt.writePacket(true, Close.createPacket(this.file));
-      let subscription: Subscription = this.nxt.packetEvent$
-        .filter(packet => packet.id == SystemCommand.CLOSE)
-        .filter((packet: Close) => packet.file == this.file)
-        .subscribe(() => {
-          subscription.unsubscribe();
-          if (this.file.autoStart) {
-            this.nxt.writePacket(true, StartProgram.createPacket(this.file.name));
-          }
-        });
-      return;
-    }
-    this.nxt.writePacket(true, Write.createPacket(this.file));
+    return this.status == NXTFileState.FILE_EXISTS;
   }
 }
