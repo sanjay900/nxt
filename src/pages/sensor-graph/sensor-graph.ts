@@ -3,7 +3,7 @@ import {AlertController, IonicPage, ViewController} from 'ionic-angular';
 import {Chart} from 'chart.js';
 import {GetInputValues} from "../../providers/nxt/packets/direct/get-input-values";
 import {Subscription} from "rxjs";
-import {NxtProvider} from "../../providers/nxt/nxt";
+import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {ChartProvider} from "../../providers/chart/chart";
 import {SensorProvider, SensorType} from "../../providers/sensor/sensor";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
@@ -30,7 +30,7 @@ export class SensorGraphPage {
   private scaledData: number[] = [];
   private rawData: number[] = [];
 
-  constructor(public viewCtrl: ViewController, public nxt: NxtProvider, private sensorProvider: SensorProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController, private file: File, private fileOpener: FileOpener) {
+  constructor(public viewCtrl: ViewController, public nxt: NxtPacketProvider, private sensorProvider: SensorProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController, private file: File, private fileOpener: FileOpener) {
     this.port = this.viewCtrl.data.port;
     this.sensor = this.viewCtrl.data.sensor;
 

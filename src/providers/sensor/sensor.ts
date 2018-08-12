@@ -1,13 +1,12 @@
 import {Injectable} from '@angular/core';
-import {ConnectionStatus} from "../nxt/nxt.model";
 import {LsRead} from "../nxt/packets/direct/ls-read";
 import {SetInputMode} from "../nxt/packets/direct/set-input-mode";
 import {LsWrite} from "../nxt/packets/direct/ls-write";
 import {LsGetStatus} from "../nxt/packets/direct/ls-get-status";
-import {NxtProvider} from "../nxt/nxt";
+import {NxtPacketProvider} from "../nxt/nxt-packet";
 import {Subject} from "rxjs";
 import {GetInputValues} from "../nxt/packets/direct/get-input-values";
-import {BluetoothProvider} from "../bluetooth/bluetooth";
+import {BluetoothProvider, ConnectionStatus} from "../bluetooth/bluetooth";
 import {DirectCommand} from "../nxt/packets/direct-command";
 import {UltrasonicSensorRegister} from "./i2c-register";
 import {UltrasonicSensorCommand} from "../nxt/ultrasonic-sensor-command";
@@ -39,7 +38,7 @@ export class SensorProvider {
     [SensorType.ULTRASONIC_CM, InputSensorType.LOW_SPEED_9V],
   ]);
 
-  constructor(private nxt: NxtProvider, private bluetooth: BluetoothProvider) {
+  constructor(private nxt: NxtPacketProvider, private bluetooth: BluetoothProvider) {
     this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.CONNECTED)
       .subscribe(()=>{

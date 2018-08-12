@@ -1,5 +1,5 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
-import {NxtProvider} from "../../providers/nxt/nxt";
+import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {MotorProvider} from "../../providers/motor/motor";
 import nipplejs from 'nipplejs';
 
@@ -17,7 +17,7 @@ export class MainPage {
   @ViewChild('leftJoystick') leftJoystick;
   @ViewChild('rightJoystick') rightJoystick;
 
-  constructor(public nxt: NxtProvider, public motor: MotorProvider) {
+  constructor(public nxt: NxtPacketProvider, public motor: MotorProvider) {
   }
 
   ionViewDidLoad() {

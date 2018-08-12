@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
-import {ConnectionStatus, ConnectionUpdate} from "../nxt/nxt.model";
 import {BehaviorSubject} from "rxjs";
 
 /**
@@ -81,5 +80,18 @@ export class BluetoothProvider {
         this.deviceStatus$.next(new ConnectionUpdate(ConnectionStatus.DISCONNECTED, reason));
       });
     }
+  }
+}
+
+export enum ConnectionStatus {
+  CONNECTED, CONNECTING, DISCONNECTED
+}
+export class ConnectionUpdate {
+  readonly status: ConnectionStatus;
+  readonly statusMessage: string;
+
+  constructor(status: ConnectionStatus, statusMessage?: string) {
+    this.status = status;
+    this.statusMessage = statusMessage;
   }
 }

@@ -2,7 +2,7 @@ import {Component, ViewChild} from '@angular/core';
 import {AlertController, IonicPage, ViewController} from 'ionic-angular';
 import {Chart} from 'chart.js';
 import {Subscription} from "rxjs";
-import {NxtProvider} from "../../providers/nxt/nxt";
+import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
 import {ChartProvider} from "../../providers/chart/chart";
 import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
@@ -51,7 +51,7 @@ export class MotorGraphPage {
   private blockCountData: number[] = [];
   private countData: number[] = [];
 
-  constructor(public viewCtrl: ViewController, public nxt: NxtProvider, private file: File, private alertCtrl: AlertController, private fileOpener: FileOpener) {
+  constructor(public viewCtrl: ViewController, public nxt: NxtPacketProvider, private file: File, private alertCtrl: AlertController, private fileOpener: FileOpener) {
     this.port = this.viewCtrl.data.port;
 
   }

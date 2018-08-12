@@ -15,7 +15,7 @@ import {AppPreferences} from "@ionic-native/app-preferences";
 import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {BluetoothProvider} from "../providers/bluetooth/bluetooth";
 import {Gyroscope} from "@ionic-native/gyroscope";
-import {NxtProvider} from '../providers/nxt/nxt';
+import {NxtPacketProvider} from '../providers/nxt/nxt-packet';
 import {File} from '@ionic-native/file';
 import {MotorStatusPage} from "../pages/motor-status/motor-status";
 import {FileUploadModule} from "../pages/file-upload/file-upload.module";
@@ -63,7 +63,7 @@ import {FileOpener} from "@ionic-native/file-opener";
     Gyroscope,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     BluetoothProvider,
-    NxtProvider,
+    NxtPacketProvider,
     File,
     ChartProvider,
     SensorProvider,

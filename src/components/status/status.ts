@@ -1,6 +1,5 @@
 import {Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {ConnectionStatus} from "../../providers/nxt/nxt.model";
+import {BluetoothProvider, ConnectionStatus} from "../../providers/bluetooth/bluetooth";
 import {AlertController, NavController, Tabs} from "ionic-angular";
 import {Toast} from '@ionic-native/toast';
 import {Subscription} from "rxjs";

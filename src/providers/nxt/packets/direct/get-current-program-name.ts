@@ -1,4 +1,4 @@
-import {Packet, PacketConstants} from "../packet";
+import {Packet} from "../packet";
 import {DirectCommand} from "../direct-command";
 import {DirectPacket} from "./direct-packet";
 
@@ -12,6 +12,6 @@ export class GetCurrentProgramName extends DirectPacket {
 
   readPacket(data: number[]): void {
     super.readPacket(data);
-    this.programName = Packet.readAsciiz(data, PacketConstants.FILE_NAME_LENGTH);
+    this.programName = Packet.readAsciiz(data, Packet.FILE_NAME_LENGTH);
   }
 }

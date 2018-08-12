@@ -1,11 +1,10 @@
 import {Injectable} from '@angular/core';
-import {NxtProvider} from "../nxt/nxt";
-import {ConnectionStatus} from "../nxt/nxt.model";
-import {BluetoothProvider} from "../bluetooth/bluetooth";
+import {NxtPacketProvider} from "../nxt/nxt-packet";
+import {BluetoothProvider, ConnectionStatus} from "../bluetooth/bluetooth";
 import {MessageWrite} from "../nxt/packets/direct/message-write";
 import {SetOutputState} from "../nxt/packets/direct/set-output-state";
 import {StartProgram} from "../nxt/packets/direct/start-program";
-import {AlertController} from "ionic-angular";
+import {AlertController, ModalController} from "ionic-angular";
 import {NXTFile} from "../nxt/nxt-file";
 import {DirectCommand} from "../nxt/packets/direct-command";
 import {DirectCommandResponse} from "../nxt/packets/direct-command-response";
@@ -13,6 +12,7 @@ import {OutputMode} from "./output-mode";
 import {OutputRegulationMode} from "./output-regulation-mode";
 import {OutputRunState} from "./output-run-state";
 import {MultiOutputPort, OutputPort, SingleOutputPort, SystemOutputPortUtils} from "./output-port";
+import {File} from "@ionic-native/file";
 
 @Injectable()
 export class MotorProvider {
@@ -34,7 +34,7 @@ export class MotorProvider {
   //Angle specified by the instructions for the robot this is designed to control
   private static DEFAULT_ANGLE = "42";
 
-  constructor(public nxt: NxtProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController) {
+  constructor(public nxt: NxtPacketProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController, private file: File, private modalController: ModalController) {
     this.readConfigFromStorage();
     this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.CONNECTED)
@@ -320,9 +320,12 @@ export class MotorProvider {
         {
           text: 'Upload',
           handler: () => {
-            let file: NXTFile = new NXTFile(MotorProvider.MOTOR_PROGRAM, this.nxt);
+            let file: NXTFile = new NXTFile(MotorProvider.MOTOR_PROGRAM, this.nxt, this.file);
             file.autoStart = true;
-            this.nxt.writeFile(file);
+            file.readFromFileSystem().then(()=>{
+              let uploadModal = this.modalController.create("file-upload", {file: file});
+              uploadModal.present();
+            },console.log);
           }
         }
       ]

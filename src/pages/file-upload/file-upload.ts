@@ -1,8 +1,6 @@
 import {Component} from '@angular/core';
 import {IonicPage, Platform, ViewController} from 'ionic-angular';
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
-import {ConnectionStatus} from "../../providers/nxt/nxt.model";
-import {NxtProvider} from "../../providers/nxt/nxt";
+import {BluetoothProvider, ConnectionStatus} from "../../providers/bluetooth/bluetooth";
 import {NXTFile, NXTFileState} from "../../providers/nxt/nxt-file";
 
 @IonicPage({
@@ -14,10 +12,10 @@ import {NXTFile, NXTFileState} from "../../providers/nxt/nxt-file";
 })
 export class FileUploadPage {
   public unregister: Function;
-  private file: NXTFile = new NXTFile("", this.nxt);
+  private file: NXTFile = new NXTFile("");
   private status: NXTFileState = NXTFileState.OPENING;
 
-  constructor(private platform: Platform, private viewCtrl: ViewController, public bluetooth: BluetoothProvider, private nxt: NxtProvider) {}
+  constructor(private platform: Platform, private viewCtrl: ViewController, public bluetooth: BluetoothProvider) {}
 
   ionViewDidEnter() {
     this.file = this.viewCtrl.data.file;
@@ -33,7 +31,7 @@ export class FileUploadPage {
     this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.DISCONNECTED)
       .subscribe(this.unregister.bind(this));
-    this.file.beginTransfer();
+    this.file.writeFileToDevice();
   }
 
   ionViewDidLeave() {

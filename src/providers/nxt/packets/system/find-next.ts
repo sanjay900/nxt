@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {Packet, PacketConstants} from "../packet";
+import {Packet} from "../packet";
 import {SystemCommand} from "../system-command";
 
 export class FindNext extends SystemPacket {
@@ -20,7 +20,7 @@ export class FindNext extends SystemPacket {
   readPacket(data: number[]): void {
     super.readPacket(data);
     this.handle = data.shift();
-    this.fileName = Packet.readAsciiz(data, PacketConstants.FILE_NAME_LENGTH);
+    this.fileName = Packet.readAsciiz(data, Packet.FILE_NAME_LENGTH);
     this.fileSize = Packet.readLong(data);
   }
 

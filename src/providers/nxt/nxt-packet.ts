@@ -2,17 +2,16 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {ModalController} from 'ionic-angular';
-import {TelegramType} from "./nxt.model";
 import {Packet} from "./packets/packet";
 import {Subject} from "rxjs";
-import {NXTFile} from "./nxt-file";
+import {PacketFactory} from "./packets/packet-factory";
 
 
 /**
  * This provide handles communication with a NXT device, and provides helper methods for uploading files and NXT I/O.
  */
 @Injectable()
-export class NxtProvider {
+export class NxtPacketProvider {
   public packetEvent$: Subject<Packet> = new Subject<Packet>();
   private buffer: number[] = [];
 
@@ -34,39 +33,29 @@ export class NxtProvider {
 
   readPacket(data: number[]) {
     let telegramType: number = data.shift();
-    let messageType: number = data.shift();
     if (telegramType == TelegramType.REPLY) {
       //Look up this packet, and construct it from the available data.
-      let packetCtor: new () => Packet = Packet.COMMAND_MAP.get(messageType);
-      if (packetCtor) {
-        let packet: Packet = new packetCtor();
-        packet.readPacket(data);
+      let packet: Packet = PacketFactory.readPacket(data);
+      if (packet) {
         //Emit events inside the angular thread so things update correctly
         this.zone.run(() => {
           this.packetEvent$.next(packet);
         });
-      } else {
-        console.log("Unknown packet id: " + messageType.toString(16));
       }
     }
   }
 
-  /**
-   * Write a file to the NXT device
-   * @param {NXTFile} file the file to write
-   */
-  writeFile(file: NXTFile) {
-    this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + file.name).then(contents => {
-      file.readData(Array.from(new Uint8Array(contents)));
-      file.size = contents.byteLength;
-      let uploadModal = this.modalCtrl.create("file-upload", {file: file});
-      uploadModal.present();
-    });
-
-  }
   writePacket(expectResponse: boolean, ...packets: Packet[]) {
     for (let packet of packets) {
       this.bluetooth.write(new Uint8Array(packet.writePacket(expectResponse)));
     }
   }
+}
+
+export enum TelegramType {
+  DIRECT_COMMAND_RESPONSE = 0x00,
+  SYSTEM_COMMAND_RESPONSE = 0x01,
+  REPLY = 0x02,
+  DIRECT_COMMAND_NO_RESPONSE = 0x80,
+  SYSTEM_COMMAND_NO_RESPONSE = 0x81
 }

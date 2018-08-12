@@ -1,6 +1,6 @@
 import {EventEmitter} from "@angular/core";
 import {Subscription} from "rxjs";
-import {NxtProvider} from "./nxt";
+import {NxtPacketProvider} from "./nxt-packet";
 import {OpenWrite} from "./packets/system/open-write";
 import {Write} from "./packets/system/write";
 import {Utils} from "../utils/utils";
@@ -9,6 +9,7 @@ import {StartProgram} from "./packets/direct/start-program";
 import {SystemCommandResponse} from "./packets/system-command-response";
 import {DirectCommandResponse} from "./packets/direct-command-response";
 import {SystemCommand} from "./packets/system-command";
+import {File} from "@ionic-native/file";
 
 export class NXTFile {
   public static PACKET_SIZE: number = 64;
@@ -23,7 +24,7 @@ export class NXTFile {
   private data: number[] = [];
   private writeSubscription: Subscription;
 
-  constructor(public name: string, private nxt: NxtProvider) {
+  constructor(public name: string, private nxt?: NxtPacketProvider, private file?: File) {
   }
 
   get response(): DirectCommandResponse | SystemCommandResponse {
@@ -52,15 +53,6 @@ export class NXTFile {
     return Utils.formatTitle(DirectCommandResponse[this._response] || SystemCommandResponse[this._response]);
   }
 
-  nextChunk(): number[] {
-    if (this.mode == NXTFileMode.READ) return;
-    let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
-    let ret: number[] = this.data.slice(0, chunkSize);
-    this.data = this.data.slice(chunkSize, this.data.length);
-    this.writtenBytes = this.size - this.data.length;
-    return ret;
-  }
-
   hasError() {
     return this.state == NXTFileState.ERROR || this.state == NXTFileState.FILE_EXISTS;
   }
@@ -69,7 +61,14 @@ export class NXTFile {
     this.data.push(...number);
   }
 
-  beginTransfer() {
+  readFromFileSystem() {
+    return this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/" + this.name).then(contents => {
+      this.data = Array.from(new Uint8Array(contents));
+      this.size = contents.byteLength;
+    });
+  }
+
+  writeFileToDevice() {
     let subscription: Subscription = this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.OPEN_WRITE)
       .filter((packet: OpenWrite) => packet.file == this)
@@ -85,6 +84,15 @@ export class NXTFile {
         this.write();
       });
     this.nxt.writePacket(true, OpenWrite.createPacket(this));
+  }
+
+  nextChunk(): number[] {
+    if (this.mode == NXTFileMode.READ) return;
+    let chunkSize: number = Math.min(NXTFile.PACKET_SIZE, this.data.length);
+    let ret: number[] = this.data.slice(0, chunkSize);
+    this.data = this.data.slice(chunkSize, this.data.length);
+    this.writtenBytes = this.size - this.data.length;
+    return ret;
   }
 
   private write() {

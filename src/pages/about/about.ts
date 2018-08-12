@@ -1,11 +1,10 @@
 import {Component} from '@angular/core';
 import {AlertController} from 'ionic-angular';
-import {NxtProvider} from "../../providers/nxt/nxt";
+import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {GetDeviceInfo} from "../../providers/nxt/packets/system/get-device-info";
-import {ConnectionStatus} from "../../providers/nxt/nxt.model";
 import {GetFirmwareVersion} from "../../providers/nxt/packets/system/get-firmware-version";
 import {SetBrickName} from "../../providers/nxt/packets/system/set-brick-name";
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
+import {BluetoothProvider, ConnectionStatus} from "../../providers/bluetooth/bluetooth";
 import {Subscription} from "rxjs";
 import {GetBatteryLevel} from "../../providers/nxt/packets/direct/get-battery-level";
 import {DirectCommand} from "../../providers/nxt/packets/direct-command";
@@ -22,7 +21,7 @@ export class AboutPage {
   public batteryInfo: GetBatteryLevel = new GetBatteryLevel();
   private connectSubscribe: Subscription;
 
-  constructor(private nxt: NxtProvider, private alertCtrl: AlertController, private bluetooth: BluetoothProvider) {
+  constructor(private nxt: NxtPacketProvider, private alertCtrl: AlertController, private bluetooth: BluetoothProvider) {
     this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.GET_DEVICE_INFO)
       .subscribe(packet => {
