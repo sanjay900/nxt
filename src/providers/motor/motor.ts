@@ -12,7 +12,7 @@ import {DirectCommandResponse} from "../nxt/packets/direct-command-response";
 import {OutputMode} from "./output-mode";
 import {OutputRegulationMode} from "./output-regulation-mode";
 import {OutputRunState} from "./output-run-state";
-import {MultiOutputPort, OutputPort, SingleOutputPort, SystemOutputPort, SystemOutputPortUtils} from "./output-port";
+import {MultiOutputPort, OutputPort, SingleOutputPort, SystemOutputPortUtils} from "./output-port";
 
 @Injectable()
 export class MotorProvider {

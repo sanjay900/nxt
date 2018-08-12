@@ -2,6 +2,7 @@ import {Packet} from "../packet";
 import {DirectPacket} from "./direct-packet";
 import {DirectCommand} from "../direct-command";
 import {OutputPort, SystemOutputPort, SystemOutputPortUtils} from "../../../motor/output-port";
+
 export class ResetMotorPosition extends DirectPacket {
   private port: SystemOutputPort;
   private relative: boolean;

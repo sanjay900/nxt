@@ -3,7 +3,7 @@ import {BluetoothSerial} from "@ionic-native/bluetooth-serial";
 import {AppPreferences} from "@ionic-native/app-preferences";
 import {Subscription} from "rxjs/Subscription";
 import {ConnectionStatus, ConnectionUpdate} from "../nxt/nxt.model";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 
 /**
  * This provider facilitates connections over bluetooth, handling emitting connect and disconnect events, and

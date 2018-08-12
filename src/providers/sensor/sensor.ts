@@ -1,6 +1,5 @@
 import {Injectable} from '@angular/core';
-import {
-  ConnectionStatus} from "../nxt/nxt.model";
+import {ConnectionStatus} from "../nxt/nxt.model";
 import {LsRead} from "../nxt/packets/direct/ls-read";
 import {SetInputMode} from "../nxt/packets/direct/set-input-mode";
 import {LsWrite} from "../nxt/packets/direct/ls-write";
