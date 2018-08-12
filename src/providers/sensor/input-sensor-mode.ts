@@ -1,0 +1,10 @@
+export enum InputSensorMode {
+  RAW = 0x00,
+  BOOLEAN = 0x20,
+  TRANSITION_COUNT = 0x40,
+  PERIOD_COUNT = 0x60,
+  PERIOD_COUNT_FULL_SCALE = 0x80,
+  CELSIUS = 0xA0,
+  FAHRENHEIT = 0xC0,
+  ANGLE_STEPS = 0xE0
+}

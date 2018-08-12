@@ -1,12 +1,6 @@
 import {Injectable} from '@angular/core';
 import {
-  ConnectionStatus,
-  DirectCommand,
-  InputSensorMode,
-  InputSensorType,
-  UltrasonicSensorCommands,
-  UltrasonicSensorRegisters
-} from "../nxt/nxt.model";
+  ConnectionStatus} from "../nxt/nxt.model";
 import {LsRead} from "../nxt/packets/direct/ls-read";
 import {SetInputMode} from "../nxt/packets/direct/set-input-mode";
 import {LsWrite} from "../nxt/packets/direct/ls-write";
@@ -15,6 +9,11 @@ import {NxtProvider} from "../nxt/nxt";
 import {Subject} from "rxjs";
 import {GetInputValues} from "../nxt/packets/direct/get-input-values";
 import {BluetoothProvider} from "../bluetooth/bluetooth";
+import {DirectCommand} from "../nxt/packets/direct-command";
+import {UltrasonicSensorRegister} from "./i2c-register";
+import {UltrasonicSensorCommand} from "../nxt/ultrasonic-sensor-command";
+import {InputSensorType} from "./input-sensor-type";
+import {InputSensorMode} from "./input-sensor-mode";
 
 @Injectable()
 export class SensorProvider {
@@ -106,7 +105,7 @@ export class SensorProvider {
 
   initUS(port: number) {
     setTimeout(() => {
-      this.nxt.writePacket(true, LsWrite.createPacket(port, [0x02, UltrasonicSensorRegisters.COMMAND, UltrasonicSensorCommands.CONTINUOUS_MEASUREMENT], 0));
+      this.nxt.writePacket(true, LsWrite.createPacket(port, [0x02, UltrasonicSensorRegister.COMMAND, UltrasonicSensorCommand.CONTINUOUS_MEASUREMENT], 0));
     }, 1000);
   }
 
@@ -136,7 +135,7 @@ export class SensorProvider {
     switch (this.sensors[this.lastSensorUpdate]) {
       case SensorType.ULTRASONIC_INCH:
       case SensorType.ULTRASONIC_CM:
-        this.readI2CRegister(UltrasonicSensorRegisters.MEASUREMENT_BYTE_0, this.lastSensorUpdate);
+        this.readI2CRegister(UltrasonicSensorRegister.MEASUREMENT_BYTE_0, this.lastSensorUpdate);
         break;
       case SensorType.NONE:
         this.tickNextSensor();

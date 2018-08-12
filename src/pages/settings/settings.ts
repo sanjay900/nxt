@@ -1,10 +1,10 @@
 import {Component} from '@angular/core';
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {NxtProvider} from "../../providers/nxt/nxt";
-import {MultiOutputPort, SingleOutputPort} from "../../providers/nxt/nxt.model";
 import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
 import {MotorProvider, SteeringConfig} from "../../providers/motor/motor";
 import {Utils} from "../../providers/utils/utils";
+import {MultiOutputPort, SingleOutputPort} from "../../providers/motor/output-port";
 
 @Component({
   selector: 'page-settings',

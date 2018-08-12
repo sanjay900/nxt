@@ -1,6 +1,7 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand, SystemCommandResponse} from "../../nxt.model";
 import {NXTFile, NXTFileState} from "../../nxt-file";
+import {SystemCommand} from "../system-command";
+import {SystemCommandResponse} from "../system-command-response";
 
 export class Close extends SystemPacket {
   public file: NXTFile;

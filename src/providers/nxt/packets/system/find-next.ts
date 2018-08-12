@@ -1,6 +1,6 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand} from "../../nxt.model";
 import {Packet, PacketConstants} from "../packet";
+import {SystemCommand} from "../system-command";
 
 export class FindNext extends SystemPacket {
   public fileName: string;

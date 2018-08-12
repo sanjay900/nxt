@@ -6,23 +6,10 @@ import {Write} from "./packets/system/write";
 import {Utils} from "../utils/utils";
 import {Close} from "./packets/system/close";
 import {StartProgram} from "./packets/direct/start-program";
-import {DirectCommandResponse, SystemCommand, SystemCommandResponse} from "./nxt.model";
+import {SystemCommandResponse} from "./packets/system-command-response";
+import {DirectCommandResponse} from "./packets/direct-command-response";
+import {SystemCommand} from "./packets/system-command";
 
-
-export enum NXTFileState {
-  OPENING = "Opening File",
-  WRITING = "Writing File",
-  CLOSING = "Closing File",
-  WRITTEN = "Written File",
-  DELETED = "Deleted File",
-  READ = "Read File",
-  ERROR = "Error",
-  FILE_EXISTS = "File already exists"
-}
-
-export enum NXTFileMode {
-  READ, WRITE
-}
 export class NXTFile {
   public static PACKET_SIZE: number = 64;
   public uploadStatus$: EventEmitter<NXTFileState> = new EventEmitter<NXTFileState>();
@@ -81,6 +68,7 @@ export class NXTFile {
   readData(number: number[]) {
     this.data.push(...number);
   }
+
   beginTransfer() {
     let subscription: Subscription = this.nxt.packetEvent$
       .filter(packet => packet.id == SystemCommand.OPEN_WRITE)
@@ -98,6 +86,7 @@ export class NXTFile {
       });
     this.nxt.writePacket(true, OpenWrite.createPacket(this));
   }
+
   private write() {
     if (this.size == this.writtenBytes) {
       this.writeSubscription.unsubscribe();
@@ -115,4 +104,19 @@ export class NXTFile {
     }
     this.nxt.writePacket(true, Write.createPacket(this));
   }
+}
+
+export enum NXTFileState {
+  OPENING = "Opening File",
+  WRITING = "Writing File",
+  CLOSING = "Closing File",
+  WRITTEN = "Written File",
+  DELETED = "Deleted File",
+  READ = "Read File",
+  ERROR = "Error",
+  FILE_EXISTS = "File already exists"
+}
+
+export enum NXTFileMode {
+  READ, WRITE
 }

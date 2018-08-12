@@ -1,5 +1,5 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand} from "../../nxt.model";
+import {SystemCommand} from "../system-command";
 import {Packet} from "../packet";
 import {NXTFile, NXTFileMode, NXTFileState} from "../../nxt-file";
 

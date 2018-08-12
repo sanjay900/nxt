@@ -1,5 +1,5 @@
 import {Packet} from "../packet";
-import {DirectCommand} from "../../nxt.model";
+import {DirectCommand} from "../direct-command";
 import {DirectPacket} from "./direct-packet";
 
 export class GetBatteryLevel extends DirectPacket {

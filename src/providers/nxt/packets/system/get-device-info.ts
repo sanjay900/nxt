@@ -1,6 +1,6 @@
-import {SystemPacket} from "./system-packet";
-import {SystemCommand} from "../../nxt.model";
+import {SystemPacket} from "./system-packet"
 import {Packet} from "../packet";
+import {SystemCommand} from "../system-command";
 
 export class GetDeviceInfo extends SystemPacket {
   public name: string;

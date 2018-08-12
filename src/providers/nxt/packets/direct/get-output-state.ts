@@ -1,13 +1,9 @@
 import {Packet} from "../packet";
-import {
-  DirectCommand,
-  NxtModel,
-  OutputPort,
-  OutputRegulationMode,
-  OutputRunState,
-  SystemOutputPort
-} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
+import {DirectCommand} from "../direct-command";
+import {OutputRegulationMode} from "../../../motor/output-regulation-mode";
+import {OutputRunState} from "../../../motor/output-run-state";
+import {OutputPort, SystemOutputPort, SystemOutputPortUtils} from "../../../motor/output-port";
 
 export class GetOutputState extends DirectPacket {
   public port: SystemOutputPort;
@@ -33,7 +29,7 @@ export class GetOutputState extends DirectPacket {
 
   public static createMultiple(ports: OutputPort): GetOutputState[] {
     let ret: GetOutputState[] = [];
-    for (let systemOutputPort of NxtModel.outputToSystemOutput(ports)) {
+    for (let systemOutputPort of SystemOutputPortUtils.fromOutputPort(ports)) {
       ret.push(GetOutputState.createPacket(systemOutputPort));
     }
     return ret;

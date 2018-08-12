@@ -1,6 +1,7 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand, SystemCommandResponse} from "../../nxt.model";
+import {SystemCommandResponse} from "../system-command-response";
 import {NXTFile, NXTFileState} from "../../nxt-file";
+import {SystemCommand} from "../system-command";
 
 export class Write extends SystemPacket {
   public file: NXTFile;

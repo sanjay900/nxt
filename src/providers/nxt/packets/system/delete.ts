@@ -1,7 +1,8 @@
 import {SystemPacket} from "./system-packet";
-import {SystemCommand, SystemCommandResponse} from "../../nxt.model";
-import {Packet, PacketConstants} from "../packet";
 import {NXTFile, NXTFileState} from "../../nxt-file";
+import {SystemCommand} from "../system-command";
+import {Packet, PacketConstants} from "../packet";
+import {SystemCommandResponse} from "../system-command-response";
 
 export class Delete extends SystemPacket {
   public file: NXTFile;

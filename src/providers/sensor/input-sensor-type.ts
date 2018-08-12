@@ -1,0 +1,15 @@
+export enum InputSensorType {
+  NO_SENSOR = 0x00,
+  TOUCH = 0x01,
+  TEMPERATURE = 0x02,
+  REFLECTION = 0x03,
+  ANGLE = 0x04,
+  LIGHT_ACTIVE = 0x05,
+  LIGHT_INACTIVE = 0x06,
+  SOUND_DB = 0x07,
+  SOUND_DBA = 0x08,
+  CUSTOM = 0x09,
+  LOW_SPEED = 0x0A,
+  LOW_SPEED_9V = 0x0B,
+  NUMBER_OF_SENSOR_TYPES = 0x0C
+}

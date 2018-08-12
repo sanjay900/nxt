@@ -2,7 +2,7 @@ import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {File} from '@ionic-native/file';
 import {ModalController} from 'ionic-angular';
-import {NxtModel, TelegramType} from "./nxt.model";
+import {TelegramType} from "./nxt.model";
 import {Packet} from "./packets/packet";
 import {Subject} from "rxjs";
 import {NXTFile} from "./nxt-file";
@@ -37,7 +37,7 @@ export class NxtProvider {
     let messageType: number = data.shift();
     if (telegramType == TelegramType.REPLY) {
       //Look up this packet, and construct it from the available data.
-      let packetCtor: new () => Packet = NxtModel.COMMAND_MAP.get(messageType);
+      let packetCtor: new () => Packet = Packet.COMMAND_MAP.get(messageType);
       if (packetCtor) {
         let packet: Packet = new packetCtor();
         packet.readPacket(data);

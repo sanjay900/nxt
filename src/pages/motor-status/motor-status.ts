@@ -2,9 +2,10 @@ import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
-import {DirectCommand, MultiOutputPort, OutputPort, SystemOutputPort} from "../../providers/nxt/nxt.model";
 import {Subscription} from "rxjs";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
+import {DirectCommand} from "../../providers/nxt/packets/direct-command";
+import {MultiOutputPort, SystemOutputPort} from "../../providers/motor/output-port";
 
 @Component({
   selector: 'page-motor-status',

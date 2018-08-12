@@ -1,6 +1,8 @@
 import {Packet} from "../packet";
-import {DirectCommand, InputSensorMode, InputSensorType} from "../../nxt.model";
+import {InputSensorMode} from "../../../sensor/input-sensor-mode";
 import {DirectPacket} from "./direct-packet";
+import {DirectCommand} from "../direct-command";
+import {InputSensorType} from "../../../sensor/input-sensor-type";
 
 export class GetInputValues extends DirectPacket {
   public port: number;

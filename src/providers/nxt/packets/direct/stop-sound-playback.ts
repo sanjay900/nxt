@@ -1,4 +1,4 @@
-import {DirectCommand} from "../../nxt.model";
+import {DirectCommand} from "../direct-command";
 import {DirectPacket} from "./direct-packet";
 
 export class StopSoundPlayback extends DirectPacket {

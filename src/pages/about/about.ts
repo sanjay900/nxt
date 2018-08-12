@@ -2,12 +2,14 @@ import {Component} from '@angular/core';
 import {AlertController} from 'ionic-angular';
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetDeviceInfo} from "../../providers/nxt/packets/system/get-device-info";
-import {ConnectionStatus, DirectCommand, SystemCommand} from "../../providers/nxt/nxt.model";
+import {ConnectionStatus} from "../../providers/nxt/nxt.model";
 import {GetFirmwareVersion} from "../../providers/nxt/packets/system/get-firmware-version";
 import {SetBrickName} from "../../providers/nxt/packets/system/set-brick-name";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {Subscription} from "rxjs";
 import {GetBatteryLevel} from "../../providers/nxt/packets/direct/get-battery-level";
+import {DirectCommand} from "../../providers/nxt/packets/direct-command";
+import {SystemCommand} from "../../providers/nxt/packets/system-command";
 
 @Component({
   selector: 'page-about',

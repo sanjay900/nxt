@@ -1,23 +1,18 @@
 import {Injectable} from '@angular/core';
 import {NxtProvider} from "../nxt/nxt";
-import {
-  ConnectionStatus,
-  DirectCommand,
-  DirectCommandResponse,
-  MultiOutputPort,
-  NxtModel,
-  OutputMode,
-  OutputPort,
-  OutputRegulationMode,
-  OutputRunState,
-  SingleOutputPort
-} from "../nxt/nxt.model";
+import {ConnectionStatus} from "../nxt/nxt.model";
 import {BluetoothProvider} from "../bluetooth/bluetooth";
 import {MessageWrite} from "../nxt/packets/direct/message-write";
 import {SetOutputState} from "../nxt/packets/direct/set-output-state";
 import {StartProgram} from "../nxt/packets/direct/start-program";
 import {AlertController} from "ionic-angular";
 import {NXTFile} from "../nxt/nxt-file";
+import {DirectCommand} from "../nxt/packets/direct-command";
+import {DirectCommandResponse} from "../nxt/packets/direct-command-response";
+import {OutputMode} from "./output-mode";
+import {OutputRegulationMode} from "./output-regulation-mode";
+import {OutputRunState} from "./output-run-state";
+import {MultiOutputPort, OutputPort, SingleOutputPort, SystemOutputPort, SystemOutputPortUtils} from "./output-port";
 
 @Injectable()
 export class MotorProvider {
@@ -103,7 +98,7 @@ export class MotorProvider {
   public setAux(power: number) {
     if (this.auxiliaryPort && this.auxiliaryPort != "None") {
       this.nxt.writePacket(false, SetOutputState.createPacket(
-        NxtModel.outputToSystemOutput(this.auxiliaryPort)[0],
+        SystemOutputPortUtils.fromOutputPort(this.auxiliaryPort)[0],
         Math.round(power), OutputMode.MOTOR_ON,
         OutputRegulationMode.IDLE,
         0, OutputRunState.RUNNING,

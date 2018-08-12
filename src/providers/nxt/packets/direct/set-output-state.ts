@@ -1,6 +1,9 @@
 import {Packet} from "../packet";
-import {DirectCommand, OutputRegulationMode, OutputRunState, SystemOutputPort} from "../../nxt.model";
 import {DirectPacket} from "./direct-packet";
+import {DirectCommand} from "../direct-command";
+import {OutputRegulationMode} from "../../../motor/output-regulation-mode";
+import {OutputRunState} from "../../../motor/output-run-state";
+import {SystemOutputPort} from "../../../motor/output-port";
 
 export class SetOutputState extends DirectPacket {
   private port: SystemOutputPort;

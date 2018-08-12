@@ -1,13 +1,6 @@
 import {Component, ViewChild} from '@angular/core';
 import {AlertController, IonicPage, ViewController} from 'ionic-angular';
 import {Chart} from 'chart.js';
-import {
-  DirectCommand,
-  OutputMode,
-  OutputRegulationMode,
-  OutputRunState,
-  SystemOutputPort
-} from "../../providers/nxt/nxt.model";
 import {Subscription} from "rxjs";
 import {NxtProvider} from "../../providers/nxt/nxt";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
@@ -15,8 +8,12 @@ import {ChartProvider} from "../../providers/chart/chart";
 import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
 import {Utils} from "../../providers/utils/utils";
 import {File} from "@ionic-native/file";
-import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {FileOpener} from "@ionic-native/file-opener";
+import {DirectCommand} from "../../providers/nxt/packets/direct-command";
+import {OutputMode} from "../../providers/motor/output-mode";
+import {OutputRegulationMode} from "../../providers/motor/output-regulation-mode";
+import {OutputRunState} from "../../providers/motor/output-run-state";
+import {SystemOutputPort} from "../../providers/motor/output-port";
 
 @IonicPage({
   name: "motor-graph"
