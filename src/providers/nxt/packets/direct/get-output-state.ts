@@ -1,9 +1,9 @@
 import {Packet} from "../packet";
 import {DirectPacket} from "./direct-packet";
 import {DirectCommand} from "../direct-command";
-import {OutputRegulationMode} from "../../../motor/output-regulation-mode";
-import {OutputRunState} from "../../../motor/output-run-state";
-import {OutputPort, SystemOutputPort, SystemOutputPortUtils} from "../../../motor/output-port";
+import {OutputPort, OutputRegulationMode, SystemOutputPort} from "../../../motor/motor";
+import {OutputRunState} from "../../../motor/motor";
+import {SystemOutputPortUtils} from "../../../motor/motor";
 
 export class GetOutputState extends DirectPacket {
   public port: SystemOutputPort;

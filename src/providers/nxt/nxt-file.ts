@@ -24,8 +24,7 @@ export class NXTFile {
   private data: number[] = [];
   private writeSubscription: Subscription;
 
-  constructor(public name: string, private nxt?: NxtPacketProvider, private file?: File) {
-  }
+  constructor(public name: string, private nxt?: NxtPacketProvider, private file?: File) {}
 
   get response(): DirectCommandResponse | SystemCommandResponse {
     return this._response;

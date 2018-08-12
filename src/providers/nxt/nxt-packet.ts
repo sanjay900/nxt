@@ -16,7 +16,8 @@ export class NxtPacketProvider {
   private buffer: number[] = [];
 
   constructor(private bluetooth: BluetoothProvider, private file: File, private modalCtrl: ModalController, private zone: NgZone) {
-    //Start up a thread for reading packets
+    //Read packets in a different place to the bluetooth subscription,
+    //as the native code happens to thread it differently, and hanging it causes bugs with bluetooth.
     setInterval(() => {
       let len: number = this.buffer[0] | this.buffer[1] << 8;
       while (this.buffer.length >= len + 2) {
