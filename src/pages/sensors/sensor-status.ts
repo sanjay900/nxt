@@ -5,9 +5,9 @@ import {SensorData, SensorProvider, SensorType} from "../../providers/sensor/sen
 
 @Component({
   selector: 'sensor-page',
-  templateUrl: 'sensor.html'
+  templateUrl: 'sensor-status.html'
 })
-export class SensorPage {
+export class SensorStatusPage {
   public sensors: SensorDataModel[] = [
     new SensorDataModel(0, this.sensor),
     new SensorDataModel(1, this.sensor),

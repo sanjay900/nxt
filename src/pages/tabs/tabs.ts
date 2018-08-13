@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 
 import {AboutPage} from '../about/about';
-import {SensorPage} from '../sensors/sensor';
+import {SensorStatusPage} from '../sensors/sensor-status';
 import {MainPage} from '../main/main';
 import {SettingsPage} from "../settings/settings";
 import {MotorStatusPage} from "../motor-status/motor-status";
@@ -14,7 +14,7 @@ export class TabsPage {
 
   tab1Root = MainPage;
   tab2Root = AboutPage;
-  tab3Root = SensorPage;
+  tab3Root = SensorStatusPage;
   tab4Root = MotorStatusPage;
   tab5Root = SettingsPage;
   tab6Root = KeyboardPage;

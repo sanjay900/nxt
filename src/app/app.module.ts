@@ -4,7 +4,7 @@ import {IonicApp, IonicErrorHandler, IonicModule} from 'ionic-angular';
 import {MyApp} from './app.component';
 
 import {AboutPage} from '../pages/about/about';
-import {SensorPage} from '../pages/sensors/sensor';
+import {SensorStatusPage} from '../pages/sensors/sensor-status';
 import {MainPage} from '../pages/main/main';
 import {TabsPage} from '../pages/tabs/tabs';
 
@@ -31,7 +31,7 @@ import {FileOpener} from "@ionic-native/file-opener";
   declarations: [
     MyApp,
     AboutPage,
-    SensorPage,
+    SensorStatusPage,
     MainPage,
     TabsPage,
     SettingsPage,
@@ -48,7 +48,7 @@ import {FileOpener} from "@ionic-native/file-opener";
   entryComponents: [
     MyApp,
     AboutPage,
-    SensorPage,
+    SensorStatusPage,
     MainPage,
     TabsPage,
     SettingsPage,
