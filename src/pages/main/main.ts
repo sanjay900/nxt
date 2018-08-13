@@ -22,7 +22,7 @@ export class MainPage {
 
   ionViewDidLoad() {
     this.createJoy(1, this.rightJoystick.nativeElement, this.setAux.bind(this), this.endAux.bind(this));
-    this.setTilt(localStorage.getItem("tile.active") == "true");
+    this.setTilt(localStorage.getItem("tilt.active") == "true");
   }
 
   endAux() {
