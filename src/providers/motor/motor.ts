@@ -1,14 +1,24 @@
-import {Injectable} from '@angular/core';
+import {Injectable} from "@angular/core";
 import {NxtPacketProvider} from "../nxt/nxt-packet";
 import {BluetoothProvider, ConnectionStatus} from "../bluetooth/bluetooth";
-import {MessageWrite} from "../nxt/packets/direct/message-write";
-import {SetOutputState} from "../nxt/packets/direct/set-output-state";
-import {StartProgram} from "../nxt/packets/direct/start-program";
 import {AlertController, ModalController} from "ionic-angular";
-import {NXTFile} from "../nxt/nxt-file";
 import {DirectCommand} from "../nxt/packets/direct-command";
 import {DirectCommandResponse} from "../nxt/packets/direct-command-response";
+import {MessageWrite} from "../nxt/packets/direct/message-write";
+import {StartProgram} from "../nxt/packets/direct/start-program";
+import {SetOutputState} from "../nxt/packets/direct/set-output-state";
+import {NXTFile} from "../nxt/nxt-file";
 import {File} from "@ionic-native/file";
+import {
+  MultiOutputPort,
+  OutputMode,
+  OutputPort,
+  OutputRegulationMode,
+  OutputRunState,
+  SingleOutputPort,
+  SteeringConfig,
+  SystemOutputPortUtils
+} from "./motor-constants";
 
 @Injectable()
 export class MotorProvider {
@@ -30,7 +40,7 @@ export class MotorProvider {
   //Angle specified by the instructions for the robot this is designed to control
   private static DEFAULT_ANGLE = "42";
 
-  constructor(public nxt: NxtPacketProvider, public bluetooth: BluetoothProvider, private alertCtrl: AlertController, private file: File, private modalController: ModalController) {
+  constructor(public bluetooth: BluetoothProvider, private alertCtrl: AlertController, private file: File, private modalController: ModalController, public nxt: NxtPacketProvider) {
     this.readConfigFromStorage();
     this.bluetooth.deviceStatus$
       .filter(status => status.status == ConnectionStatus.CONNECTED)
@@ -331,64 +341,4 @@ export class MotorProvider {
 
 }
 
-export enum SteeringConfig {
-  FRONT_STEERING = "0", TANK = "1"
-}
 
-export enum SystemOutputPort {
-  A = 0x00,
-  B = 0x01,
-  C = 0x02,
-  ALL = 0xFF
-}
-
-
-export enum OutputRegulationMode {
-  IDLE = 0x00,
-  MOTOR_SPEED = 0x01,
-  MOTOR_SYNC = 0x02
-}
-
-export enum OutputMode {
-  MOTOR_ON = 0x01,
-  BRAKE = 0x02,
-  REGULATED = 0x04
-}
-
-export enum MultiOutputPort {
-  A_B = "4",
-  A_C = "5",
-  B_C = "6",
-  A_B_C = "7"
-}
-
-export enum SingleOutputPort {
-  A = "1",
-  B = "2",
-  C = "3"
-}
-
-export type OutputPort = SingleOutputPort | MultiOutputPort;
-
-export class SystemOutputPortUtils {
-  static fromOutputPort(port: OutputPort): SystemOutputPort[] {
-    let ports: SystemOutputPort[] = [];
-    if (port == SingleOutputPort.A || port == MultiOutputPort.A_B || port == MultiOutputPort.A_C || port == MultiOutputPort.A_B_C) {
-      ports.push(SystemOutputPort.A);
-    }
-    if (port == SingleOutputPort.B || port == MultiOutputPort.A_B || port == MultiOutputPort.B_C || port == MultiOutputPort.A_B_C) {
-      ports.push(SystemOutputPort.B);
-    }
-    if (port == SingleOutputPort.C || port == MultiOutputPort.A_C || port == MultiOutputPort.B_C || port == MultiOutputPort.A_B_C) {
-      ports.push(SystemOutputPort.C);
-    }
-    return ports;
-  }
-}
-
-export enum OutputRunState {
-  IDLE = 0x00,
-  RAMP_UP = 0x10,
-  RUNNING = 0x20,
-  RAMP_DOWN = 0x40
-}

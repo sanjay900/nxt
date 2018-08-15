@@ -56,6 +56,8 @@ import {FileOpener} from "@ionic-native/file-opener";
     KeyboardPage
   ],
   providers: [
+    NxtPacketProvider,
+    MotorProvider,
     StatusBar,
     SplashScreen,
     AppPreferences,
@@ -63,12 +65,10 @@ import {FileOpener} from "@ionic-native/file-opener";
     Gyroscope,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     BluetoothProvider,
-    NxtPacketProvider,
     File,
     ChartProvider,
     SensorProvider,
     Toast,
-    MotorProvider,
     FileOpener
   ]
 })

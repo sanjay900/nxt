@@ -1,7 +1,5 @@
 import {Injectable, NgZone} from '@angular/core';
 import {BluetoothProvider} from "../bluetooth/bluetooth";
-import {File} from '@ionic-native/file';
-import {ModalController} from 'ionic-angular';
 import {Packet} from "./packets/packet";
 import {Subject} from "rxjs";
 import {PacketFactory} from "./packets/packet-factory";
@@ -15,7 +13,7 @@ export class NxtPacketProvider {
   public packetEvent$: Subject<Packet> = new Subject<Packet>();
   private buffer: number[] = [];
 
-  constructor(private bluetooth: BluetoothProvider, private file: File, private modalCtrl: ModalController, private zone: NgZone) {
+  constructor(private bluetooth: BluetoothProvider, private zone: NgZone) {
     //Read packets in a different place to the bluetooth subscription,
     //as the native code happens to thread it differently, and hanging it causes bugs with bluetooth.
     setInterval(() => {

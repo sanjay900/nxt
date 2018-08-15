@@ -5,8 +5,8 @@ import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-stat
 import {Subscription} from "rxjs";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {DirectCommand} from "../../providers/nxt/packets/direct-command";
-import {SystemOutputPort} from "../../providers/motor/motor";
-import {MultiOutputPort} from "../../providers/motor/motor";
+import {SystemOutputPort} from "../../providers/motor/motor-constants";
+import {MultiOutputPort} from "../../providers/motor/motor-constants";
 
 @Component({
   selector: 'page-motor-status',

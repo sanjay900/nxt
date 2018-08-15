@@ -34,7 +34,7 @@
     "angular-progress-bar": "^1.0.3",
     "big-integer": "^1.6.32",
     "chart.js": "^2.7.2",
-    "cordova-android": "6.3.0",
+    "cordova-android": "^7.1.1",
     "cordova-android-support-gradle-release": "^1.4.4",
     "cordova-browser": "^5.0.4",
     "cordova-plugin-app-preferences": "^0.99.3",

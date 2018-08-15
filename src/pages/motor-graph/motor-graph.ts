@@ -10,10 +10,10 @@ import {Utils} from "../../providers/utils/utils";
 import {File} from "@ionic-native/file";
 import {FileOpener} from "@ionic-native/file-opener";
 import {DirectCommand} from "../../providers/nxt/packets/direct-command";
-import {OutputMode} from "../../providers/motor/motor";
-import {OutputRegulationMode} from "../../providers/motor/motor";
-import {OutputRunState} from "../../providers/motor/motor";
-import {SystemOutputPort} from "../../providers/motor/motor";
+import {OutputMode} from "../../providers/motor/motor-constants";
+import {OutputRegulationMode} from "../../providers/motor/motor-constants";
+import {OutputRunState} from "../../providers/motor/motor-constants";
+import {SystemOutputPort} from "../../providers/motor/motor-constants";
 
 @IonicPage({
   name: "motor-graph"

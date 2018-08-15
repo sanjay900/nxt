@@ -1,8 +1,9 @@
 import {Packet} from "../packet";
 import {DirectPacket} from "./direct-packet";
 import {DirectCommand} from "../direct-command";
-import {SystemOutputPortUtils} from "../../../motor/motor";
-import {OutputPort, SystemOutputPort} from "../../../motor/motor";
+import {SystemOutputPortUtils} from "../../../motor/motor-constants";
+import {OutputPort} from "../../../motor/motor-constants";
+import {SystemOutputPort} from "../../../motor/motor-constants";
 
 export class ResetMotorPosition extends DirectPacket {
   private port: SystemOutputPort;

@@ -80,7 +80,6 @@ export class MainPage {
   }
 
   sensorUpdate(data) {
-    this.steering = data.eulerAngles.pitch;
     this.throttle = (data.eulerAngles.roll + Math.PI / 2) * 2;
     if (Math.abs(this.throttle) < 0.5) {
       this.motor.setThrottle(0);
@@ -90,6 +89,7 @@ export class MainPage {
       this.throttle *= -100;
       this.motor.setThrottle(this.throttle);
     }
+    this.steering = data.eulerAngles.pitch * -1;
     this.motor.setSteering(this.steering);
 
   }
