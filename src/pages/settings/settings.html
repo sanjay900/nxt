@@ -77,6 +77,18 @@
       <ion-input type="text" maxlength="3" inputmode="numeric" pattern="[0-9]*" [(ngModel)]="motor.steeringAngle"></ion-input>
     </ion-item>
     <ion-item>
+      <ion-label>Flip Steering Motor</ion-label>
+      <ion-checkbox *ngIf="!isTankControlled()" [(ngModel)]="motor.xFlip"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Flip Drive Motor</ion-label>
+      <ion-checkbox [(ngModel)]="motor.yFlip"></ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-label>Flip Other Motor</ion-label>
+      <ion-checkbox [(ngModel)]="motor.aFlip"></ion-checkbox>
+    </ion-item>
+    <ion-item>
       <button ion-button (click)="motor.startMotorProgram()" [disabled]="!bluetooth.connected">Start steering program
       </button>
     </ion-item>

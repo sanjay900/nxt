@@ -23,7 +23,7 @@ export class StatusComponent implements OnInit, OnDestroy{
 
   ngOnInit() {
     this.subscription = this.bluetooth.deviceStatus$.subscribe(update => {
-      if (!Utils.isVisible(this.elementRef)) return;
+      if (!Utils.isVisible(this.elementRef) && this._status != null) return;
       if (update.status == ConnectionStatus.DISCONNECTED && this._status == ConnectionStatus.CONNECTING) {
         this.showAlert(update.statusMessage);
       } else if (this._status) {

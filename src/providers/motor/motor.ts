@@ -27,6 +27,9 @@ export class MotorProvider {
   private hasAngle: boolean = false;
   private power: number = 0;
   private motorTimer: number = 0;
+  private _xFlip: number = 1;
+  private _yFlip: number = 1;
+  private _aFlip: number = 1;
   private _steeringConfig: SteeringConfig;
   private _steeringPort: SingleOutputPort;
   private _drivePorts: OutputPort;
@@ -91,12 +94,14 @@ export class MotorProvider {
   }
 
   public setThrottle(power: number) {
+    power *= this._yFlip;
     this.power = Math.round(power);
   }
 
   public setSteering(angle: number) {
     angle = Math.min(1, angle);
     angle = Math.max(-1, angle);
+    angle *= this._xFlip;
     this.targetAngle = Math.round(angle * this._steeringAngle);
     this.hasAngle = true;
   }
@@ -105,7 +110,7 @@ export class MotorProvider {
     if (this.auxiliaryPort && this.auxiliaryPort != "None") {
       this.nxt.writePacket(false, SetOutputState.createPacket(
         SystemOutputPortUtils.fromOutputPort(this.auxiliaryPort)[0],
-        Math.round(power), OutputMode.MOTOR_ON,
+        Math.round(power * this._aFlip), OutputMode.MOTOR_ON,
         OutputRegulationMode.IDLE,
         0, OutputRunState.RUNNING,
         0)
@@ -122,6 +127,9 @@ export class MotorProvider {
     this._rightPort = localStorage.getItem("steering.right") as SingleOutputPort;
     this._auxiliaryPort = localStorage.getItem("steering.aux") as SingleOutputPort | "None";
     this._steeringAngle = Number.parseFloat(localStorage.getItem("steering.angle") || MotorProvider.DEFAULT_ANGLE);
+    this._xFlip = Number.parseFloat(localStorage.getItem("steering.xDirection") || "1");
+    this._yFlip = Number.parseFloat(localStorage.getItem("steering.yDirection") || "1");
+    this._aFlip = Number.parseFloat(localStorage.getItem("steering.auxDirection") || "1");
   }
 
   private writeConfigToNXT() {
@@ -171,6 +179,30 @@ export class MotorProvider {
 
   get steeringAngle(): number {
     return this._steeringAngle;
+  }
+
+  get xFlip(): boolean {
+    return this._xFlip == -1;
+  }
+
+  get yFlip(): boolean {
+    return this._yFlip == -1;
+  }
+
+  get aFlip(): boolean {
+    return this._aFlip == -1;
+  }
+
+  set xFlip(value: boolean) {
+    this._xFlip = value ? -1 : 1;
+  }
+
+  set yFlip(value: boolean) {
+    this._yFlip = value ? -1 : 1;
+  }
+
+  set aFlip(value: boolean) {
+    this._aFlip = value ? -1 : 1;
   }
 
   set steeringAngle(value: number) {
