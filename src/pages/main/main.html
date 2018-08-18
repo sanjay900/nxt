@@ -13,7 +13,7 @@
   <span>Use the right joystick to control an additional motor (if configured)</span>
   <h5>Current Motor Values</h5>
   <span>
-    Steering Motor Angle: {{steering}}
+    Steering Motor Angle: {{steering * (180/pi)}}
     <br/>
     Throttle Motor Power: {{throttle}}
     <br/>
@@ -21,4 +21,5 @@
   </span>
   <div #leftJoystick style="position: absolute; top:0; left:0;bottom:0; right: 50%;"></div>
   <div #rightJoystick style="position: absolute; top:0; left:50%;bottom:0; right: 0;"></div>
+  <ion-range [(ngModel)]="auxiliary"></ion-range>
 </ion-content>

@@ -8,9 +8,10 @@ import nipplejs from 'nipplejs';
   templateUrl: 'main.html'
 })
 export class MainPage {
+  private pi = Math.PI;
   private steering: number = 0;
   private throttle: number = 0;
-  private auxiliary: number = 0;
+  private _auxiliary: number = 0;
   private watchId: number;
   private tiltActive: boolean;
   private joysticks: any[] = new Array(2);
@@ -21,53 +22,68 @@ export class MainPage {
   }
 
   ionViewDidLoad() {
-    this.createJoy(1, this.rightJoystick.nativeElement, this.setAux.bind(this), this.endAux.bind(this));
     this.setTilt(localStorage.getItem("tilt.active") == "true");
   }
 
-  endAux() {
-    this.motor.setAux(0);
-    this.auxiliary = 0;
+  get auxiliary(): number {
+    return this._auxiliary;
   }
 
-  setAux(evt) {
-    let pos = evt.target.instance.frontPosition;
-    this.auxiliary = pos.y/(evt.target.instance.options.size/2)*100;
-    this.motor.setAux(this.auxiliary);
+  set auxiliary(value: number) {
+    this._auxiliary = value;
+    //TODO: make it so that the aux slider is in a nicer position and add a label.
+    //TODO: we could also just remove the text telling the user of the current motor positions, and
+    //TODO: that would give us space to give the user the option of the aux slider being power or angle based.
+    this.motor.setAux(this._auxiliary);
   }
 
-  endDrive() {
-    this.motor.setSteering(0);
+  endThrottle() {
     this.motor.setThrottle(0);
-    this.steering = this.throttle = 0;
+    this.throttle = 0;
   }
 
-  setDrive(evt) {
+  endSteering() {
+    this.motor.setSteering(0);
+    this.steering = 0;
+  }
+
+  setSteering(evt) {
     let pos = evt.target.instance.frontPosition;
-    this.steering = pos.x/(evt.target.instance.options.size/2);
-    this.throttle = pos.y/(evt.target.instance.options.size/2)*100;
+    this.steering = pos.x / (evt.target.instance.options.size / 2);
     this.motor.setSteering(this.steering);
+  }
+
+  setThrottle(evt) {
+    let pos = evt.target.instance.frontPosition;
+    this.throttle = pos.y / (evt.target.instance.options.size / 2) * 100;
     this.motor.setThrottle(this.throttle);
   }
 
-  createJoy(index: number, element: ElementRef, move: Function, end: Function) {
+  createJoy(index: number, element: ElementRef, move: Function, end: Function, h: boolean, v: boolean) {
     let options = {
       zone: element,
       mode: 'static',
       position: {left: '50%', top: '75%'},
-      color: 'black'
+      color: 'black',
+      lockX: h,
+      lockY: v
     };
 
     this.joysticks[index] = nipplejs.create(options)[0];
     this.joysticks[index].on("move", move);
     this.joysticks[index].on("end", end);
   }
+
   listenToTilt() {
     if (this.tiltActive) {
-      (<any>navigator).fusion.setMode(() => {}, () => {}, {mode: 1});
-      this.watchId = (<any>navigator).fusion.watchSensorFusion(this.sensorUpdate.bind(this), ()=>{}, {frequency: 100});
+      (<any>navigator).fusion.setMode(() => {
+      }, () => {
+      }, {mode: 1});
+      this.watchId = (<any>navigator).fusion.watchSensorFusion(this.sensorUpdate.bind(this), () => {
+      }, {frequency: 100});
     }
   }
+
   ionViewDidEnter() {
     this.listenToTilt();
   }
@@ -104,8 +120,10 @@ export class MainPage {
     if (this.tiltActive) {
       this.listenToTilt();
       this.joysticks[0].destroy();
+      this.joysticks[1].destroy();
     } else {
-      this.createJoy(0, this.leftJoystick.nativeElement, this.setDrive.bind(this), this.endDrive.bind(this));
+      this.createJoy(0, this.leftJoystick.nativeElement, this.setThrottle.bind(this), this.endThrottle.bind(this), false, true);
+      this.createJoy(1, this.rightJoystick.nativeElement, this.setSteering.bind(this), this.endSteering.bind(this), true, false);
     }
   }
 }
