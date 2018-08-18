@@ -6,7 +6,7 @@ import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
 import {ChartProvider} from "../../providers/chart/chart";
 import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
-import {Utils} from "../../providers/utils/utils";
+import {Utils} from "../../utils/utils";
 import {File} from "@ionic-native/file";
 import {FileOpener} from "@ionic-native/file-opener";
 import {DirectCommand} from "../../providers/nxt/packets/direct-command";

@@ -3,7 +3,7 @@ import {BluetoothProvider, ConnectionStatus} from "../../providers/bluetooth/blu
 import {AlertController, NavController, Tabs} from "ionic-angular";
 import {Toast} from '@ionic-native/toast';
 import {Subscription} from "rxjs";
-import {Utils} from "../../providers/utils/utils";
+import {Utils} from "../../utils/utils";
 
 /**
  * Generated class for the StatusComponent component.

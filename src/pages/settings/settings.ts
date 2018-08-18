@@ -3,7 +3,7 @@ import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
 import {MotorProvider} from "../../providers/motor/motor";
-import {Utils} from "../../providers/utils/utils";
+import {Utils} from "../../utils/utils";
 import {MultiOutputPort, SingleOutputPort} from "../../providers/motor/motor-constants";
 import {SteeringConfig} from "../../providers/motor/motor-constants";
 

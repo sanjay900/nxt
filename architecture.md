@@ -7,7 +7,6 @@ Providers:
 * Motor - Provides a simplified handler for communicating with the onboard nxt motor control application
 * Sensor - Provides a simplified handler for recieving sensor information
 * Chart - Provides an easy way to create chart.js charts and push information to them
-* Utils - Utility functions
 
 Components:
 * Status - The bluetooth status icon
@@ -23,3 +22,6 @@ Pages:
 * Main - A page that provides joystick and tilt controls to control the robot
 * Settings - Configure details about the brick like the bluetooth device and motor config
 * Tabs - the tabbed interface
+
+Others:
+* Utils - Utility functions

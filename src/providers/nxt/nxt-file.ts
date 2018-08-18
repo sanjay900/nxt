@@ -3,7 +3,7 @@ import {Subscription} from "rxjs";
 import {NxtPacketProvider} from "./nxt-packet";
 import {OpenWrite} from "./packets/system/open-write";
 import {Write} from "./packets/system/write";
-import {Utils} from "../utils/utils";
+import {Utils} from "../../utils/utils";
 import {Close} from "./packets/system/close";
 import {StartProgram} from "./packets/direct/start-program";
 import {SystemCommandResponse} from "./packets/system-command-response";
