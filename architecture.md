@@ -30,7 +30,7 @@ Data:
 provides look up tables to get information about commands to communicate with the NXT brick
 * Packet + its children - Stores information required to construct a single packet / receive a single packet from the NXT device
 * PacketFactory - Construct packets from raw information received over bluetooth
-
+* UltrasonicSensorCommand - Stores look up tables required to communicate with an ultrasonic sensor
 Others:
 * Utils - Utility functions
 
