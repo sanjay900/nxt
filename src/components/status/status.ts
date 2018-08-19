@@ -46,9 +46,7 @@ export class StatusComponent implements OnInit, OnDestroy{
     });
     alert.present();
   }
-  isConnected() {
-    return this._status == ConnectionStatus.CONNECTED;
-  }
+
   getStatus() {
     return ConnectionStatus[this._status].toLowerCase();
   }
