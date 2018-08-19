@@ -13,6 +13,11 @@ page-main {
   bottom: 0;
   right: 50%;
 }
+$slot-size: 37.5px;
+.left-joy .back {
+  margin-top: -$slot-size/2 !important;
+  height: $slot-size !important;
+}
 
 .right-joy {
   position: absolute;
@@ -20,4 +25,9 @@ page-main {
   left: 50%;
   bottom: 0;
   right: 0;
+}
+
+.right-joy .back {
+  margin-left: -$slot-size/2 !important;
+  width: $slot-size !important;
 }

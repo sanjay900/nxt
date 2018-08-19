@@ -27,8 +27,6 @@ export class MainPage {
   set auxiliary(value: number) {
     this._auxiliary = value;
     //TODO: make it so that the aux slider is in a nicer position and add a label.
-    //TODO: we could also just remove the text telling the user of the current motor positions, and
-    //TODO: that would give us space to give the user the option of the aux slider being power or angle based.
     this.motor.setAux(this._auxiliary);
   }
 
