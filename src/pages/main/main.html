@@ -1,25 +1,22 @@
 <ion-header>
   <ion-navbar>
-    <ion-title>Remote Control<status></status></ion-title>
+    <ion-title>Remote Control
+      <status></status>
+    </ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
   <button class="control-button" *ngIf="!tiltActive" (click)="setTilt(true)" ion-button>Swap to tilt controls</button>
-  <button class="control-button" *ngIf="tiltActive" (click)="setTilt(false)" ion-button>Swap to Joystick controls</button>
+  <button class="control-button" *ngIf="tiltActive" (click)="setTilt(false)" ion-button>Swap to Joystick controls
+  </button>
   <span *ngIf="tiltActive">Tilt your device to control the robot</span>
   <span *ngIf="!tiltActive">Use the left joystick to drive the robot</span>
   <br/>
   <span>Use the right joystick to control an additional motor (if configured)</span>
-  <h5>Current Motor Values</h5>
-  <span>
-    Steering Motor Angle: {{steering * (180/pi)}}
-    <br/>
-    Throttle Motor Power: {{throttle}}
-    <br/>
-    Additional Motor Power: {{auxiliary}}
-  </span>
-  <div #leftJoystick style="position: absolute; top:0; left:0;bottom:0; right: 50%;"></div>
-  <div #rightJoystick style="position: absolute; top:0; left:50%;bottom:0; right: 0;"></div>
+  <joystick *ngIf="!tiltActive" [lockX]="true" [lockY]="false" class="left-joy" [mode]="'static'" [color]="'black'"
+            [position]="{left: '50%', top: '75%'}" (move)="setThrottle" (end)="endThrottle"></joystick>
+  <joystick *ngIf="!tiltActive" [lockX]="false" [lockY]="true" class="right-joy" [mode]="'static'" [color]="'black'"
+            [position]="{left: '50%', top: '75%'}" (move)="setSteering" (end)="endSteering"></joystick>
   <ion-range [(ngModel)]="auxiliary"></ion-range>
 </ion-content>

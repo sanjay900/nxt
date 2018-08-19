@@ -8,15 +8,11 @@ import nipplejs from 'nipplejs';
   templateUrl: 'main.html'
 })
 export class MainPage {
-  private pi = Math.PI;
   private steering: number = 0;
   private throttle: number = 0;
   private _auxiliary: number = 0;
   private watchId: number;
   private tiltActive: boolean;
-  private joysticks: any[] = new Array(2);
-  @ViewChild('leftJoystick') leftJoystick;
-  @ViewChild('rightJoystick') rightJoystick;
 
   constructor(public nxt: NxtPacketProvider, public motor: MotorProvider) {
   }
@@ -57,21 +53,6 @@ export class MainPage {
     let pos = evt.target.instance.frontPosition;
     this.throttle = pos.y / (evt.target.instance.options.size / 2) * 100;
     this.motor.setThrottle(this.throttle);
-  }
-
-  createJoy(index: number, element: ElementRef, move: Function, end: Function, h: boolean, v: boolean) {
-    let options = {
-      zone: element,
-      mode: 'static',
-      position: {left: '50%', top: '75%'},
-      color: 'black',
-      lockX: h,
-      lockY: v
-    };
-
-    this.joysticks[index] = nipplejs.create(options)[0];
-    this.joysticks[index].on("move", move);
-    this.joysticks[index].on("end", end);
   }
 
   listenToTilt() {
@@ -116,14 +97,6 @@ export class MainPage {
     if (this.watchId) {
       (<any>navigator).fusion.clearWatch(this.watchId);
       this.watchId = null;
-    }
-    if (this.tiltActive) {
-      this.listenToTilt();
-      this.joysticks[0].destroy();
-      this.joysticks[1].destroy();
-    } else {
-      this.createJoy(0, this.leftJoystick.nativeElement, this.setThrottle.bind(this), this.endThrottle.bind(this), false, true);
-      this.createJoy(1, this.rightJoystick.nativeElement, this.setSteering.bind(this), this.endSteering.bind(this), true, false);
     }
   }
 }
