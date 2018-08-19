@@ -46,14 +46,11 @@ export class StatusComponent implements OnInit, OnDestroy{
     });
     alert.present();
   }
-  isConnecting() {
-    return this._status == ConnectionStatus.CONNECTING;
-  }
   isConnected() {
     return this._status == ConnectionStatus.CONNECTED;
   }
-  isDisconnected() {
-    return this._status == ConnectionStatus.DISCONNECTED;
+  getStatus() {
+    return ConnectionStatus[this._status].toLowerCase();
   }
 
   goToSettings() {
@@ -62,8 +59,7 @@ export class StatusComponent implements OnInit, OnDestroy{
   }
 
   private showToast(status: ConnectionStatus) {
-    let statusMessage = ConnectionStatus[status].toLowerCase();
-    statusMessage = statusMessage.charAt(0).toLocaleUpperCase()+statusMessage.substring(1);
+    let statusMessage = Utils.formatTitle(ConnectionStatus[status]);
     this.toastCtrl.showWithOptions({
       message: "NXT "+statusMessage,
       duration: 1000,
