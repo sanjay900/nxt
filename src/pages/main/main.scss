@@ -1,6 +1,8 @@
 page-main {
 }
 
+$slot-size: 37.5px;
+
 .control-button {
   z-index: 1;
   float: right;
@@ -13,7 +15,7 @@ page-main {
   bottom: 0;
   right: 50%;
 }
-$slot-size: 37.5px;
+
 .left-joy .back {
   margin-top: -$slot-size/2 !important;
   height: $slot-size !important;

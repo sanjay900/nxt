@@ -1,6 +1,7 @@
-import {Component} from '@angular/core';
+import {Component, ElementRef} from '@angular/core';
 import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {MotorProvider} from "../../providers/motor/motor";
+import {Utils} from "../../utils/utils";
 
 @Component({
   selector: 'page-main',
@@ -13,7 +14,7 @@ export class MainPage {
   private watchId: number;
   private tiltActive: boolean;
 
-  constructor(public nxt: NxtPacketProvider, public motor: MotorProvider) {
+  constructor(private elementRef: ElementRef, public nxt: NxtPacketProvider, public motor: MotorProvider) {
   }
 
   ionViewDidLoad() {
@@ -52,18 +53,8 @@ export class MainPage {
     this.motor.setThrottle(this.throttle);
   }
 
-  listenToTilt() {
-    if (this.tiltActive) {
-      (<any>navigator).fusion.setMode(() => {
-      }, () => {
-      }, {mode: 1});
-      this.watchId = (<any>navigator).fusion.watchSensorFusion(this.sensorUpdate.bind(this), () => {
-      }, {frequency: 100});
-    }
-  }
-
   ionViewDidEnter() {
-    this.listenToTilt();
+
   }
 
   ionViewDidLeave() {
@@ -74,6 +65,7 @@ export class MainPage {
   }
 
   sensorUpdate(data) {
+    if (!this.tiltActive || !Utils.isVisible(this.elementRef)) return;
     this.throttle = (data.eulerAngles.roll + Math.PI / 2) * 2;
     if (Math.abs(this.throttle) < 0.5) {
       this.motor.setThrottle(0);
@@ -94,6 +86,10 @@ export class MainPage {
     if (this.watchId) {
       (<any>navigator).fusion.clearWatch(this.watchId);
       this.watchId = null;
+    }
+    if (this.tiltActive) {
+      (<any>navigator).fusion.setMode(() => {}, () => {}, {mode: 1});
+      this.watchId = (<any>navigator).fusion.watchSensorFusion(this.sensorUpdate.bind(this), () => {}, {frequency: 100});
     }
   }
 }

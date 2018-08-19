@@ -8,12 +8,11 @@
 
 <ion-content padding>
   <button class="control-button" *ngIf="!tiltActive" (click)="setTilt(true)" ion-button>Swap to tilt controls</button>
-  <button class="control-button" *ngIf="tiltActive" (click)="setTilt(false)" ion-button>Swap to Joystick controls
-  </button>
+  <button class="control-button" *ngIf="tiltActive" (click)="setTilt(false)" ion-button>Swap to Joystick controls</button>
   <span *ngIf="tiltActive">Tilt your device to control the robot</span>
-  <span *ngIf="!tiltActive">Use the left joystick to drive the robot</span>
+  <span *ngIf="!tiltActive">Use both joysticks to drive the robot!</span>
   <br/>
-  <span>Use the right joystick to control an additional motor (if configured)</span>
+  <span>Use the slider to control an additional motor (if configured)</span>
   <joystick *ngIf="!tiltActive" [lockX]="true" [lockY]="false" class="left-joy" [mode]="'static'" [color]="'black'"
             [position]="{left: '50%', top: '75%'}" (move)="setSteering($event)" (end)="endSteering($event)"></joystick>
   <joystick *ngIf="!tiltActive" [lockX]="false" [lockY]="true" class="right-joy" [mode]="'static'" [color]="'black'"
