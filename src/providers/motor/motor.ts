@@ -24,7 +24,7 @@ import {
 export class MotorProvider {
   private static MOTOR_PROGRAM: string = "SteeringControl.rxe";
   private targetAngle: number = 0;
-  private hasAngle: boolean = false;
+  private hasUpdate: boolean = false;
   private power: number = 0;
   private motorTimer: number = 0;
   private _xFlip: number = 1;
@@ -71,8 +71,8 @@ export class MotorProvider {
             this.targetAngle = 0;
             this.power = 0;
           }
-          if (this.hasAngle) {
-            this.hasAngle = false;
+          if (this.hasUpdate) {
+            this.hasUpdate = false;
             this.nxt.writePacket(false, MessageWrite.createPacket(
               MotorProvider.PACKET_MAILBOX,
               MotorProvider.DRIVE_PACKET_ID +
@@ -96,6 +96,7 @@ export class MotorProvider {
   public setThrottle(power: number) {
     power *= this._yFlip;
     this.power = Math.round(power);
+    this.hasUpdate = true;
   }
 
   public setSteering(angle: number) {
@@ -103,7 +104,7 @@ export class MotorProvider {
     angle = Math.max(-1, angle);
     angle *= this._xFlip;
     this.targetAngle = Math.round(angle * this._steeringAngle);
-    this.hasAngle = true;
+    this.hasUpdate = true;
   }
 
   public setAux(power: number) {
