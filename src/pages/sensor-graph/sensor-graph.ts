@@ -4,7 +4,6 @@ import {Chart} from 'chart.js';
 import {GetInputValues} from "../../providers/nxt/packets/direct/get-input-values";
 import {Subscription} from "rxjs";
 import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
-import {ChartProvider} from "../../providers/chart/chart";
 import {SensorProvider, SensorType} from "../../providers/sensor/sensor";
 import {BluetoothProvider} from "../../providers/bluetooth/bluetooth";
 import {File} from "@ionic-native/file";
@@ -18,15 +17,12 @@ import {FileOpener} from "@ionic-native/file-opener";
   templateUrl: 'sensor-graph.html',
 })
 export class SensorGraphPage {
-  private static readonly GRAPH_SIZE: number = 50;
-  @ViewChild('scaledChartCanvas') scaledChartCanvas;
-  @ViewChild('rawChartCanvas') rawChartCanvas;
+  private readonly GRAPH_SIZE: number = 50;
+  @ViewChild('scaledChart') scaledChart;
+  @ViewChild('rawChart') rawChart;
   private readonly port: number;
   private readonly sensor: SensorType;
-  private scaledChart: Chart;
-  private rawChart: Chart;
   private packetReceiver: Subscription;
-  private current: number = 0;
   private scaledData: number[] = [];
   private rawData: number[] = [];
 
@@ -43,22 +39,16 @@ export class SensorGraphPage {
   }
 
   sensorUpdate(packet: GetInputValues) {
-    ChartProvider.addData(this.scaledChart, packet.scaledValue, this.current + "", SensorGraphPage.GRAPH_SIZE);
-    ChartProvider.addData(this.rawChart, packet.rawValue, this.current + "", SensorGraphPage.GRAPH_SIZE);
+    this.scaledChart.addData(packet.scaledValue);
+    this.rawChart.addData(packet.rawValue);
     this.scaledData.push(packet.scaledValue);
     this.rawData.push(packet.rawValue);
-    this.current++;
   }
 
   ionViewDidLeave() {
     this.packetReceiver.unsubscribe();
     this.rawData = [];
     this.scaledData = [];
-  }
-
-  ionViewDidLoad() {
-    this.scaledChart = ChartProvider.createLineChart(this.scaledChartCanvas.nativeElement);
-    this.rawChart = ChartProvider.createLineChart(this.rawChartCanvas.nativeElement);
   }
 
   export() {

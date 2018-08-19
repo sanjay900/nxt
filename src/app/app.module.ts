@@ -19,7 +19,6 @@ import {NxtPacketProvider} from '../providers/nxt/nxt-packet';
 import {File} from '@ionic-native/file';
 import {MotorStatusPage} from "../pages/motor-status/motor-status";
 import {FileUploadModule} from "../pages/file-upload/file-upload.module";
-import {ChartProvider} from '../providers/chart/chart';
 import {KeyboardPage} from "../pages/keyboard/keyboard";
 import {SensorProvider} from '../providers/sensor/sensor';
 import {ComponentsModule} from "../components/components.module";
@@ -66,7 +65,6 @@ import {FileOpener} from "@ionic-native/file-opener";
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     BluetoothProvider,
     File,
-    ChartProvider,
     SensorProvider,
     Toast,
     FileOpener

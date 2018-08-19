@@ -28,7 +28,7 @@
       Power
     </ion-card-header>
     <ion-card-content>
-      <canvas #powerChartCanvas></canvas>
+      <chart #powerChart [columnCount]="GRAPH_SIZE"></chart>
     </ion-card-content>
   </ion-card>
   <ion-card>
@@ -36,7 +36,7 @@
       Rotation Count
     </ion-card-header>
     <ion-card-content>
-      <canvas #rotationCountChartCanvas></canvas>
+      <chart #rotationCountChart [columnCount]="GRAPH_SIZE"></chart>
     </ion-card-content>
   </ion-card>
   <ion-card>
@@ -44,7 +44,7 @@
       Tachometer Count
     </ion-card-header>
     <ion-card-content>
-      <canvas #countChartCanvas></canvas>
+      <chart #countChart [columnCount]="GRAPH_SIZE"></chart>
     </ion-card-content>
   </ion-card>
   <ion-card>
@@ -52,7 +52,7 @@
       Tachometer Limit
     </ion-card-header>
     <ion-card-content>
-      <canvas #limitChartCanvas></canvas>
+      <chart #limitChart [columnCount]="GRAPH_SIZE"></chart>
     </ion-card-content>
   </ion-card>
   <ion-card>
@@ -60,7 +60,7 @@
       Block Tachometer Count
     </ion-card-header>
     <ion-card-content>
-      <canvas #blockCountChartCanvas></canvas>
+      <chart #blockCountChart [columnCount]="GRAPH_SIZE"></chart>
     </ion-card-content>
   </ion-card>
 </ion-content>

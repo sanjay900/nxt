@@ -4,16 +4,17 @@ import {Chart} from 'chart.js';
 import {Subscription} from "rxjs";
 import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {GetOutputState} from "../../providers/nxt/packets/direct/get-output-state";
-import {ChartProvider} from "../../providers/chart/chart";
 import {ResetMotorPosition} from "../../providers/nxt/packets/direct/reset-motor-position";
 import {Utils} from "../../utils/utils";
 import {File} from "@ionic-native/file";
 import {FileOpener} from "@ionic-native/file-opener";
 import {DirectCommand} from "../../providers/nxt/packets/direct-command";
-import {OutputMode} from "../../providers/motor/motor-constants";
-import {OutputRegulationMode} from "../../providers/motor/motor-constants";
-import {OutputRunState} from "../../providers/motor/motor-constants";
-import {SystemOutputPort} from "../../providers/motor/motor-constants";
+import {
+  OutputMode,
+  OutputRegulationMode,
+  OutputRunState,
+  SystemOutputPort
+} from "../../providers/motor/motor-constants";
 
 @IonicPage({
   name: "motor-graph"
@@ -23,17 +24,12 @@ import {SystemOutputPort} from "../../providers/motor/motor-constants";
   templateUrl: 'motor-graph.html',
 })
 export class MotorGraphPage {
-  private static readonly GRAPH_SIZE: number = 50;
-  @ViewChild('powerChartCanvas') powerChartCanvas;
-  @ViewChild('rotationCountChartCanvas') rotationCountChartCanvas;
-  @ViewChild('countChartCanvas') countChartCanvas;
-  @ViewChild('limitChartCanvas') limitChartCanvas;
-  @ViewChild('blockCountChartCanvas') blockCountChartCanvas;
-  private powerChart: Chart;
-  private rotationCountChart: Chart;
-  private countChart: Chart;
-  private limitChart: Chart;
-  private blockCountChart: Chart;
+  private readonly GRAPH_SIZE: number = 50;
+  @ViewChild('powerChart') powerChart;
+  @ViewChild('rotationCountChart') rotationCountChart;
+  @ViewChild('countChart') countChart;
+  @ViewChild('limitChart') limitChart;
+  @ViewChild('blockCountChart') blockCountChart;
   private readonly formatTitle = Utils.formatTitle;
   private readonly OutputMode = OutputMode;
   private readonly OutputRegulationMode = OutputRegulationMode;
@@ -43,7 +39,6 @@ export class MotorGraphPage {
   private readonly portName: string;
   private intervalId: number;
   private packetReciever: Subscription;
-  private current: number = 0;
   private packet: GetOutputState = new GetOutputState();
   private powerData: number[] = [];
   private rotationCountData: number[] = [];
@@ -67,18 +62,16 @@ export class MotorGraphPage {
   }
 
   motorUpdate(packet: GetOutputState) {
-    ChartProvider.addData(this.powerChart, packet.power, this.current + "", MotorGraphPage.GRAPH_SIZE);
-    ChartProvider.addData(this.rotationCountChart, packet.rotationCount, this.current + "", MotorGraphPage.GRAPH_SIZE);
-    ChartProvider.addData(this.limitChart, packet.tachoLimit, this.current + "", MotorGraphPage.GRAPH_SIZE);
-    ChartProvider.addData(this.blockCountChart, packet.blockTachoCount, this.current + "", MotorGraphPage.GRAPH_SIZE);
-    ChartProvider.addData(this.countChart, packet.tachoCount, this.current + "", MotorGraphPage.GRAPH_SIZE);
+    this.powerChart.addData(packet.power);
+    this.rotationCountChart.addData(packet.rotationCount);
+    this.limitChart.addData(packet.tachoLimit);
+    this.blockCountChart.addData(packet.blockTachoCount);
+    this.countChart.addData(packet.tachoCount);
     this.powerData.push(packet.power);
     this.rotationCountData.push(packet.rotationCount);
     this.limitData.push(packet.tachoLimit);
     this.blockCountData.push(packet.blockTachoCount);
     this.countData.push(packet.tachoCount);
-
-    this.current++;
     this.packet = packet;
   }
 
@@ -90,14 +83,6 @@ export class MotorGraphPage {
     this.limitData = [];
     this.blockCountData = [];
     this.countData = [];
-  }
-
-  ionViewDidLoad() {
-    this.countChart = ChartProvider.createLineChart(this.countChartCanvas.nativeElement);
-    this.powerChart = ChartProvider.createLineChart(this.powerChartCanvas.nativeElement);
-    this.rotationCountChart = ChartProvider.createLineChart(this.rotationCountChartCanvas.nativeElement);
-    this.limitChart = ChartProvider.createLineChart(this.limitChartCanvas.nativeElement);
-    this.blockCountChart = ChartProvider.createLineChart(this.blockCountChartCanvas.nativeElement);
   }
 
   resetMotorStats() {
