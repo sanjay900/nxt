@@ -18,6 +18,8 @@
               [ngClass]="{'down':active.get(pianoKey.blackKeyId)}" (touchstart)="keyPress(pianoKey.blackKeyId)"
               (touchend)="keyRelease(pianoKey.blackKeyId)"></span>
       </li>
+      <li class="piano-edge"></li>
     </ul>
+    <div class="grip"></div>
   </div>
 </ion-content>

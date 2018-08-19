@@ -7,6 +7,8 @@
  * Good luck!
  */
 $note-scaler: 1.5;
+$white-note-width: 38px*$note-scaler;
+$key-count: 29;
 #p-wrapper > * {
   margin: 0;
   padding: 0;
@@ -14,6 +16,7 @@ $note-scaler: 1.5;
 }
 
 #p-wrapper {
+  overflow-x: scroll;
   margin-top: 20px;
   background: #000;
   background: -webkit-linear-gradient(-60deg, #000, #333, #000, #666, #333 70%);
@@ -37,19 +40,30 @@ $note-scaler: 1.5;
 
 /* Tuts */
 ul#piano {
-  overflow-x: scroll;
   display: block;
   width: 100%;
-  height: 240px;
   border-top: 2px solid #222;
   white-space: nowrap;
+}
+.piano-edge {
+  width:15px !important;
+}
+.grip {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjODg4Ij48L3JlY3Q+Cjwvc3ZnPg==");
+  width: $white-note-width*$key-count !important;
+  padding-right: 15px;
+  height: 15px !important;
+  margin: 15px 15px 15px 0 !important;
+  cursor: grab;
+  cursor: -webkit-grab;
+  pointer-events: none;
 }
 
 ul#piano li {
   list-style: none;
   display: inline-block;
   background: #aaa;
-  width: 38px*$note-scaler;
+  width: $white-note-width;
   position: relative;
   cursor: pointer;
 }
