@@ -33,10 +33,10 @@ export class JoystickComponent implements OnInit, OnDestroy {
       lockX: this.lockX,
       lockY: this.lockY
     };
-
-    this.joystick = nipplejs.create(options)[0];
-    this.joystick.on("move", this.move.emit.bind(this.move));
-    this.joystick.on("end", this.end.emit.bind(this.end));
+    let joys = nipplejs.create(options);
+    this.joystick = joys[joys.length-1];
+    this.joystick.on("move", evt => this.move.emit(evt));
+    this.joystick.on("end", evt => this.end.emit(evt));
   }
 
 }

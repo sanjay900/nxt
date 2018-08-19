@@ -15,8 +15,8 @@
   <br/>
   <span>Use the right joystick to control an additional motor (if configured)</span>
   <joystick *ngIf="!tiltActive" [lockX]="true" [lockY]="false" class="left-joy" [mode]="'static'" [color]="'black'"
-            [position]="{left: '50%', top: '75%'}" (move)="setThrottle" (end)="endThrottle"></joystick>
+            [position]="{left: '50%', top: '75%'}" (move)="setSteering($event)" (end)="endSteering($event)"></joystick>
   <joystick *ngIf="!tiltActive" [lockX]="false" [lockY]="true" class="right-joy" [mode]="'static'" [color]="'black'"
-            [position]="{left: '50%', top: '75%'}" (move)="setSteering" (end)="endSteering"></joystick>
+            [position]="{left: '50%', top: '75%'}" (move)="setThrottle($event)" (end)="endThrottle($event)"></joystick>
   <ion-range [(ngModel)]="auxiliary"></ion-range>
 </ion-content>

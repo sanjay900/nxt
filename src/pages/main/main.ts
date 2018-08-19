@@ -1,7 +1,6 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {MotorProvider} from "../../providers/motor/motor";
-import nipplejs from 'nipplejs';
 
 @Component({
   selector: 'page-main',
