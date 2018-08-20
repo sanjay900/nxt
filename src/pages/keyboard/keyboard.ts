@@ -2,6 +2,10 @@ import {Component, OnInit} from '@angular/core';
 
 import {NxtPacketProvider} from "../../providers/nxt/nxt-packet";
 import {PlayTone} from "../../providers/nxt/packets/direct/play-tone";
+import {File} from "@ionic-native/file";
+
+import MidiPlayer from "midi-player-ts"
+
 
 @Component({
   selector: 'keyboard',
@@ -11,7 +15,7 @@ export class KeyboardPage implements OnInit {
   private pianoKeys: IPianoKey[];
   private active: Map<number, boolean> = new Map<number, boolean>();
 
-  constructor(private nxt: NxtPacketProvider) {
+  constructor(private nxt: NxtPacketProvider, private file: File) {
 
     this.pianoKeys = [
       {whiteKeyId: 16},
@@ -47,6 +51,7 @@ export class KeyboardPage implements OnInit {
   }
 
   ngOnInit() {
+
   }
 
   keyPress(keyNumber: number) {
@@ -58,6 +63,24 @@ export class KeyboardPage implements OnInit {
 
   keyRelease(keyNumber: number) {
     this.active.set(keyNumber, false);
+  }
+
+  playMario() {
+    let nxt = this.nxt;
+    var Player = new MidiPlayer.Player(function (event) {
+      if (event.name != "Note on" || event.track != 3) {
+        return;
+      }
+      console.log(event);
+      let f: number = 27.5 * Math.pow(2, ((event.noteNumber - 21) / 12));
+      nxt.writePacket(false, PlayTone.createPacket(f, 100));
+    });
+    this.file.readAsArrayBuffer(this.file.applicationDirectory, "www/assets/tetris.mid").then(buf => {
+      console.log(buf);
+      Player.loadArrayBuffer(buf);
+      Player.play();
+    }, err => console.log(err));
+
   }
 }
 
