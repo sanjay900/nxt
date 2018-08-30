@@ -1,0 +1,84 @@
+@startuml architecture
+left to right direction
+
+package "Presentation" {
+    package "Pages" {
+        [Main]
+        [Tab]
+        [About]
+        [FileUpload]
+        [Keyboard]
+        [MotorStatus]
+        [SensorStatus]
+        [MotorGraph]
+        [SensorGraph]
+        [Settings]
+    }
+    package "Components" {
+        [Status]
+        [Chart]
+        [Joystick]
+    }
+}
+
+package "Business" {
+    [Bluetooth]
+    [NXTPacket]
+    [Motor]
+    [Sensor]
+}
+
+
+package "Utils" {
+    component util as "Utils"
+}
+package "Data" {
+    [I2CRegister]
+    [NXTFile]
+    [Command]
+    [Packet]
+    [PacketFactory]
+}
+
+Tab --> Main
+Tab --> About
+Tab --> Keyboard
+Tab --> Settings
+Tab --> SensorStatus
+Tab --> MotorStatus
+Status --> Main
+Status --> About
+Status --> Keyboard
+Status --> Settings
+Status --> SensorStatus
+Status --> MotorStatus
+Status --> MotorGraph
+Status --> SensorGraph
+Status --> FileUpload
+Utils <-- MotorGraph
+Utils <-- SensorGraph
+Utils <-- SensorStatus
+Utils <-- MotorStatus
+MotorStatus --> MotorGraph
+SensorStatus --> SensorGraph
+Keyboard --> NXTPacket
+MotorGraph <--> NXTPacket
+SensorGraph <--> NXTPacket
+Bluetooth <--> NXTPacket
+Motor <--> NXTPacket
+Sensor <--> NXTPacket
+FileUpload <--> NXTPacket
+FileUpload <- Bluetooth
+Status <-- Bluetooth
+Joystick <-- Main
+Sensor <-- I2CRegister
+NXTFile <-- FileUpload
+Command <-- NXTPacket
+Packet <-- NXTPacket
+PacketFactory <--> NXTPacket
+Chart <-- MotorStatus
+Chart <-- SensorStatus
+Chart <-- MotorGraph
+Chart <-- SensorGraph
+
+@enduml
